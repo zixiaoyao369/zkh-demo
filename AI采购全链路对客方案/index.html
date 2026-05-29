@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 采购全链路对客方案 · 方案档案室</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0e14;
+    --ink-2:#11161f;
+    --ink-3:#161c27;
+    --line:#262e3b;
+    --line-soft:rgba(255,255,255,.06);
+    --paper:#e8e6df;
+    --paper-dim:#a8a59a;
+    --copper:#d97757;
+    --copper-glow:#f0a06d;
+    --amber:#e8b339;
+    --amber-glow:#f6cc62;
+    --teal:#5fb3a8;
+    --serif:'Noto Serif SC',serif;
+    --sans:'Space Grotesk','Noto Sans SC',system-ui,sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background:var(--ink);color:var(--paper);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+  ::selection{background:var(--amber);color:var(--ink)}
+
+  /* 背景肌理：方格 + 琥珀辉光（与总目录差异化） */
+  body::before{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+    background-size:64px 64px,64px 64px;
+    mask-image:radial-gradient(ellipse 80% 70% at 50% 40%,#000 50%,transparent 100%);
+  }
+  body::after{
+    content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(ellipse 700px 500px at 18% 22%, rgba(232,179,57,.10), transparent 60%),
+      radial-gradient(ellipse 600px 600px at 82% 92%, rgba(217,119,87,.07), transparent 60%);
+  }
+
+  /* 视口框架 */
+  .frame{
+    position:fixed;inset:24px;border:1px solid var(--line);
+    pointer-events:none;z-index:1;
+  }
+  .frame::before,.frame::after,
+  .corner{position:absolute;width:18px;height:18px;border:1.5px solid var(--amber)}
+  .frame::before{top:-1px;left:-1px;border-right:none;border-bottom:none;content:''}
+  .frame::after{bottom:-1px;right:-1px;border-left:none;border-top:none;content:''}
+  .corner.tr{top:-1px;right:-1px;border-left:none;border-bottom:none}
+  .corner.bl{bottom:-1px;left:-1px;border-right:none;border-top:none}
+
+  /* 顶部 meta + 返回 */
+  .meta{
+    position:relative;z-index:2;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:48px 64px 0;font-family:var(--mono);font-size:11px;
+    letter-spacing:.18em;color:var(--paper-dim);text-transform:uppercase;
+  }
+  .meta .left{display:flex;align-items:center;gap:14px}
+  .meta .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 12px var(--amber-glow);animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.85)}}
+  .back{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:8px 14px;border:1px solid var(--line);
+    color:var(--paper-dim);text-decoration:none;
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    transition:all .3s;
+  }
+  .back:hover{border-color:var(--amber);color:var(--amber)}
+  .back .arr{transition:transform .3s}
+  .back:hover .arr{transform:translateX(-3px)}
+
+  /* 头部 */
+  header{
+    position:relative;z-index:2;
+    padding:64px 64px 48px;
+  }
+  .eyebrow{
+    font-family:var(--mono);font-size:12px;letter-spacing:.32em;
+    color:var(--amber);text-transform:uppercase;margin-bottom:28px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .eyebrow::before{content:'';width:48px;height:1px;background:var(--amber)}
+  h1{
+    font-family:var(--serif);font-weight:900;
+    font-size:clamp(40px,6.5vw,84px);line-height:1;
+    letter-spacing:-.02em;color:var(--paper);
+    max-width:1100px;
+  }
+  h1 .it{
+    font-style:italic;font-weight:500;
+    background:linear-gradient(120deg,var(--amber),var(--copper-glow) 60%,var(--amber-glow));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  h1 .stroke{-webkit-text-stroke:1.5px var(--paper);color:transparent}
+  .lede{
+    margin-top:32px;max-width:680px;
+    font-family:var(--serif);font-weight:500;font-size:17px;line-height:1.8;
+    color:#cfcdc4;
+  }
+  .lede em{font-style:normal;color:var(--amber-glow);font-weight:700}
+
+  /* 章节序号 */
+  .section-mark{
+    position:relative;z-index:2;
+    display:flex;align-items:flex-end;justify-content:space-between;
+    padding:24px 64px;border-top:1px solid var(--line);
+  }
+  .section-mark .label{
+    font-family:var(--mono);font-size:11px;letter-spacing:.28em;
+    color:var(--paper-dim);text-transform:uppercase;
+  }
+  .section-mark .count{
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--paper-dim);
+  }
+  .section-mark .count b{color:var(--paper)}
+
+  /* 文档列表（档案抽屉式） */
+  main{
+    position:relative;z-index:2;
+    padding:16px 64px 80px;
+    display:grid;grid-template-columns:1fr 1fr;gap:24px;
+  }
+
+  .doc{
+    position:relative;background:var(--ink-2);
+    border:1px solid var(--line);
+    overflow:hidden;text-decoration:none;color:inherit;
+    display:flex;flex-direction:column;
+    min-height:480px;
+    transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .4s;
+  }
+  .doc::before{
+    content:'';position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(135deg,transparent 0%,transparent 60%,var(--accent-soft) 100%);
+    opacity:0;transition:opacity .5s;
+  }
+  .doc::after{
+    content:'';position:absolute;left:0;top:0;height:100%;width:3px;
+    background:var(--accent);transform:scaleY(0);transform-origin:top;
+    transition:transform .55s cubic-bezier(.2,.8,.2,1);
+  }
+  .doc:hover{transform:translateY(-6px);border-color:var(--accent)}
+  .doc:hover::before{opacity:1}
+  .doc:hover::after{transform:scaleY(1)}
+
+  /* 文档顶部信息条（模拟档案标签） */
+  .doc-head{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 28px;border-bottom:1px dashed var(--line);
+    font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+    color:var(--paper-dim);text-transform:uppercase;
+    background:linear-gradient(90deg,var(--ink-3),transparent);
+  }
+  .doc-head .id b{color:var(--accent);font-weight:500}
+  .doc-head .ext{
+    padding:3px 8px;border:1px solid var(--accent);
+    color:var(--accent);font-size:10px;
+  }
+
+  .doc-body{
+    padding:36px 36px 32px;display:flex;flex-direction:column;flex:1;
+    position:relative;
+  }
+  /* 大序号水印 */
+  .doc-body::before{
+    content:attr(data-num);position:absolute;
+    right:-10px;bottom:-50px;
+    font-family:var(--serif);font-weight:900;font-style:italic;
+    font-size:280px;line-height:1;
+    color:var(--accent);opacity:.05;
+    pointer-events:none;user-select:none;
+    transition:opacity .5s,transform .8s cubic-bezier(.2,.8,.2,1);
+  }
+  .doc:hover .doc-body::before{opacity:.1;transform:translate(-6px,-10px) rotate(-2deg)}
+
+  .doc-tag{
+    display:inline-flex;align-items:center;gap:8px;width:fit-content;
+    padding:5px 12px;border:1px solid var(--accent);
+    font-family:var(--mono);font-size:10px;letter-spacing:.2em;
+    color:var(--accent);text-transform:uppercase;margin-bottom:24px;
+  }
+  .doc-tag .sq{width:5px;height:5px;background:var(--accent)}
+  .doc-title{
+    font-family:var(--serif);font-weight:900;
+    font-size:32px;line-height:1.12;letter-spacing:-.01em;
+    color:var(--paper);margin-bottom:14px;
+  }
+  .doc-title .accent{color:var(--accent)}
+  .doc-en{
+    font-family:var(--mono);font-size:11px;letter-spacing:.22em;
+    color:var(--paper-dim);text-transform:uppercase;margin-bottom:24px;
+  }
+  .doc-desc{
+    font-family:var(--serif);font-weight:500;
+    font-size:14.5px;line-height:1.8;color:#bdbab1;
+    max-width:480px;margin-bottom:32px;
+  }
+
+  /* 文档元信息 */
+  .doc-meta{
+    display:grid;grid-template-columns:repeat(3,auto);gap:0;
+    margin-bottom:28px;border-top:1px solid var(--line-soft);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .doc-meta .cell{
+    padding:14px 0;padding-right:24px;
+    border-right:1px solid var(--line-soft);
+  }
+  .doc-meta .cell:last-child{border-right:none;padding-right:0;padding-left:24px}
+  .doc-meta .cell:nth-child(2){padding-left:24px}
+  .doc-meta .k{
+    display:block;font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+    color:var(--paper-dim);text-transform:uppercase;margin-bottom:4px;
+  }
+  .doc-meta .v{
+    font-family:var(--serif);font-weight:700;font-size:14px;color:var(--paper);
+  }
+  .doc-meta .v .accent{color:var(--accent)}
+
+  .doc-cta{
+    margin-top:auto;display:flex;align-items:center;justify-content:space-between;
+    padding-top:22px;border-top:1px solid var(--line);
+  }
+  .doc-cta .label{
+    font-family:var(--mono);font-size:12px;letter-spacing:.22em;
+    color:var(--paper);text-transform:uppercase;
+  }
+  .doc-cta .arrow{
+    width:44px;height:44px;border:1px solid var(--accent);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--accent);font-size:18px;
+    transition:all .4s cubic-bezier(.2,.8,.2,1);
+  }
+  .doc:hover .doc-cta .arrow{
+    background:var(--accent);color:var(--ink);
+    transform:translateX(4px) rotate(-45deg);
+    box-shadow:0 8px 28px var(--accent-soft);
+  }
+
+  /* 文档主题 */
+  .doc--alpha{
+    --accent:var(--amber);
+    --accent-soft:rgba(232,179,57,.18);
+  }
+  .doc--beta{
+    --accent:var(--copper);
+    --accent-soft:rgba(217,119,87,.18);
+  }
+
+  /* 底部 */
+  footer{
+    position:relative;z-index:2;
+    padding:32px 64px 52px;border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;
+    font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+    color:var(--paper-dim);text-transform:uppercase;
+  }
+  footer .sig{font-family:var(--serif);font-style:italic;font-size:13px;letter-spacing:.04em;color:#cfcdc4;text-transform:none}
+
+  /* 入场动画 */
+  .reveal{opacity:0;transform:translateY(20px);animation:reveal .9s cubic-bezier(.2,.8,.2,1) forwards}
+  .r1{animation-delay:.05s}.r2{animation-delay:.18s}.r3{animation-delay:.32s}
+  .r4{animation-delay:.5s}.r5{animation-delay:.68s}.r6{animation-delay:.85s}
+  @keyframes reveal{to{opacity:1;transform:translateY(0)}}
+
+  @media(max-width:1100px){
+    main{grid-template-columns:1fr;gap:20px}
+    .doc{min-height:auto}
+  }
+  @media(max-width:960px){
+    main{padding:16px 28px 56px}
+    header{padding:48px 28px 36px}
+    .meta,.section-mark,footer{padding-left:28px;padding-right:28px}
+    .frame{inset:14px}
+    .doc-body{padding:28px 24px 28px}
+    .doc-title{font-size:26px}
+    .doc-meta{grid-template-columns:1fr 1fr}
+    .doc-meta .cell:nth-child(3){grid-column:span 2;border-right:none;padding-left:0}
+  }
+  @media(max-width:560px){
+    .meta .right{display:none}
+    .doc-meta{grid-template-columns:1fr}
+    .doc-meta .cell{border-right:none;border-bottom:1px solid var(--line-soft);padding:12px 0!important}
+    .doc-meta .cell:last-child{border-bottom:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="frame"><span class="corner tr"></span><span class="corner bl"></span></div>
+
+<!-- 顶部 meta + 返回 -->
+<div class="meta reveal r1">
+  <div class="left">
+    <span class="dot"></span>
+    <span>ZKH × AI · SOLUTION DOSSIER</span>
+  </div>
+  <a class="back" href="../index.html">
+    <span class="arr">←</span>
+    <span>Back to Portal</span>
+  </a>
+</div>
+
+<!-- 头部 -->
+<header>
+  <div class="eyebrow reveal r2">Volume 03 · 方案档案室</div>
+  <h1 class="reveal r3">
+    AI 采购<span class="it">全链路</span>，<br>
+    <span class="stroke">对客</span>方案档案。
+  </h1>
+  <p class="lede reveal r4">
+    本档案室收录震坤行 AI 采购能力的 <em>对客交付级</em> 方案文档 — 以产品视角系统化呈现，
+    覆盖 <em>一品多商智能匹配</em> 与 <em>商品资质智能审核</em> 等核心能力，可作为客户沟通、商务支撑与售前讲解的标准物料。
+  </p>
+</header>
+
+<!-- 章节标识 -->
+<div class="section-mark reveal r4">
+  <span class="label">▍ Documents · 方案文档</span>
+  <span class="count">DOSSIER <b>02</b> / 02</span>
+</div>
+
+<!-- 文档列表 -->
+<main>
+
+  <!-- 01 一品多商 -->
+  <a class="doc doc--alpha reveal r5" href="./一品多商/一品多商智能匹配平台-对客产品方案.html">
+    <div class="doc-head">
+      <span class="id">DOC <b>01</b> · YPDS</span>
+      <span class="ext">HTML</span>
+    </div>
+    <div class="doc-body" data-num="01">
+      <div class="doc-tag"><span class="sq"></span>Capability · 智能匹配</div>
+      <h2 class="doc-title">一品多商<span class="accent">智能匹配</span>平台</h2>
+      <div class="doc-en">ONE-SKU · MULTI-VENDOR · MATCHING</div>
+      <p class="doc-desc">
+        围绕"一物多源"的供应商匹配场景，基于规格语义、品牌族系与价格分布构建智能匹配引擎，
+        在客户视角阐述价值定位、能力地图与落地路径。
+      </p>
+      <div class="doc-meta">
+        <div class="cell">
+          <span class="k">Category</span>
+          <span class="v">对客产品<span class="accent">方案</span></span>
+        </div>
+        <div class="cell">
+          <span class="k">Edition</span>
+          <span class="v">v · Live</span>
+        </div>
+        <div class="cell">
+          <span class="k">Format</span>
+          <span class="v">HTML</span>
+        </div>
+      </div>
+      <div class="doc-cta">
+        <span class="label">Open Document</span>
+        <span class="arrow">→</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- 02 商品审核 -->
+  <a class="doc doc--beta reveal r6" href="./商品审核/商品资质智能审核方案-对客版v4.0.html">
+    <div class="doc-head">
+      <span class="id">DOC <b>02</b> · SPSH</span>
+      <span class="ext">HTML</span>
+    </div>
+    <div class="doc-body" data-num="02">
+      <div class="doc-tag"><span class="sq"></span>Capability · 资质审核</div>
+      <h2 class="doc-title">商品资质<span class="accent">智能审核</span>方案</h2>
+      <div class="doc-en">PRODUCT QUALIFICATION · AI REVIEW</div>
+      <p class="doc-desc">
+        针对商品上架链路中的资质合规审核场景，融合 OCR、规则引擎与多模态模型，
+        系统呈现 AI 在准入提效、风险拦截与合规留痕中的对客落地形态。
+      </p>
+      <div class="doc-meta">
+        <div class="cell">
+          <span class="k">Category</span>
+          <span class="v">对客产品<span class="accent">方案</span></span>
+        </div>
+        <div class="cell">
+          <span class="k">Edition</span>
+          <span class="v">v4.0</span>
+        </div>
+        <div class="cell">
+          <span class="k">Format</span>
+          <span class="v">HTML</span>
+        </div>
+      </div>
+      <div class="doc-cta">
+        <span class="label">Open Document</span>
+        <span class="arrow">→</span>
+      </div>
+    </div>
+  </a>
+
+</main>
+
+<!-- 底部 -->
+<footer>
+  <span>© 2026 ZKH · 对客方案档案</span>
+  <span class="sig">— Where AI meets procurement, in clients' words.</span>
+  <span>VOL · 03 / DOSSIER</span>
+</footer>
+
+</body>
+</html>

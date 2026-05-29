@@ -124,7 +124,7 @@
   main{
     position:relative;z-index:2;
     padding:24px 64px 80px;
-    display:grid;grid-template-columns:1.05fr .95fr;gap:32px;
+    display:grid;grid-template-columns:repeat(3,1fr);gap:24px;
   }
 
   .card{
@@ -134,7 +134,7 @@
     transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .4s;
     text-decoration:none;color:inherit;
     display:flex;flex-direction:column;
-    min-height:520px;
+    min-height:560px;
   }
   .card::before{
     content:'';position:absolute;inset:0;
@@ -169,7 +169,7 @@
   .card:hover .watermark{opacity:.12;transform:translate(-8px,-12px) rotate(-2deg)}
 
   .card-body{
-    padding:64px 44px 40px;display:flex;flex-direction:column;
+    padding:56px 36px 36px;display:flex;flex-direction:column;
     flex:1;position:relative;z-index:1;
   }
   .card-tag{
@@ -181,7 +181,7 @@
   .card-tag .sq{width:5px;height:5px;background:var(--accent)}
   .card-title{
     font-family:var(--serif);font-weight:900;
-    font-size:42px;line-height:1.1;letter-spacing:-.01em;
+    font-size:34px;line-height:1.12;letter-spacing:-.01em;
     color:var(--paper);margin-bottom:18px;
   }
   .card-title .accent{color:var(--accent)}
@@ -191,8 +191,8 @@
   }
   .card-desc{
     font-family:var(--serif);font-weight:500;
-    font-size:15px;line-height:1.85;color:#bdbab1;
-    max-width:440px;margin-bottom:40px;
+    font-size:14.5px;line-height:1.8;color:#bdbab1;
+    max-width:440px;margin-bottom:36px;
   }
 
   .card-features{
@@ -232,6 +232,19 @@
     --accent:var(--teal);
     --accent-soft:rgba(95,179,168,.16);
   }
+  .card--gamma{
+    --accent:var(--amber);
+    --accent-soft:rgba(232,179,57,.18);
+  }
+  /* gamma 卡片：方案文档专属徽记 */
+  .card--gamma .card-tag::after{
+    content:'';width:14px;height:1px;background:var(--accent);
+    margin-left:4px;opacity:.6;
+  }
+  .card--gamma .card-title .accent{
+    background:linear-gradient(120deg,var(--amber),var(--copper-glow));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
 
   /* ── 底部 ── */
   footer{
@@ -250,6 +263,11 @@
   @keyframes reveal{to{opacity:1;transform:translateY(0)}}
 
   /* ── 响应式 ── */
+  @media(max-width:1240px){
+    main{grid-template-columns:1fr;gap:24px}
+    .card{min-height:auto}
+    .card-title{font-size:38px}
+  }
   @media(max-width:960px){
     main{grid-template-columns:1fr;gap:24px;padding:24px 28px 56px}
     header{padding:56px 28px 40px}
@@ -299,8 +317,8 @@
 
 <!-- 章节标识 -->
 <div class="section-mark reveal r4">
-  <span class="label">▍ Demos · 双线演示</span>
-  <span class="count">SHOWCASE <b>02</b> / 02</span>
+  <span class="label">▍ Showcase · 三线呈现</span>
+  <span class="count">SHOWCASE <b>03</b> / 03</span>
 </div>
 
 <!-- 卡片主体 -->
@@ -352,6 +370,31 @@
       </div>
       <div class="card-cta">
         <span class="label">Enter Prototype</span>
+        <span class="arrow">→</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- 03 -->
+  <a class="card card--gamma reveal r6" href="./AI采购全链路对客方案/index.html" style="animation-delay:1s">
+    <span class="num">DOC <b>03</b></span>
+    <span class="watermark">03</span>
+    <div class="card-body">
+      <div class="card-tag"><span class="sq"></span>Solution · 方案文档</div>
+      <h2 class="card-title">AI 采购全链路<span class="accent">对客方案</span></h2>
+      <div class="card-en">CLIENT-FACING · SOLUTION DOSSIER</div>
+      <p class="card-desc">
+        面向客户的 AI 采购能力产品方案汇集，涵盖一品多商智能匹配、商品资质智能审核等完整方案文档，
+        以可交付的产品视角系统呈现 AI 的业务价值与落地路径。
+      </p>
+      <div class="card-features">
+        <span>一品多商</span>
+        <span>商品审核</span>
+        <span>方案文档</span>
+        <span>对客交付</span>
+      </div>
+      <div class="card-cta">
+        <span class="label">Enter Dossier</span>
         <span class="arrow">→</span>
       </div>
     </div>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一品多商·智能商品匹配平台 - 对客产品方案</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, 'Microsoft YaHei', sans-serif; background: #f8fafc; color: #1a1a2e; line-height: 1.7; }
+
+        /* Header */
+        .header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: white; padding: 80px 40px; text-align: center; position: relative; overflow: hidden; }
+        .header::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.03) 0%, transparent 70%); animation: rotate 30s linear infinite; }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .header h1 { font-size: 42px; font-weight: 700; margin-bottom: 16px; position: relative; }
+        .header .subtitle { font-size: 18px; opacity: 0.85; position: relative; }
+        .header .badge { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 6px 18px; font-size: 13px; margin-top: 20px; position: relative; }
+        .header .badge-group { display: flex; gap: 12px; justify-content: center; margin-top: 20px; position: relative; flex-wrap: wrap; }
+
+        /* Navigation */
+        .nav { background: white; border-bottom: 1px solid #e2e8f0; padding: 16px 40px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+        .nav-inner { max-width: 1200px; margin: 0 auto; display: flex; gap: 32px; overflow-x: auto; }
+        .nav a { text-decoration: none; color: #64748b; font-size: 14px; font-weight: 500; white-space: nowrap; padding: 4px 0; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .nav a:hover { color: #1a1a2e; border-bottom-color: #0f3460; }
+
+        /* Sections */
+        .section { max-width: 1200px; margin: 0 auto; padding: 60px 40px; }
+        .section-title { font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+        .section-num { background: #0f3460; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; flex-shrink: 0; }
+        .section-desc { font-size: 15px; color: #64748b; margin-bottom: 40px; }
+
+        /* Chain Flow */
+        .chain-container { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 40px; }
+        .chain-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 24px; text-align: center; }
+        .chain-flow { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+        .chain-step { background: #f1f5f9; border: 2px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; text-align: center; min-width: 120px; transition: all 0.3s; position: relative; }
+        .chain-step.active { background: #eff6ff; border-color: #3b82f6; box-shadow: 0 4px 12px rgba(59,130,246,0.2); transform: translateY(-4px); }
+        .chain-step.active::after { content: '一品多商切入点'; position: absolute; bottom: -28px; left: 50%; transform: translateX(-50%); font-size: 11px; color: #3b82f6; font-weight: 600; white-space: nowrap; }
+        .chain-step .step-name { font-size: 13px; font-weight: 600; color: #334155; }
+        .chain-step .step-sub { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+        .chain-arrow { color: #cbd5e1; font-size: 20px; font-weight: 700; }
+        .chain-note { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 16px 20px; border-radius: 0 8px 8px 0; margin-top: 32px; font-size: 14px; color: #1e40af; }
+
+        /* Pain Points */
+        .pain-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .pain-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border-left: 4px solid #ef4444; transition: transform 0.2s; }
+        .pain-card:hover { transform: translateY(-2px); }
+        .pain-card h4 { font-size: 15px; color: #dc2626; margin-bottom: 8px; }
+        .pain-card p { font-size: 13px; color: #64748b; }
+
+        /* Solution Flow */
+        .solution-flow { background: white; border-radius: 16px; padding: 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .flow-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 32px; }
+        .flow-steps { display: flex; flex-direction: column; gap: 0; position: relative; }
+        .flow-step { display: flex; align-items: flex-start; gap: 20px; padding: 20px 0; opacity: 0; transform: translateX(-20px); animation: slideIn 0.5s ease forwards; }
+        .flow-step:nth-child(1) { animation-delay: 0.2s; }
+        .flow-step:nth-child(2) { animation-delay: 0.5s; }
+        .flow-step:nth-child(3) { animation-delay: 0.8s; }
+        .flow-step:nth-child(4) { animation-delay: 1.1s; }
+        .flow-step:nth-child(5) { animation-delay: 1.4s; }
+        @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+        .flow-step-num { width: 40px; height: 40px; border-radius: 50%; background: #0f3460; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; position: relative; z-index: 2; }
+        .flow-step-num.step-blue { background: #0f3460; }
+        .flow-step-num.step-green { background: #059669; }
+        .flow-step-num.step-orange { background: #d97706; }
+        .flow-step-content { flex: 1; }
+        .flow-step-content h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+        .flow-step-content p { font-size: 13px; color: #64748b; }
+        .flow-step-content .tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; margin-top: 6px; }
+        .tag-config { background: #f0fdf4; color: #166534; }
+        .tag-supplier { background: #eff6ff; color: #1e40af; }
+        .tag-ai { background: #ecfdf5; color: #065f46; }
+        .tag-human { background: #fffbeb; color: #92400e; }
+        .tag-result { background: #f5f3ff; color: #5b21b6; }
+        .flow-connector { width: 2px; height: 20px; background: #e2e8f0; margin-left: 19px; }
+
+        /* Demo Section */
+        .demo-section { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 24px; }
+        .demo-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .demo-title { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        .demo-btn { padding: 10px 24px; border-radius: 8px; background: #0f3460; color: white; border: none; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
+        .demo-btn:hover { background: #1a2744; transform: translateY(-1px); }
+        .demo-btn:disabled { background: #94a3b8; cursor: not-allowed; transform: none; }
+        .demo-body { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; min-height: 220px; }
+        @media (max-width: 768px) { .demo-body { grid-template-columns: 1fr; } }
+
+        /* Demo shared styles */
+        .demo-panel { border-radius: 12px; padding: 20px; position: relative; }
+        .demo-panel-left { background: #f8fafc; border: 1px solid #e2e8f0; }
+        .demo-panel-right { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .demo-panel h5 { font-size: 14px; color: #475569; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+        .demo-panel-right h5 { color: #166534; }
+
+        /* Demo1: Scan line effect */
+        .scan-area { position: relative; overflow: hidden; }
+        .scan-line { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #3b82f6, transparent); box-shadow: 0 0 12px #3b82f6; opacity: 0; pointer-events: none; z-index: 10; }
+        .scan-line.active { opacity: 1; animation: scanDown 2s ease-in-out forwards; }
+        @keyframes scanDown { 0% { top: 0; } 100% { top: 100%; } }
+
+        .raw-data-item { padding: 10px 14px; background: white; border-radius: 8px; margin-bottom: 8px; border: 1px solid #e2e8f0; font-size: 13px; color: #334155; transition: all 0.3s; }
+        .raw-data-item.scanned { background: #eff6ff; border-color: #93c5fd; }
+
+        .std-result { padding: 10px 14px; background: white; border-radius: 8px; margin-bottom: 8px; border: 1px solid #bbf7d0; font-size: 13px; opacity: 0; transform: translateX(10px); transition: all 0.4s ease; }
+        .std-result.show { opacity: 1; transform: translateX(0); }
+        .std-result .std-label { display: inline-block; min-width: 60px; color: #059669; font-weight: 600; }
+        .std-result .std-value { color: #1a1a2e; }
+
+        /* Demo2: AI Analysis */
+        .ai-analysis { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+        .ai-spinner { width: 48px; height: 48px; border: 3px solid #e2e8f0; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; opacity: 0; }
+        .ai-spinner.active { opacity: 1; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ai-progress-bar { width: 80%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; opacity: 0; }
+        .ai-progress-bar.active { opacity: 1; }
+        .ai-progress-fill { height: 100%; background: #3b82f6; border-radius: 3px; width: 0; transition: width 1.5s ease; }
+        .ai-time-hint { font-size: 12px; color: #3b82f6; font-weight: 600; opacity: 0; }
+        .ai-time-hint.active { opacity: 1; }
+
+        .category-result { padding: 12px 16px; background: white; border-radius: 8px; margin-bottom: 8px; border: 1px solid #bbf7d0; display: flex; align-items: center; justify-content: space-between; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
+        .category-result.show { opacity: 1; transform: translateY(0); }
+        .category-level { font-size: 12px; color: #64748b; }
+        .category-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+        .category-conf { font-size: 13px; font-weight: 700; }
+        .conf-high { color: #059669; }
+        .conf-mid { color: #d97706; }
+
+        /* Demo3: Radar/Pulse effect */
+        .match-radar { position: relative; width: 100%; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+        .radar-circle { position: absolute; border: 2px solid rgba(59,130,246,0.2); border-radius: 50%; opacity: 0; }
+        .radar-circle.pulse1 { width: 40px; height: 40px; animation: radarPulse 2s ease-out infinite; }
+        .radar-circle.pulse2 { width: 40px; height: 40px; animation: radarPulse 2s ease-out 0.5s infinite; }
+        .radar-circle.pulse3 { width: 40px; height: 40px; animation: radarPulse 2s ease-out 1s infinite; }
+        @keyframes radarPulse { 0% { transform: scale(1); opacity: 0.6; } 100% { transform: scale(4); opacity: 0; } }
+        .radar-center { width: 16px; height: 16px; background: #3b82f6; border-radius: 50%; z-index: 2; box-shadow: 0 0 12px rgba(59,130,246,0.5); }
+        .radar-label { position: absolute; font-size: 12px; color: #3b82f6; font-weight: 600; }
+
+        .match-result-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; opacity: 0; transform: translateY(10px); transition: all 0.4s ease; }
+        .match-result-card.show { opacity: 1; transform: translateY(0); }
+        .match-result-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .match-name { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+        .match-score { font-size: 14px; font-weight: 700; }
+        .score-high { color: #059669; }
+        .score-mid { color: #d97706; }
+        .match-details { display: flex; gap: 16px; font-size: 12px; color: #64748b; }
+        .match-detail-item { display: flex; align-items: center; gap: 4px; }
+
+        /* Case Cards */
+        .case-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+        .case-tab { padding: 8px 16px; border-radius: 8px; background: #f1f5f9; border: none; cursor: pointer; font-size: 13px; font-weight: 500; color: #64748b; transition: all 0.2s; }
+        .case-tab.active { background: #0f3460; color: white; }
+        .case-content { display: none; }
+        .case-content.active { display: block; }
+
+        /* Case detail styles */
+        .case-detail { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
+        .case-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 768px) { .case-detail-grid { grid-template-columns: 1fr; } }
+        .case-detail-left { background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; }
+        .case-detail-right { background: #f0fdf4; border-radius: 12px; padding: 20px; border: 1px solid #bbf7d0; }
+        .case-detail-right h5 { font-size: 14px; color: #166534; margin-bottom: 12px; }
+        .case-detail-left h5 { font-size: 14px; color: #475569; margin-bottom: 12px; }
+        .case-field { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        .case-field .label { color: #94a3b8; }
+        .case-field .value { color: #1a1a2e; font-weight: 500; }
+        .check-item { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; font-size: 13px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .check-icon { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; flex-shrink: 0; margin-top: 2px; }
+        .check-pass { background: #dcfce7; color: #166534; }
+        .check-fail { background: #fecaca; color: #991b1b; }
+        .check-text { flex: 1; }
+        .check-text.fail { color: #dc2626; font-weight: 500; }
+
+        /* Value Section */
+        .value-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .value-card { background: white; border-radius: 12px; padding: 24px; text-align: center; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+        .value-card .num { font-size: 36px; font-weight: 700; color: #0f3460; margin-bottom: 8px; }
+        .value-card .unit { font-size: 14px; color: #64748b; }
+        .value-card .desc { font-size: 12px; color: #94a3b8; margin-top: 8px; }
+
+        /* Category Table */
+        .cat-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
+        .cat-table th { background: #1a1a2e; color: white; padding: 14px 16px; font-size: 13px; text-align: left; }
+        .cat-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+        .cat-table tr:hover td { background: #f8fafc; }
+        .cat-table td:first-child { font-weight: 600; color: #0f3460; white-space: nowrap; }
+
+        /* Separator */
+        .sep { height: 1px; background: linear-gradient(to right, transparent, #e2e8f0, transparent); max-width: 1200px; margin: 0 auto; }
+
+        /* Footer */
+        .footer { background: #1a1a2e; color: rgba(255,255,255,0.7); padding: 40px; text-align: center; font-size: 13px; }
+
+        /* Animations on scroll */
+        .animate-on-scroll { opacity: 0; transform: translateY(20px); transition: all 0.6s ease; }
+        .animate-on-scroll.visible { opacity: 1; transform: translateY(0); }
+
+        /* Why Section */
+        .why-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        @media (max-width: 768px) { .why-grid { grid-template-columns: 1fr; } }
+        .why-card { background: white; border-radius: 12px; padding: 24px 24px 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.05); border-left: 4px solid; transition: transform 0.2s; }
+        .why-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+        .why-card.b1 { border-left-color: #3b82f6; }
+        .why-card.b2 { border-left-color: #8b5cf6; }
+        .why-card.b3 { border-left-color: #10b981; }
+        .why-card.b4 { border-left-color: #f59e0b; }
+        .why-card.b5 { border-left-color: #ef4444; }
+        .why-card.b6 { border-left-color: #0f3460; }
+        .why-card-icon { font-size: 28px; margin-bottom: 10px; }
+        .why-card h4 { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; }
+        .why-card p { font-size: 13px; color: #64748b; line-height: 1.8; }
+
+        /* Compare Table */
+        .compare-wrap { margin-top: 40px; }
+        .compare-title { font-size: 16px; font-weight: 700; margin-bottom: 20px; text-align: center; }
+        .compare-table { width: 100%; border-collapse: separate; border-spacing: 0; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .compare-table th { padding: 16px 20px; font-size: 14px; font-weight: 700; text-align: center; }
+        .compare-table th.th-dim { background: #f8fafc; color: #475569; text-align: left; width: 160px; }
+        .compare-table th.th-zkh { background: #059669; color: white; }
+        .compare-table th.th-gen { background: #64748b; color: white; }
+        .compare-table th.th-self { background: #94a3b8; color: white; }
+        .compare-table td { padding: 14px 20px; font-size: 13px; border-bottom: 1px solid #f1f5f9; }
+        .compare-table td.td-dim { background: #f8fafc; color: #475569; font-weight: 500; }
+        .compare-table td.td-zkh { background: #f0fdf4; color: #166534; font-weight: 500; text-align: center; }
+        .compare-table td.td-gen { background: #fef2f2; color: #991b1b; text-align: center; }
+        .compare-table td.td-self-yellow { background: #fefce8; color: #92400e; text-align: center; }
+        .compare-table td.td-self-red { background: #fef2f2; color: #991b1b; text-align: center; }
+        .compare-table td.td-self-green { background: #f0fdf4; color: #166534; text-align: center; }
+        .compare-table tr:last-child td { border-bottom: none; }
+        .compare-table tr:hover td.td-zkh { background: #dcfce7; }
+        .compare-tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+        .tag-best { background: #166534; color: white; }
+        .tag-ok { background: #f0fdf4; color: #166534; }
+        .tag-weak { background: #991b1b; color: white; }
+        .tag-slow { background: #92400e; color: white; }
+
+        /* Before-After compare */
+        .compare-box { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+        @media (max-width: 768px) { .compare-box { grid-template-columns: 1fr; } }
+        .compare-before { background: #fef2f2; border-radius: 12px; padding: 24px; }
+        .compare-after { background: #f0fdf4; border-radius: 12px; padding: 24px; }
+        .compare-before-title { font-size: 13px; color: #991b1b; font-weight: 600; margin-bottom: 8px; }
+        .compare-after-title { font-size: 13px; color: #166534; font-weight: 600; margin-bottom: 8px; }
+        .compare-big-num { font-size: 28px; font-weight: 700; }
+        .compare-desc { font-size: 12px; color: #64748b; margin-top: 4px; }
+
+        /* Main product card for demo3 */
+        .main-product-card { background: #eff6ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
+        .main-product-icon { font-size: 32px; }
+        .main-product-info h4 { font-size: 16px; font-weight: 700; color: #1a1a2e; }
+        .main-product-info p { font-size: 13px; color: #64748b; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+    <h1>一品多商·智能商品匹配平台</h1>
+    <div class="subtitle">AI驱动品类自动识别 + 相似商品智能推荐 + 供应商多维度匹配</div>
+    <div class="badge-group">
+        <span class="badge">多模态AI + 一体化匹配</span>
+        <span class="badge">面向B2B采购平台</span>
+    </div>
+</div>
+
+<!-- Navigation -->
+<div class="nav">
+    <div class="nav-inner">
+        <a href="#chain">采购链路定位</a>
+        <a href="#pain">当前痛点</a>
+        <a href="#solution">解决方案</a>
+        <a href="#demo">实时演示</a>
+        <a href="#cases">典型案例</a>
+        <a href="#value">核心价值</a>
+        <a href="#capability">能力体系</a>
+        <a href="#why">技术特色</a>
+    </div>
+</div>
+
+<!-- 1. 采购链路定位 -->
+<div class="section" id="chain">
+    <div class="section-title"><div class="section-num">1</div> 采购链路定位</div>
+    <div class="section-desc">一品多商聚焦采购链路中的商品上架与供应商寻源环节，以AI智能匹配替代人工比对</div>
+
+    <div class="chain-container animate-on-scroll">
+        <div class="chain-title">B2B采购全链路</div>
+        <div class="chain-flow">
+            <div class="chain-step"><div class="step-name">需求提报</div><div class="step-sub">需求部门</div></div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step active"><div class="step-name">供应商寻源</div><div class="step-sub">AI辅助商品匹配</div></div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step active"><div class="step-name">商品上架</div><div class="step-sub">品类自动识别</div></div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step"><div class="step-name">匹配确认</div><div class="step-sub">采购员审核</div></div>
+            <div class="chain-arrow">&rarr;</div>
+            <div class="chain-step"><div class="step-name">合同签订</div><div class="step-sub">采购部门</div></div>
+        </div>
+        <div class="chain-note">
+            <strong>一品多商核心切入环节：</strong>在"供应商寻源"阶段，AI自动识别商品品类、推荐相似商品与供应商；在"商品上架"阶段，AI辅助品类归一与属性标准化。两个环节协同，实现"同一商品、多供应商"的高效匹配。
+        </div>
+    </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- 2. 当前痛点 -->
+<div class="section" id="pain">
+    <div class="section-title"><div class="section-num">2</div> 当前痛点</div>
+    <div class="section-desc">B2B采购平台在商品管理与供应商匹配中面临的核心挑战</div>
+
+    <div class="pain-grid">
+        <div class="pain-card animate-on-scroll">
+            <h4>商品分类众多，手工分类效率低</h4>
+            <p>工业品品类动辄数千种，人工逐条分类不仅耗时巨大，还容易出现分类错位，影响后续匹配与采购效率。</p>
+        </div>
+        <div class="pain-card animate-on-scroll">
+            <h4>同物异名、型号简写导致匹配困难</h4>
+            <p>不同供应商对同一商品的命名各异（如"六角螺栓"vs"M10螺栓"vs"外六角螺钉"），型号规格缩写不统一，人工很难快速识别为同一商品。</p>
+        </div>
+        <div class="pain-card animate-on-scroll">
+            <h4>供应商上传商品数据质量参差不齐</h4>
+            <p>供应商提交的商品信息格式混乱、字段缺失、描述不规范，大量数据需要人工清洗和补全，增加了运营成本。</p>
+        </div>
+        <div class="pain-card animate-on-scroll">
+            <h4>相似商品难以快速发现与对标</h4>
+            <p>面对海量商品库，采购员很难快速找到与目标商品相似的可替代品，无法高效进行多供应商比价与寻源。</p>
+        </div>
+        <div class="pain-card animate-on-scroll">
+            <h4>缺少自动化匹配工具，全靠人工比对</h4>
+            <p>当前匹配工作高度依赖采购员的经验与手动操作，效率低下、一致性差，难以支撑业务规模化增长。</p>
+        </div>
+    </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- 3. 解决方案 -->
+<div class="section" id="solution">
+    <div class="section-title"><div class="section-num">3</div> 解决方案</div>
+    <div class="section-desc">AI驱动的"上传&mdash;识别&mdash;匹配&mdash;审核&mdash;沉淀"五步闭环流程</div>
+
+    <div class="solution-flow animate-on-scroll">
+        <div class="flow-title">一品多商智能匹配完整流程</div>
+        <div class="flow-steps">
+            <div class="flow-step">
+                <div class="flow-step-num step-blue">1</div>
+                <div class="flow-step-content">
+                    <h4>供应商上传商品基本信息 + 资质证件</h4>
+                    <p>供应商在平台提交商品名称、规格型号、品牌、材质等基础信息，同时上传相关资质文件（图片/PDF）。系统根据品类智能提示需要补充的信息字段。</p>
+                    <span class="tag tag-supplier">供应商操作</span>
+                </div>
+            </div>
+            <div class="flow-connector"></div>
+            <div class="flow-step">
+                <div class="flow-step-num step-green">2</div>
+                <div class="flow-step-content">
+                    <h4>AI识别商品品类 + 提取关键属性</h4>
+                    <p>多模态AI自动识别商品所属品类（一/二/三级类目），提取规格、材质、等级等关键属性，将非结构化描述转为标准化数据。单件处理耗时&lt;10秒。</p>
+                    <span class="tag tag-ai">AI自动执行，&lt;10秒/件</span>
+                </div>
+            </div>
+            <div class="flow-connector"></div>
+            <div class="flow-step">
+                <div class="flow-step-num step-green">3</div>
+                <div class="flow-step-content">
+                    <h4>AI检索标准商品库 &rarr; 自动推荐匹配商品</h4>
+                    <p>基于标准化属性，AI在千万级SKU标准库中检索相似商品，按相似度排序推荐Top-N匹配结果，支持同物异名、型号简写等模糊匹配场景。</p>
+                    <span class="tag tag-ai">AI智能推荐，多维度匹配</span>
+                </div>
+            </div>
+            <div class="flow-connector"></div>
+            <div class="flow-step">
+                <div class="flow-step-num step-orange">4</div>
+                <div class="flow-step-content">
+                    <h4>采购员人工审核AI推荐结果 + 确认/驳回</h4>
+                    <p>采购员查看AI推荐的匹配商品列表，逐条确认或驳回。支持批量操作，异常项可标记原因。AI不做最终决策，由人工把关。</p>
+                    <span class="tag tag-human">人工最终确认</span>
+                </div>
+            </div>
+            <div class="flow-connector"></div>
+            <div class="flow-step">
+                <div class="flow-step-num step-blue">5</div>
+                <div class="flow-step-content">
+                    <h4>生成匹配记录 + 数据积累反馈</h4>
+                    <p>确认的匹配结果自动生成商品-供应商关联记录。驳回数据作为BadCase反馈，驱动AI模型持续优化迭代，匹配准确率不断提升。</p>
+                    <span class="tag tag-result">数据沉淀，持续进化</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- 4. 实时演示 -->
+<div class="section" id="demo">
+    <div class="section-title"><div class="section-num">4</div> 实时演示</div>
+    <div class="section-desc">点击"开始演示"按钮，体验AI从数据预处理到品类识别再到相似推荐的完整流程</div>
+
+    <!-- Demo 1: 物料数据预处理 -->
+    <div class="demo-section animate-on-scroll">
+        <div class="demo-header">
+            <div class="demo-title">Demo 1 &mdash; 物料数据预处理</div>
+            <button class="demo-btn" id="demo1Btn" onclick="startDemo1()">开始演示</button>
+        </div>
+        <div class="demo-body">
+            <div class="demo-panel demo-panel-left scan-area">
+                <h5>原始物料数据</h5>
+                <div class="scan-line" id="scanLine1"></div>
+                <div class="raw-data-item" id="raw1">六角螺栓 M10x50 碳钢 4.8级</div>
+                <div class="raw-data-item" id="raw2">内六角螺钉M8×30 不锈钢A2-70</div>
+                <div class="raw-data-item" id="raw3">球阀 Q41F-16P DN50 不锈钢</div>
+                <div class="raw-data-item" id="raw4">电缆 BV-2.5mm² 450/750V 铜芯</div>
+            </div>
+            <div class="demo-panel demo-panel-right">
+                <h5>标准化结果</h5>
+                <div id="stdResults1">
+                    <div style="text-align:center;color:#94a3b8;padding:40px;font-size:13px;">等待演示开始...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo 2: 类目自动识别 -->
+    <div class="demo-section animate-on-scroll">
+        <div class="demo-header">
+            <div class="demo-title">Demo 2 &mdash; 类目自动识别</div>
+            <button class="demo-btn" id="demo2Btn" onclick="startDemo2()">开始演示</button>
+        </div>
+        <div class="demo-body">
+            <div class="demo-panel demo-panel-left">
+                <h5>待识别物料</h5>
+                <div class="raw-data-item" style="border-left:3px solid #3b82f6;">
+                    <strong style="color:#1a1a2e;">六角螺栓 M10x50 碳钢 4.8级</strong>
+                    <div style="font-size:11px;color:#94a3b8;margin-top:4px;">供应商：华东紧固件有限公司</div>
+                </div>
+                <div class="ai-analysis" id="aiAnalysis">
+                    <div class="ai-spinner" id="aiSpinner"></div>
+                    <div class="ai-progress-bar" id="aiProgressBar"><div class="ai-progress-fill" id="aiProgressFill"></div></div>
+                    <div class="ai-time-hint" id="aiTimeHint">&lt;5秒完成分析</div>
+                </div>
+            </div>
+            <div class="demo-panel demo-panel-right">
+                <h5>AI识别结果</h5>
+                <div id="categoryResults">
+                    <div style="text-align:center;color:#94a3b8;padding:40px;font-size:13px;">等待演示开始...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demo 3: 相似商品推荐 -->
+    <div class="demo-section animate-on-scroll">
+        <div class="demo-header">
+            <div class="demo-title">Demo 3 &mdash; 相似商品推荐</div>
+            <button class="demo-btn" id="demo3Btn" onclick="startDemo3()">开始演示</button>
+        </div>
+        <div>
+            <div class="main-product-card">
+                <div class="main-product-icon">🔩</div>
+                <div class="main-product-info">
+                    <h4>M10六角螺栓 4.8级 碳钢镀锌</h4>
+                    <p>规格：M10×50mm | 材质：碳钢Q235 | 等级：4.8级 | 表面：镀锌</p>
+                </div>
+            </div>
+            <div class="match-radar" id="matchRadar" style="display:none;">
+                <div class="radar-circle pulse1"></div>
+                <div class="radar-circle pulse2"></div>
+                <div class="radar-circle pulse3"></div>
+                <div class="radar-center"></div>
+                <div class="radar-label" style="right:30%;top:20%;">搜索匹配中...</div>
+            </div>
+            <div id="matchResults">
+                <div style="text-align:center;color:#94a3b8;padding:40px;font-size:13px;">等待演示开始...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- 5. 典型案例 -->
+<div class="section" id="cases">
+    <div class="section-title"><div class="section-num">5</div> 典型案例</div>
+    <div class="section-desc">不同品类的一品多商匹配场景展示</div>
+
+    <div class="case-tabs">
+        <button class="case-tab active" onclick="switchCase(0)">紧固件类 - 同物异名识别</button>
+        <button class="case-tab" onclick="switchCase(1)">电气电工类 - 型号标准化</button>
+        <button class="case-tab" onclick="switchCase(2)">劳保防护类 - 多供应商比价</button>
+    </div>
+
+    <!-- Case 0: 紧固件 -->
+    <div class="case-content active" id="case-0">
+        <div class="case-detail">
+            <div style="margin-bottom:16px;font-size:15px;font-weight:600;color:#0f3460;">场景：同物异名识别 &mdash; 六角螺栓/内六角螺钉/螺丝的AI识别归一</div>
+            <div class="case-detail-grid">
+                <div class="case-detail-left">
+                    <h5>供应商上传的不同名称</h5>
+                    <div class="case-field"><span class="label">供应商A</span><span class="value">六角螺栓 M10×50 4.8级</span></div>
+                    <div class="case-field"><span class="label">供应商B</span><span class="value">外六角螺钉 M10*50 4.8级镀锌</span></div>
+                    <div class="case-field"><span class="label">供应商C</span><span class="value">Hex Bolt M10x50 Gr4.8 碳钢</span></div>
+                </div>
+                <div class="case-detail-right">
+                    <h5>AI识别归一结果</h5>
+                    <div class="check-item">
+                        <div class="check-icon check-pass">&#10003;</div>
+                        <div class="check-text">三条商品AI判定为<strong>同一标准商品</strong>：六角螺栓 M10×50 4.8级</div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-icon check-pass">&#10003;</div>
+                        <div class="check-text">同物异名归因："外六角螺钉"="六角螺栓"（同义名称）；"Hex Bolt"=英文名称</div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-icon check-pass">&#10003;</div>
+                        <div class="check-text">规格归一："M10*50"="M10×50"（符号差异）；"Gr4.8"="4.8级"（中英文差异）</div>
+                    </div>
+                    <div style="margin-top:16px;padding:12px;background:rgba(22,163,74,0.08);border-radius:8px;font-size:13px;">
+                        <strong style="color:#166534;">匹配结果：</strong>3个供应商的同一商品成功归一，可进行价格、交期、资质对比
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case 1: 电气电工 -->
+    <div class="case-content" id="case-1">
+        <div class="case-detail">
+            <div style="margin-bottom:16px;font-size:15px;font-weight:600;color:#0f3460;">场景：型号规格标准化 &mdash; DZ47-63/C16断路器多种写法统一</div>
+            <div class="case-detail-grid">
+                <div class="case-detail-left">
+                    <h5>供应商上传的不同写法</h5>
+                    <div class="case-field"><span class="label">供应商A</span><span class="value">DZ47-63 C16 小型断路器</span></div>
+                    <div class="case-field"><span class="label">供应商B</span><span class="value">DZ47-63/C16 1P 空气开关</span></div>
+                    <div class="case-field"><span class="label">供应商C</span><span class="value">正泰 DZ47 63A 16A 微型断路器</span></div>
+                </div>
+                <div class="case-detail-right">
+                    <h5>AI标准化结果</h5>
+                    <div class="check-item">
+                        <div class="check-icon check-pass">&#10003;</div>
+                        <div class="check-text">统一标准型号：<strong>DZ47-63/C16 1P</strong></div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-icon check-pass">&#10003;</div>
+                        <div class="check-text">"空气开关"="小型断路器"="微型断路器"（同义词归一）</div>
+                    </div>
+                    <div class="check-item">
+                        <div class="check-icon check-pass">&#10003;</div>
+                        <div class="check-text">"C16"="16A"（脱扣电流规格标准化）；"63A"=壳架电流（非脱扣电流）</div>
+                    </div>
+                    <div style="margin-top:16px;padding:12px;background:rgba(22,163,74,0.08);border-radius:8px;font-size:13px;">
+                        <strong style="color:#166534;">匹配结果：</strong>3种不同写法统一为标准型号，避免重复上架，支持精准比价
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Case 2: 劳保防护 -->
+    <div class="case-content" id="case-2">
+        <div class="case-detail">
+            <div style="margin-bottom:16px;font-size:15px;font-weight:600;color:#0f3460;">场景：多供应商比价 &mdash; 安全帽3个供应商对比</div>
+            <div style="overflow-x:auto;">
+                <table class="cat-table" style="margin-top:0;">
+                    <thead>
+                        <tr><th>对比项</th><th>供应商A - 华泰劳保</th><th>供应商B - 安达防护</th><th>供应商C - 盾安安全</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>商品名称</td><td>ABS安全帽 V型</td><td>V型安全帽 ABS材质</td><td>安全帽 V型 ABS</td></tr>
+                        <tr><td>品牌</td><td>代尔塔</td><td>梅思安(MSA)</td><td>3M</td></tr>
+                        <tr><td>单价</td><td style="color:#059669;font-weight:700;">¥28</td><td style="color:#d97706;font-weight:700;">¥45</td><td style="color:#dc2626;font-weight:700;">¥52</td></tr>
+                        <tr><td>LA认证</td><td style="color:#059669;">有 ✓</td><td style="color:#059669;">有 ✓</td><td style="color:#059669;">有 ✓</td></tr>
+                        <tr><td>检测报告</td><td style="color:#059669;">有效 ✓</td><td style="color:#059669;">有效 ✓</td><td style="color:#dc2626;">过期 ✗</td></tr>
+                        <tr><td>交期</td><td>3天</td><td>5天</td><td>7天</td></tr>
+                        <tr><td>AI相似度</td><td><span style="color:#059669;font-weight:700;">96.5%</span></td><td><span style="color:#059669;font-weight:700;">94.2%</span></td><td><span style="color:#d97706;font-weight:700;">89.1%</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="margin-top:16px;padding:12px;background:rgba(22,163,74,0.08);border-radius:8px;font-size:13px;">
+                <strong style="color:#166534;">AI推荐：</strong>供应商A性价比最高（价格最低+资质齐全+交期最短）；供应商C检测报告已过期，建议暂缓
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- 6. 核心价值 -->
+<div class="section" id="value">
+    <div class="section-title"><div class="section-num">6</div> 核心价值</div>
+    <div class="section-desc">从人工逐条比对到AI智能匹配+人工审核异常，效率与准确率双重提升</div>
+
+    <div class="value-grid animate-on-scroll">
+        <div class="value-card">
+            <div class="num">&lt;10秒</div>
+            <div class="unit">单件分类处理耗时</div>
+            <div class="desc">原人工分类5-15分钟/件</div>
+        </div>
+        <div class="value-card">
+            <div class="num">98.2%</div>
+            <div class="unit">品类识别准确率</div>
+            <div class="desc">基于千万级SKU训练优化</div>
+        </div>
+        <div class="value-card">
+            <div class="num">100+</div>
+            <div class="unit">平均相似推荐商品数</div>
+            <div class="desc">单次检索覆盖海量标准库</div>
+        </div>
+        <div class="value-card">
+            <div class="num">2-3小时</div>
+            <div class="unit">千级物料批量处理</div>
+            <div class="desc">原人工需5-7天完成</div>
+        </div>
+    </div>
+
+    <div class="compare-box animate-on-scroll">
+        <div class="compare-before">
+            <div class="compare-before-title">使用前（纯人工）</div>
+            <div class="compare-big-num" style="color:#dc2626;">5-7天</div>
+            <div class="compare-desc">人工处理一批物料，分类效率低，准确率依赖经验</div>
+        </div>
+        <div class="compare-after">
+            <div class="compare-after-title">使用后（AI辅助）</div>
+            <div class="compare-big-num" style="color:#16a34a;">半天</div>
+            <div class="compare-desc">AI辅助半天完成，准确率98%+，人工仅需审核异常项</div>
+        </div>
+    </div>
+</div>
+
+<div class="sep"></div>
+
+<!-- 7. 能力体系 -->
+<div class="section" id="capability">
+    <div class="section-title"><div class="section-num">7</div> 能力体系</div>
+    <div class="section-desc">五大核心模块覆盖从数据治理到质量反馈的全链路能力</div>
+
+    <table class="cat-table animate-on-scroll">
+        <thead>
+            <tr><th style="width:140px;">模块</th><th>能力项</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>数据治理</td><td>数据校验、去重清洗、格式标准化、质量评分</td></tr>
+            <tr><td>智能匹配</td><td>品类识别、相似推荐、供应商配对、属性提取</td></tr>
+            <tr><td>规则引擎</td><td>客户自定义规则、权重配置、匹配阈值、Excel导入导出</td></tr>
+            <tr><td>提示词管理</td><td>AI模型配置化、预设模板、版本管理、效果对比</td></tr>
+            <tr><td>质量反馈</td><td>BadCase标注、归因分析、模型迭代、持续优化</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="sep"></div>
+
+<!-- 8. 为什么选我们 -->
+<div class="section" id="why">
+    <div class="section-title"><div class="section-num">8</div> 为什么选我们</div>
+    <div class="section-desc">深耕工业品场景，数据壁垒深厚，能力成熟可落地</div>
+
+    <div class="why-grid animate-on-scroll">
+        <div class="why-card b1">
+            <div class="why-card-icon">🎯</div>
+            <h4>原生工业品场景适配</h4>
+            <p>MRO行业深耕，理解工业品分类体系、命名规则、参数标准，无需从零定制，开箱即用。</p>
+        </div>
+        <div class="why-card b2">
+            <div class="why-card-icon">🧱</div>
+            <h4>千万级SKU标准库</h4>
+            <p>覆盖主流工业品品类的参数词库、型号同义词库，自动对齐同物异名、简写缩写，保障匹配准确率。</p>
+        </div>
+        <div class="why-card b3">
+            <div class="why-card-icon">⚡</div>
+            <h4>多模态AI能力</h4>
+            <p>文字+图片+OCR多维度识别，支持扫描件、PDF、图片等多种格式，全面覆盖供应商上传场景。</p>
+        </div>
+        <div class="why-card b4">
+            <div class="why-card-icon">🏗️</div>
+            <h4>灵活配置化规则引擎</h4>
+            <p>客户可自定义匹配规则与权重，设置匹配阈值，支持Excel批量导入导出，适配不同业务场景。</p>
+        </div>
+        <div class="why-card b5">
+            <div class="why-card-icon">🔒</div>
+            <h4>私有化部署安全可控</h4>
+            <p>数据不出企业边界，满足数据安全与等保合规要求，支持内网API对接，全程审计溯源。</p>
+        </div>
+        <div class="why-card b6">
+            <div class="why-card-icon">📊</div>
+            <h4>2-4周快速试点</h4>
+            <p>轻量接入，快速验证价值，成熟产品短周期落地，可快速形成示范标杆，低风险启动。</p>
+        </div>
+    </div>
+
+    <div class="compare-wrap animate-on-scroll">
+        <div class="compare-title">三种路径对比</div>
+        <table class="compare-table">
+            <thead>
+                <tr>
+                    <th class="th-dim">对比维度</th>
+                    <th class="th-zkh">一品多商</th>
+                    <th class="th-gen">通用AI厂商</th>
+                    <th class="th-self">完全自研</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="td-dim">工业品场景理解</td>
+                    <td class="td-zkh">深度适配 <span class="compare-tag tag-best">最优</span></td>
+                    <td class="td-gen">需定制 <span class="compare-tag tag-slow">慢</span></td>
+                    <td class="td-self-red">需从零建 <span class="compare-tag tag-weak">弱</span></td>
+                </tr>
+                <tr>
+                    <td class="td-dim">标准商品库</td>
+                    <td class="td-zkh">千万级SKU <span class="compare-tag tag-best">最优</span></td>
+                    <td class="td-gen">无 <span class="compare-tag tag-weak">弱</span></td>
+                    <td class="td-self-red">需自建 <span class="compare-tag tag-weak">弱</span></td>
+                </tr>
+                <tr>
+                    <td class="td-dim">匹配准确率</td>
+                    <td class="td-zkh">98%+ <span class="compare-tag tag-best">最优</span></td>
+                    <td class="td-gen">70-80% <span class="compare-tag tag-weak">弱</span></td>
+                    <td class="td-self-yellow">取决于投入 <span class="compare-tag tag-slow">不确定</span></td>
+                </tr>
+                <tr>
+                    <td class="td-dim">部署周期</td>
+                    <td class="td-zkh">2-4周 <span class="compare-tag tag-best">快</span></td>
+                    <td class="td-self-yellow">1-2月 <span class="compare-tag tag-slow">慢</span></td>
+                    <td class="td-self-red">6-12月 <span class="compare-tag tag-weak">弱</span></td>
+                </tr>
+                <tr>
+                    <td class="td-dim">数据安全</td>
+                    <td class="td-zkh">私有化部署 <span class="compare-tag tag-best">最优</span></td>
+                    <td class="td-gen">公有云 <span class="compare-tag tag-weak">弱</span></td>
+                    <td class="td-self-green">可控 <span class="compare-tag tag-ok">好</span></td>
+                </tr>
+                <tr>
+                    <td class="td-dim">维护成本</td>
+                    <td class="td-zkh">低 <span class="compare-tag tag-best">最优</span></td>
+                    <td class="td-self-yellow">中 <span class="compare-tag tag-slow">中等</span></td>
+                    <td class="td-self-red">高 <span class="compare-tag tag-weak">弱</span></td>
+                </tr>
+                <tr>
+                    <td class="td-dim">持续迭代</td>
+                    <td class="td-zkh">持续升级 <span class="compare-tag tag-best">最优</span></td>
+                    <td class="td-self-yellow">需付费 <span class="compare-tag tag-slow">慢</span></td>
+                    <td class="td-self-yellow">依赖团队 <span class="compare-tag tag-slow">不确定</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+    <div>一品多商·智能商品匹配平台 | 震坤行工业超市 | 2026年5月</div>
+    <div style="margin-top:8px;opacity:0.6;">AI驱动品类自动识别 + 相似商品智能推荐 + 供应商多维度匹配 &mdash; 让采购更高效、更精准</div>
+</div>
+
+<script>
+// ============ Demo 1: 物料数据预处理 ============
+let demo1Running = false;
+function startDemo1() {
+    if (demo1Running) return;
+    demo1Running = true;
+    const btn = document.getElementById('demo1Btn');
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+
+    // Reset
+    document.getElementById('scanLine1').classList.remove('active');
+    ['raw1','raw2','raw3','raw4'].forEach(id => document.getElementById(id).classList.remove('scanned'));
+    document.getElementById('stdResults1').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">正在扫描...</div>';
+
+    // Start scan animation
+    setTimeout(() => {
+        document.getElementById('scanLine1').classList.add('active');
+    }, 200);
+
+    // Show standardized results with stagger
+    const stdData = [
+        [
+            {label: '品名', value: '六角螺栓'},
+            {label: '规格', value: 'M10×50mm'},
+            {label: '材质', value: '碳钢Q235'},
+            {label: '等级', value: '4.8级'}
+        ],
+        [
+            {label: '品名', value: '内六角螺钉'},
+            {label: '规格', value: 'M8×30mm'},
+            {label: '材质', value: '不锈钢A2'},
+            {label: '等级', value: 'A2-70'}
+        ],
+        [
+            {label: '品名', value: '球阀'},
+            {label: '规格', value: 'DN50'},
+            {label: '型号', value: 'Q41F-16P'},
+            {label: '材质', value: '不锈钢304'}
+        ],
+        [
+            {label: '品名', value: '铜芯电线'},
+            {label: '规格', value: 'BV-2.5mm²'},
+            {label: '电压', value: '450/750V'},
+            {label: '材质', value: '铜芯'}
+        ]
+    ];
+
+    let stdIdx = 0;
+    function showNextStd() {
+        if (stdIdx >= stdData.length) {
+            btn.disabled = false;
+            btn.textContent = '重新演示';
+            demo1Running = false;
+            return;
+        }
+        // Mark raw item as scanned
+        document.getElementById('raw' + (stdIdx + 1)).classList.add('scanned');
+
+        if (stdIdx === 0) {
+            document.getElementById('stdResults1').innerHTML = '';
+        }
+
+        const group = document.createElement('div');
+        group.style.marginBottom = '12px';
+        group.style.padding = '10px 14px';
+        group.style.background = 'white';
+        group.style.borderRadius = '8px';
+        group.style.border = '1px solid #bbf7d0';
+        group.innerHTML = '<div style="font-size:11px;color:#059669;font-weight:600;margin-bottom:6px;">第' + (stdIdx+1) + '条标准化结果</div>';
+        stdData[stdIdx].forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'std-result';
+            row.innerHTML = '<span class="std-label">' + item.label + '</span><span class="std-value">' + item.value + '</span>';
+            group.appendChild(row);
+        });
+        document.getElementById('stdResults1').appendChild(group);
+
+        // Trigger staggered animation for each row
+        setTimeout(() => {
+            group.querySelectorAll('.std-result').forEach((el, i) => {
+                setTimeout(() => el.classList.add('show'), i * 150);
+            });
+        }, 50);
+
+        stdIdx++;
+        setTimeout(showNextStd, 1200);
+    }
+
+    setTimeout(showNextStd, 800);
+}
+
+// ============ Demo 2: 类目自动识别 ============
+let demo2Running = false;
+function startDemo2() {
+    if (demo2Running) return;
+    demo2Running = true;
+    const btn = document.getElementById('demo2Btn');
+    btn.disabled = true;
+    btn.textContent = '识别中...';
+
+    // Reset
+    document.getElementById('aiSpinner').classList.remove('active');
+    document.getElementById('aiProgressBar').classList.remove('active');
+    document.getElementById('aiProgressFill').style.width = '0%';
+    document.getElementById('aiTimeHint').classList.remove('active');
+    document.getElementById('categoryResults').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">AI正在分析...</div>';
+
+    // Start spinner
+    setTimeout(() => {
+        document.getElementById('aiSpinner').classList.add('active');
+    }, 100);
+
+    // Start progress bar
+    setTimeout(() => {
+        document.getElementById('aiProgressBar').classList.add('active');
+        document.getElementById('aiProgressFill').style.width = '100%';
+    }, 300);
+
+    // Show time hint
+    setTimeout(() => {
+        document.getElementById('aiTimeHint').classList.add('active');
+    }, 500);
+
+    // Show results
+    const categories = [
+        {level: '一级类目', name: '紧固件', conf: '99.6%', confClass: 'conf-high'},
+        {level: '二级类目', name: '螺栓', conf: '98.8%', confClass: 'conf-high'},
+        {level: '三级类目', name: '六角螺栓', conf: '97.2%', confClass: 'conf-high'}
+    ];
+
+    setTimeout(() => {
+        document.getElementById('aiSpinner').classList.remove('active');
+        document.getElementById('categoryResults').innerHTML = '';
+
+        let catIdx = 0;
+        function showNextCat() {
+            if (catIdx >= categories.length) {
+                btn.disabled = false;
+                btn.textContent = '重新演示';
+                demo2Running = false;
+                return;
+            }
+            const cat = categories[catIdx];
+            const el = document.createElement('div');
+            el.className = 'category-result';
+            el.innerHTML = '<div><div class="category-level">' + cat.level + '</div><div class="category-name">' + cat.name + '</div></div><div class="category-conf ' + cat.confClass + '">' + cat.conf + '</div>';
+            document.getElementById('categoryResults').appendChild(el);
+            setTimeout(() => el.classList.add('show'), 50);
+            catIdx++;
+            setTimeout(showNextCat, 600);
+        }
+        showNextCat();
+    }, 2000);
+}
+
+// ============ Demo 3: 相似商品推荐 ============
+let demo3Running = false;
+function startDemo3() {
+    if (demo3Running) return;
+    demo3Running = true;
+    const btn = document.getElementById('demo3Btn');
+    btn.disabled = true;
+    btn.textContent = '匹配中...';
+
+    // Show radar
+    const radar = document.getElementById('matchRadar');
+    radar.style.display = 'flex';
+    document.getElementById('matchResults').innerHTML = '<div style="text-align:center;color:#94a3b8;padding:20px;font-size:13px;">正在检索标准商品库...</div>';
+
+    const matchData = [
+        {name: '六角螺栓 M10×50 4.8级 镀锌', supplier: '华东紧固件', price: '¥0.12/个', score: '98.5%', scoreClass: 'score-high', brand: '晋亿'},
+        {name: '外六角螺栓 M10×50 4.8级 碳钢', supplier: '标准件总汇', price: '¥0.11/个', score: '96.2%', scoreClass: 'score-high', brand: '定西'},
+        {name: '六角头螺栓 M10×50 4.8级', supplier: '北方五金', price: '¥0.13/个', score: '94.8%', scoreClass: 'score-high', brand: '中机'},
+        {name: '六角螺栓 M10×50 8.8级 镀锌', supplier: '强度紧固件', price: '¥0.22/个', score: '82.3%', scoreClass: 'score-mid', brand: '高强度'}
+    ];
+
+    setTimeout(() => {
+        radar.style.display = 'none';
+        document.getElementById('matchResults').innerHTML = '';
+
+        let matchIdx = 0;
+        function showNextMatch() {
+            if (matchIdx >= matchData.length) {
+                btn.disabled = false;
+                btn.textContent = '重新演示';
+                demo3Running = false;
+                return;
+            }
+            const m = matchData[matchIdx];
+            const el = document.createElement('div');
+            el.className = 'match-result-card';
+            el.innerHTML = '<div class="match-header"><div class="match-name">' + m.name + '</div><div class="match-score ' + m.scoreClass + '">相似度 ' + m.score + '</div></div><div class="match-details"><div class="match-detail-item">🏭 ' + m.supplier + '</div><div class="match-detail-item">🏷️ ' + m.brand + '</div><div class="match-detail-item">💰 ' + m.price + '</div></div>';
+            document.getElementById('matchResults').appendChild(el);
+            setTimeout(() => el.classList.add('show'), 50);
+            matchIdx++;
+            setTimeout(showNextMatch, 700);
+        }
+        showNextMatch();
+    }, 2500);
+}
+
+// ============ Case Tab Switching ============
+function switchCase(idx) {
+    document.querySelectorAll('.case-tab').forEach((tab, i) => {
+        tab.classList.toggle('active', i === idx);
+    });
+    document.querySelectorAll('.case-content').forEach((content, i) => {
+        content.classList.toggle('active', i === idx);
+    });
+}
+
+// ============ Scroll Animation ============
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el);
+});
+</script>
+
+</body>
+</html>

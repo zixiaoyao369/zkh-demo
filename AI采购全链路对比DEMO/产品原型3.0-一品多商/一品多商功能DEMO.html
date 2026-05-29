@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一品多商 · 智能比价能力演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0d1117;overflow:hidden;height:100vh;color:#333}
+.header{height:52px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid rgba(59,130,246,.2)}
+.header h1{font-size:16px;font-weight:600;letter-spacing:2px}
+.header-right{position:absolute;right:16px;display:flex;align-items:center;gap:8px}
+.scene-badge{background:rgba(59,130,246,.15);padding:4px 12px;border-radius:12px;font-size:11px;border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+.scene-nav{display:flex;align-items:center;gap:6px;margin-right:12px}
+.scene-nav .nav-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:transparent;cursor:pointer;transition:all .3s;position:relative}
+.scene-nav .nav-dot:hover{border-color:#93c5fd;transform:scale(1.3)}
+.scene-nav .nav-dot.active{background:#3b82f6;border-color:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.6)}
+.scene-nav .nav-dot .nav-tip{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid rgba(59,130,246,.3);z-index:100}
+.scene-nav .nav-dot:hover .nav-tip{opacity:1}
+.main{height:calc(100vh - 52px);position:relative;overflow:hidden}
+.scene-full{position:absolute;inset:0;bottom:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;padding:40px;opacity:0;pointer-events:none;transition:opacity .5s;overflow:hidden}
+.scene-full.active{opacity:1;pointer-events:auto}
+.scene-split{position:absolute;inset:0;bottom:44px;display:flex;opacity:0;pointer-events:none;transition:opacity .5s}
+.scene-split.active{opacity:1;pointer-events:auto}
+.half{display:flex;flex:1;position:relative;overflow:hidden}
+.half-left{border-right:1px solid rgba(59,130,246,.15)}
+.half-left.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.half-right.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.col-mall{flex:3;display:flex;flex-direction:column;background:#fff;position:relative;overflow:hidden}
+.col-sys{flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,#0a1628,#111d35);position:relative;overflow:hidden}
+.panel-hdr{height:34px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px}
+.panel-hdr.before{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.panel-hdr.after{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.panel-body{flex:1;overflow-y:auto;position:relative;padding:0}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
+.mall-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.mall-logo{font-weight:700;font-size:13px;color:#1f2937;display:flex;align-items:center;gap:6px}
+.mall-logo::before{content:'';width:20px;height:20px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:4px}
+.mall-search{flex:1;max-width:300px;display:flex;height:32px}
+.mall-search input{flex:1;border:2px solid #e5e7eb;border-right:none;padding:0 10px;font-size:11px;border-radius:6px 0 0 6px;outline:none;background:#f9fafb}
+.mall-search input.active{border-color:#3b82f6;background:#fff}
+.mall-search button{background:#3b82f6;color:#fff;border:none;padding:0 14px;border-radius:0 6px 6px 0;font-size:11px;font-weight:600;cursor:pointer}
+.mall-user{width:26px;height:26px;background:#e5e7eb;border-radius:50%;margin-left:auto}
+.result-area{padding:10px 14px}
+.result-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;margin-bottom:8px}
+.result-badge.warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.result-badge.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.result-badge.err{background:#fecaca;color:#991b1b;border:1px solid #fca5a5}
+.product-card{display:flex;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:8px;background:#fff;transition:all .3s;position:relative;cursor:pointer}
+.product-card.highlight{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.product-card .pc-img{width:54px;height:54px;object-fit:contain;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;padding:3px;flex-shrink:0}
+.product-card .pc-info{flex:1;min-width:0}
+.product-card .pc-name{font-size:12px;font-weight:600;color:#1f2937;line-height:1.4;margin-bottom:4px}
+.product-card .pc-meta{font-size:10px;color:#6b7280;margin-bottom:3px}
+.product-card .pc-price{font-size:14px;font-weight:700;color:#dc2626}
+.product-card .pc-supplier{display:inline-block;background:#f3f4f6;color:#374151;font-size:9px;padding:2px 7px;border-radius:3px;margin-top:3px}
+.badge-multi{position:absolute;top:0;left:0;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;font-size:10px;font-weight:700;padding:3px 9px;border-radius:8px 0 8px 0;letter-spacing:.5px;box-shadow:0 2px 6px rgba(139,92,246,.4)}
+.detail-pane{padding:12px 14px;background:#fff;border-top:1px solid #e5e7eb}
+.detail-head{display:flex;gap:12px;align-items:flex-start;padding:10px;background:#f8fafc;border-radius:8px;margin-bottom:10px}
+.detail-head img{width:60px;height:60px;object-fit:contain;border-radius:6px;border:1px solid #e5e7eb;background:#fff;padding:3px}
+.detail-head .dh-info{flex:1}
+.detail-head .dh-name{font-size:12px;font-weight:600;color:#1f2937;line-height:1.5}
+.detail-head .dh-spec{font-size:10px;color:#6b7280;margin-top:3px}
+.detail-head .dh-price{font-size:13px;font-weight:700;color:#dc2626;margin-top:5px}
+.data-tbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.data-tbl th{background:#f8fafc;border:1px solid #e5e7eb;padding:6px 6px;text-align:left;font-weight:600;color:#64748b;font-size:10px}
+.data-tbl td{border:1px solid #e5e7eb;padding:6px 6px;color:#374151}
+.data-tbl tr.best td{background:#dcfce7!important;border-color:#22c55e!important}
+.data-tbl tr.best{box-shadow:inset 0 0 0 2px #22c55e}
+.tag-best{background:#16a34a;color:#fff;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px;font-weight:700}
+.tag-mfr{background:#3b82f6;color:#fff;font-size:9px;padding:1px 6px;border-radius:3px;margin-left:4px;font-weight:700}
+.stock-ok{color:#16a34a;font-weight:600}
+.stock-warn{color:#ea580c;font-weight:600}
+.btn-pick{background:#fff;border:1px solid #d1d5db;color:#374151;font-size:9.5px;padding:4px 8px;border-radius:4px;cursor:pointer;font-weight:600}
+.btn-pick.best{background:#16a34a;color:#fff;border-color:#16a34a}
+.sys-inner{display:flex;flex-direction:column;align-items:center;padding:14px 6px;height:100%;justify-content:center;gap:8px}
+.sys-label{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase}
+.sys-note{font-size:9px;color:rgba(255,255,255,.4);text-align:center;padding:0 4px;line-height:1.4;margin-top:4px}
+.sys-node{width:88%;padding:9px 5px;border-radius:8px;text-align:center;position:relative;transition:all .4s}
+.sys-node .n-icon{font-size:14px;display:block;margin-bottom:2px}
+.sys-node .n-name{font-size:10px;font-weight:700;display:block}
+.sys-node .n-desc{font-size:8px;display:block;margin-top:2px;opacity:.6}
+.sys-node.n-blue{background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.4);color:#93c5fd}
+.sys-node.n-gray{background:rgba(148,163,184,.08);border:2px solid rgba(148,163,184,.3);color:#94a3b8}
+.sys-node.n-glow{background:rgba(59,130,246,.15);border:2px solid rgba(96,165,250,.6);color:#dbeafe;box-shadow:0 0 12px rgba(59,130,246,.3)}
+.sys-node.n-active{box-shadow:0 0 16px rgba(59,130,246,.5);border-color:#60a5fa;animation:nodeGlow 1.5s ease-in-out infinite}
+.sys-node.n-fail{border-color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.3)}
+.sys-connector{width:2px;height:18px;background:rgba(255,255,255,.1);position:relative}
+.sys-sub-row{display:grid;grid-template-columns:1fr 1fr;gap:4px;width:88%}
+.sys-sub-node{padding:5px 3px;border-radius:5px;text-align:center;font-size:9px;font-weight:700;transition:all .4s}
+.sys-sub-node.sn-orange{background:rgba(249,115,22,.08);border:1.5px solid rgba(249,115,22,.3);color:#fdba74}
+.sys-sub-node.sn-green{background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.3);color:#86efac}
+.sys-sub-node.sn-purple{background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.3);color:#c4b5fd}
+.sys-sub-node.sn-gray{background:rgba(148,163,184,.08);border:1.5px solid rgba(148,163,184,.25);color:#94a3b8}
+.sys-sub-node.sn-active{box-shadow:0 0 8px currentColor;animation:nodeGlow 1.2s ease-in-out infinite}
+.particle{position:absolute;border-radius:50%;pointer-events:none;z-index:50}
+.node-pulse{animation:nodePulse .4s ease-out}
+.action-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;background:rgba(0,0,0,.15);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .4s}
+.action-overlay.visible{opacity:1;pointer-events:auto}
+.action-btn{padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.action-btn.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
+.action-btn.green{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff}
+.transition-overlay{position:absolute;inset:0;bottom:44px;display:flex;align-items:center;justify-content:center;background:rgba(13,17,23,.92);z-index:80;opacity:0;pointer-events:none;transition:opacity .4s}
+.transition-overlay.visible{opacity:1;pointer-events:auto}
+.transition-text{color:#93c5fd;font-size:16px;font-weight:600;letter-spacing:1px;animation:fadeInUp .5s ease-out}
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(135deg,#0f172a,#1e293b);display:flex;align-items:center;padding:0 20px;gap:12px;border-top:1px solid rgba(59,130,246,.15);z-index:70}
+.step-text{flex:1;font-size:11px;color:rgba(255,255,255,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-dots{display:flex;gap:6px;align-items:center}
+.progress-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.progress-dots .dot.active{background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.5);transform:scale(1.2)}
+.progress-dots .dot.done{background:rgba(255,255,255,.5)}
+.kb-hint{font-size:10px;color:rgba(255,255,255,.3);margin-left:8px}
+/* Scene 1: Cycle ring */
+.cycle-container{position:relative;width:920px;height:560px;margin:10px auto}
+.cycle-node{position:absolute;padding:13px 16px;border-radius:12px;font-size:14px;font-weight:600;line-height:1.45;border:2px solid rgba(239,68,68,.55);opacity:0;transform:scale(.85);transition:all .5s cubic-bezier(.4,0,.2,1);text-align:center;color:#fef2f2;background:rgba(15,23,42,.92);backdrop-filter:blur(6px);box-shadow:0 6px 24px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);text-shadow:0 1px 2px rgba(0,0,0,.6);z-index:2}
+.cycle-node b{color:#fff;background:rgba(239,68,68,.18);padding:1px 6px;border-radius:4px;margin:0 1px}
+.cycle-node.show{opacity:1;transform:scale(1)}
+.cycle-node.warn{border-color:#ef4444!important;color:#fff!important;background:rgba(127,29,29,.85)!important;box-shadow:0 0 24px rgba(239,68,68,.45),0 6px 24px rgba(0,0,0,.5)}
+.cycle-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0}
+.cycle-svg path{stroke-dasharray:5 5;stroke:rgba(239,68,68,.55);stroke-width:1.8;fill:none;opacity:0;transition:opacity .5s}
+.cycle-svg path.show{opacity:1}
+.cycle-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;background:radial-gradient(circle,rgba(239,68,68,.18),rgba(127,29,29,.08));border:1.5px solid rgba(239,68,68,.45);border-radius:50%;width:150px;height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .6s;box-shadow:0 0 32px rgba(239,68,68,.25),inset 0 0 24px rgba(239,68,68,.08);z-index:1}
+.cycle-center.show{opacity:1}
+.cycle-center .cc-num{font-size:24px;font-weight:800;color:#fecaca;letter-spacing:.5px;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.cycle-center .cc-lbl{font-size:10.5px;color:rgba(254,202,202,.85);margin-top:5px;line-height:1.5;padding:0 12px;font-weight:500}
+.s1-search{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px 22px;margin-bottom:6px;max-width:460px;width:100%}
+/* Scene 3: Architecture */
+.arch-half{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px 20px;position:relative}
+.arch-half.left-arch{background:#0d1117;border-right:1px solid rgba(239,68,68,.15)}
+.arch-half.right-arch{background:radial-gradient(ellipse at center,rgba(34,197,94,.04),#0d1117 70%)}
+.arch-title{font-size:15px;font-weight:700;margin-bottom:16px;letter-spacing:1px}
+.arch-box{padding:11px 18px;border-radius:10px;text-align:center;font-size:11.5px;font-weight:600;opacity:0;transform:translateY(15px);transition:all .5s;min-width:160px}
+.arch-box.show{opacity:1;transform:translateY(0)}
+.arch-line{width:2px;height:20px;margin:0 auto;opacity:0;transition:opacity .5s}
+.arch-line.show{opacity:1}
+.arch-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;justify-content:center;max-width:100%}
+.arch-row .arch-box{min-width:90px;padding:8px 10px;font-size:10px}
+.arch-tag{display:inline-block;font-size:9px;padding:2px 7px;border-radius:4px;margin:2px 2px}
+.arch-tag.bad{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+.arch-tag.good{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#86efac}
+.arch-tags{margin-top:10px;opacity:0;transition:opacity .5s}
+.arch-tags.show{opacity:1}
+/* Scene 4: Metrics */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:980px;width:100%}
+.metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:28px 18px;text-align:center;opacity:0;transform:translateY(20px);transition:all .6s;position:relative;overflow:hidden}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#3b82f6,transparent);opacity:.5}
+.metric-card.show{opacity:1;transform:translateY(0)}
+.metric-card:hover{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.03)}
+.metric-icon{font-size:26px;margin-bottom:6px}
+.metric-num{font-size:34px;font-weight:800;margin:6px 0;font-family:'Segoe UI',monospace;color:#f0f9ff;letter-spacing:.5px}
+.metric-label{font-size:12px;color:rgba(255,255,255,.55);margin-top:4px}
+.metric-change{font-size:10px;color:rgba(147,197,253,.7);margin-top:8px;padding:3px 10px;background:rgba(59,130,246,.08);border-radius:8px;display:inline-block}
+.slogan{font-size:18px;font-weight:700;color:#93c5fd;letter-spacing:2px;margin-top:36px;text-align:center;opacity:0;transition:opacity 1s}
+.slogan.show{opacity:1}
+.pain-overlay{position:absolute;inset:0;background:rgba(220,38,38,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .5s;pointer-events:none;z-index:10;backdrop-filter:blur(1px)}
+.pain-overlay.show{opacity:1}
+.pain-card{background:rgba(254,242,242,.97);border:2px solid #fca5a5;border-radius:10px;padding:14px 20px;max-width:300px;text-align:center;box-shadow:0 8px 32px rgba(239,68,68,.3)}
+.confirm-toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#16a34a;color:#fff;padding:14px 22px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(22,163,74,.4);opacity:0;transition:opacity .3s;z-index:20}
+.confirm-toast.show{opacity:1}
+.bottom-warn{padding:8px 14px;background:#fef2f2;border-top:1px solid #fecaca;font-size:10.5px;color:#991b1b;text-align:center;font-weight:600}
+.bottom-stat{padding:8px 14px;background:#dcfce7;border-top:1px solid #86efac;font-size:10.5px;color:#166534;text-align:center;font-weight:600}
+.api-fan{display:flex;gap:5px;margin-top:6px;width:88%}
+.api-fan .api-mini{flex:1;padding:5px 2px;border-radius:5px;font-size:8.5px;font-weight:700;text-align:center;border:1.5px solid;transition:all .4s}
+.api-fan .api-mini.m-orange{background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.4);color:#fdba74}
+.api-fan .api-mini.m-green{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.4);color:#86efac}
+.api-fan .api-mini.m-purple{background:rgba(168,85,247,.08);border-color:rgba(168,85,247,.4);color:#c4b5fd}
+.api-fan .api-mini.m-gray{background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.3);color:#94a3b8}
+.api-fan .api-mini.m-active{box-shadow:0 0 8px currentColor;animation:nodeGlow 1.2s ease-in-out infinite}
+@keyframes nodeGlow{0%,100%{box-shadow:0 0 12px rgba(59,130,246,.3)}50%{box-shadow:0 0 20px rgba(59,130,246,.6)}}
+@keyframes nodePulse{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 20px 4px transparent}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes rowReveal{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.row-reveal{animation:rowReveal .4s ease-out backwards}
+/* Cursor animation */
+#simCursor{position:fixed;z-index:99999;pointer-events:none;opacity:0;transition:opacity .3s}
+#simCursor.visible{opacity:1}
+.cursor-ring{position:absolute;top:-18px;left:-18px;width:44px;height:44px;border-radius:50%;border:2px solid #4fc3f7;box-shadow:0 0 15px #4fc3f7,0 0 30px #4fc3f7;animation:ringPulse 1.5s ease-in-out infinite;pointer-events:none}
+@keyframes ringPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes cursorClick{0%{transform:scale(1)}30%{transform:scale(.6)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>一品多商 · 智能比价能力演示</h1>
+  <div class="header-right">
+    <div class="scene-nav" id="sceneNav"></div>
+    <span class="scene-badge" id="sceneBadge">场景 1/4</span>
+  </div>
+</div>
+<div class="main" id="mainArea"></div>
+<div class="transition-overlay" id="transOverlay"><span class="transition-text" id="transText"></span></div>
+<div class="bottom-bar">
+  <span class="step-text" id="stepText">准备开始...</span>
+  <div class="progress-dots" id="dots"></div>
+  <span class="kb-hint">← → Space</span>
+</div>
+<script>
+const IMG='./images/';
+let scene=0, phase='idle', animTimers=[], paused=false;
+function clearAnim(){animTimers.forEach(t=>{clearTimeout(t);clearInterval(t)});animTimers=[];}
+function delay(ms){return new Promise(r=>{const t=setTimeout(r,ms);animTimers.push(t);})}
+
+const SCENES=[
+  {id:'s1',title:'痛点引入 — 同物多品恶性循环',type:'full'},
+  {id:'s2',title:'核心对比 — 人工逐个查 vs 一品多商比价',type:'split'},
+  {id:'s3',title:'技术架构 — 单一链路 vs 聚合引擎',type:'full'},
+  {id:'s4',title:'价值总结',type:'full'}
+];
+
+function $(id){return document.getElementById(id)}
+function setHTML(id,html){const el=$(id);if(el)el.innerHTML=html;}
+function showEl(el){if(typeof el==='string')el=$(el);if(el)el.classList.add('show');}
+function hideEl(el){if(typeof el==='string')el=$(el);if(el)el.classList.remove('show');}
+
+// ===== CURSOR ANIMATION SYSTEM =====
+let cursorEl=null,cursorRing=null,lastPos={x:60,y:60};
+function initCursor(){
+  cursorEl=document.createElement('div');cursorEl.id='simCursor';
+  cursorEl.innerHTML='<svg width="22" height="28" viewBox="0 0 22 28"><path d="M1,1 L1,20 L6,15 L10.5,25 L13.5,23.5 L9,13.5 L16,13.5Z" fill="white" stroke="rgba(0,0,0,.4)" stroke-width="0.8"/></svg><div class="cursor-ring"></div>';
+  document.body.appendChild(cursorEl);
+  cursorRing=cursorEl.querySelector('.cursor-ring');
+}
+function hideCursor(){if(cursorEl)cursorEl.classList.remove('visible');}
+async function animateCursor(target,cb){
+  if(!cursorEl)initCursor();
+  const el=typeof target==='string'?document.querySelector(target):target;
+  if(!el){if(cb)cb();return;}
+  const r=el.getBoundingClientRect();
+  const tx=r.left+r.width/2,ty=r.top+r.height/2;
+  cursorEl.style.transition='none';
+  cursorEl.style.left=lastPos.x+'px';cursorEl.style.top=lastPos.y+'px';
+  cursorEl.classList.add('visible');
+  await delay(30);
+  cursorEl.style.transition='left 500ms cubic-bezier(.4,0,.2,1),top 500ms cubic-bezier(.4,0,.2,1)';
+  cursorEl.style.left=tx+'px';cursorEl.style.top=ty+'px';
+  await delay(800);
+  if(cursorRing){cursorRing.style.animation='cursorClick 250ms ease-out';setTimeout(()=>{if(cursorRing)cursorRing.style.animation='ringPulse 1.5s ease-in-out infinite';},300);}
+  await delay(250);
+  lastPos={x:tx,y:ty};
+  if(cb)cb();
+}
+
+function mallNav(keyword,filled,multi){
+  const v=filled?` value="${keyword}"`:'';const cls=filled?'active':'';
+  const m=multi?'<span style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;padding:3px 8px;border-radius:10px;font-size:9px;font-weight:700;margin-left:6px">一品多商</span>':'';
+  return `<div class="mall-nav"><span class="mall-logo">采购商城</span><div class="mall-search"><input class="${cls}" placeholder="请输入物料名称..."${v} readonly><button>搜索</button></div>${m}<div class="mall-user"></div></div>`;
+}
+function sysBarLeft(state){
+  const dirCls=state==='req'||state==='active'?'n-gray n-active':state==='ok'?'n-gray n-active':'n-gray';
+  return `<div class="sys-inner"><span class="sys-label">系统链路</span>
+    <div class="sys-node n-blue" id="lMall"><span class="n-icon">🏪</span><span class="n-name">采购商城</span></div>
+    <div class="sys-connector"></div>
+    <div class="sys-node ${dirCls}" id="lDir"><span class="n-icon">📇</span><span class="n-name">ZKH供应商目录</span><span class="n-desc">单一来源</span></div>
+    <div class="sys-note">单一来源，无归一化能力</div></div>`;
+}
+function sysBarRight(state){
+  const apiCls=state==='active'||state==='ok'||state==='dispatch'?'n-glow n-active':'n-glow';
+  const sub=state==='dispatch'||state==='ok'?' m-active':'';
+  return `<div class="sys-inner"><span class="sys-label">系统链路</span>
+    <div class="sys-node n-blue" id="rMall"><span class="n-icon">🏪</span><span class="n-name">采购商城</span></div>
+    <div class="sys-connector"></div>
+    <div class="sys-node ${apiCls}" id="rEng"><span class="n-icon">⚙️</span><span class="n-name">供应商聚合引擎</span><span class="n-desc">多源聚合 + 归一化</span></div>
+    <div class="sys-connector"></div>
+    <div class="api-fan">
+      <div class="api-mini m-orange${sub}" id="rZKH">ZKH</div>
+      <div class="api-mini m-green${sub}" id="rJG">紧固件厂</div>
+      <div class="api-mini m-purple${sub}" id="rHD">华东</div>
+      <div class="api-mini m-gray${sub}" id="rBS">博仕</div>
+    </div>
+    <div class="sys-note">多源聚合 + 物料归一化</div></div>`;
+}
+
+// ===== ENHANCED PARTICLE SYSTEM =====
+function fireParticles(container,startEl,endEl,color,onArrive){
+  if(!container||!startEl||!endEl)return;
+  const cr=container.getBoundingClientRect();
+  const sr=startEl.getBoundingClientRect();
+  const er=endEl.getBoundingClientRect();
+  const x1=sr.left+sr.width/2-cr.left, y1=sr.top+sr.height/2-cr.top;
+  const x2=er.left+er.width/2-cr.left, y2=er.top+er.height/2-cr.top;
+  const dur=800;
+  for(let i=0;i<3;i++){
+    const p=document.createElement('div');
+    const size=i===0?7:4;const op=i===0?1:0.4-i*0.1;
+    p.style.cssText=`position:absolute;left:${x1}px;top:${y1}px;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};z-index:${50-i};opacity:${op};pointer-events:none;transition:left ${dur+i*120}ms cubic-bezier(.4,0,.2,1),top ${dur+i*120}ms cubic-bezier(.4,0,.2,1);`;
+    container.appendChild(p);
+    requestAnimationFrame(()=>{p.style.left=x2+'px';p.style.top=y2+'px';});
+    setTimeout(()=>p.remove(),dur+i*120+100);
+  }
+  setTimeout(()=>{
+    endEl.classList.add('node-pulse');
+    setTimeout(()=>endEl.classList.remove('node-pulse'),400);
+    if(onArrive)onArrive();
+  },dur);
+}
+
+// ===== SCENE 1: Pain Cycle =====
+function buildScene1(){
+  return `<div class="scene-full active" id="s1">
+    <div style="text-align:center;margin-bottom:14px"><h2 style="color:#f87171;font-size:20px;font-weight:700">当前痛点 — 一品多商缺失的恶性循环</h2><p style="color:rgba(255,255,255,.4);font-size:12px;margin-top:6px">同一物料被分散上架，采购无法横向比价</p></div>
+    <div class="cycle-container" id="cycleBox">
+      <svg class="cycle-svg" viewBox="0 0 920 560" preserveAspectRatio="none">
+        <path id="cp1" d="M460,60 Q680,80 780,170"/>
+        <path id="cp2" d="M780,170 Q860,280 780,390"/>
+        <path id="cp3" d="M780,390 Q680,480 460,500"/>
+        <path id="cp4" d="M460,500 Q240,480 140,390"/>
+        <path id="cp5" d="M140,390 Q60,280 140,170"/>
+        <path id="cp6" d="M140,170 Q240,80 460,60"/>
+      </svg>
+      <div class="cycle-node" id="cn1" style="top:22px;left:50%;margin-left:-135px;width:270px">① 同一物料被不同供应商<b>分别上架</b></div>
+      <div class="cycle-node" id="cn2" style="top:140px;right:8px;width:240px">② 商城出现 <b>3个</b>“六角螺栓M10×50”</div>
+      <div class="cycle-node" id="cn3" style="top:360px;right:8px;width:240px">③ 采购员逐个查看，<b>无法对比</b></div>
+      <div class="cycle-node" id="cn4" style="bottom:22px;left:50%;margin-left:-135px;width:270px">④ 随机选择供应商下单</div>
+      <div class="cycle-node" id="cn5" style="top:360px;left:8px;width:240px">⑤ 采购成本不稳定，<b>价差20%</b></div>
+      <div class="cycle-node warn" id="cn6" style="top:140px;left:8px;width:240px">⑥ 审计无法证明<b>择优采购</b> ⚠</div>
+      <div class="cycle-center" id="ccCenter"><div class="cc-num" id="ccNum">15-20%</div><div class="cc-lbl">年采购成本偏高<br>审计风险持续累积</div></div>
+    </div>
+    <div class="action-overlay" id="s1Action"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene1(){
+  phase='playing';
+  await delay(500);
+  const ids=['cn1','cn2','cn3','cn4','cn5','cn6'];
+  const paths=['cp1','cp2','cp3','cp4','cp5','cp6'];
+  for(let i=0;i<ids.length;i++){
+    showEl(ids[i]);
+    if(i<paths.length){await delay(350);const p=$(paths[i]);if(p)p.classList.add('show');}
+    await delay(700);
+  }
+  await delay(400);showEl('ccCenter');
+  await delay(2000);
+  phase='scene-done';const overlay=$('s1Action');if(overlay)overlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 2: Core Comparison =====
+function buildScene2(){
+  return `<div class="scene-split active" id="s2">
+    <div class="half half-left" id="s2Left"><div class="col-mall"><div class="panel-hdr before">❌ 优化前 · 人工多商品比价</div><div class="panel-body" id="s2LBody"></div></div><div class="col-sys" id="s2LSys"></div></div>
+    <div class="half half-right dimmed" id="s2Right"><div class="col-sys" id="s2RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 优化后 · 一品多商比价</div><div class="panel-body" id="s2RBody"></div></div></div>
+    <div class="action-overlay" id="s2ActionMid"><button class="action-btn blue" onclick="triggerRight()">查看优化方案 →</button></div>
+    <div class="action-overlay" id="s2ActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+
+const LEFT_PRODUCTS=[
+  {img:'bolt',name:'六角螺栓 M10×50 全牙',meta:'编码：MAT-A001 · 碳钢',price:'¥0.85',supplier:'ZKH震坤行'},
+  {img:'inner_hex',name:'不锈钢304螺栓 M10×50',meta:'编码：MAT-A002 · 304不锈钢',price:'¥0.92',supplier:'上海紧固件厂'},
+  {img:'bolt',name:'M10×50六角头螺栓',meta:'编码：MAT-A003 · 8.8级',price:'¥1.05',supplier:'博仕五金'}
+];
+function leftCardHTML(p,idx){
+  return `<div class="product-card" id="lc${idx}"><img src="${IMG}${p.img}.png" class="pc-img"><div class="pc-info"><div class="pc-name">${p.name}</div><div class="pc-meta">${p.meta}</div><div class="pc-price">${p.price} <span style="font-size:10px;color:#6b7280;font-weight:400">/个</span></div><span class="pc-supplier">供应商：${p.supplier}</span></div></div>`;
+}
+function leftDetailHTML(p){
+  return `<div class="detail-pane"><div style="font-size:10px;color:#6b7280;margin-bottom:6px">← 返回搜索结果 · 商品详情</div>
+    <div class="detail-head"><img src="${IMG}${p.img}.png"><div class="dh-info"><div class="dh-name">${p.name}</div><div class="dh-spec">${p.meta}</div><div class="dh-price">${p.price}/个</div></div></div>
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:8px 10px;font-size:10px;color:#374151;line-height:1.7">
+      <div><span style="color:#6b7280">供应商：</span><b>${p.supplier}</b></div>
+      <div><span style="color:#6b7280">货期：</span>3-5个工作日</div>
+      <div><span style="color:#6b7280">起订量：</span>50个</div>
+    </div>
+    <div style="margin-top:8px;padding:8px;background:#fef3c7;border:1px solid #fde68a;border-radius:5px;font-size:10px;color:#92400e;text-align:center">⚠ 仅显示该1家供应商信息，无法横向对比</div>
+  </div>`;
+}
+
+async function playScene2Left(){
+  phase='playing-left';
+  setHTML('s2LSys',sysBarLeft('idle'));
+  setHTML('s2LBody',mallNav('',false,false)+`<div class="result-area" id="s2LRes"><div style="text-align:center;padding:30px;color:#9ca3af;font-size:12px">等待搜索...</div></div>`);
+  setHTML('s2RSys',sysBarRight('idle'));
+  setHTML('s2RBody',mallNav('',false,true)+`<div class="result-area"><div style="text-align:center;padding:30px;color:#9ca3af;font-size:12px">聚合引擎待命...</div></div>`);
+  await delay(500);
+  const input=document.querySelector('#s2LBody .mall-search input');
+  if(input){input.classList.add('active');const kw='六角螺栓';for(let i=0;i<kw.length;i++){await delay(180);input.value=kw.slice(0,i+1);}}
+  await delay(400);
+  await animateCursor('#s2LBody .mall-search button');
+  const container=$('s2Left');
+  const mallBtn=document.querySelector('#s2LBody .mall-search button');
+  fireParticles(container,mallBtn,$('lDir'),'rgba(180,180,180,.9)');
+  setHTML('s2LSys',sysBarLeft('active'));await delay(1000);
+  fireParticles(container,$('lDir'),$('s2LRes'),'#ef4444');
+  await delay(500);
+  setHTML('s2LRes',`<span class="result-badge warn">返回 3 条商品 — 看似不同，实为同一物料</span>${LEFT_PRODUCTS.map((p,i)=>leftCardHTML(p,i)).join('')}`);
+  await delay(800);
+  // Click product A → detail
+  await animateCursor('#lc0',()=>{
+    const card=$('lc0');if(card)card.classList.add('highlight');
+  });
+  await delay(300);
+  setHTML('s2LRes',leftDetailHTML(LEFT_PRODUCTS[0]));
+  await delay(1500);
+  // Return to list, click product B → detail
+  setHTML('s2LRes',`<span class="result-badge warn">返回 3 条商品 — 看似不同，实为同一物料</span>${LEFT_PRODUCTS.map((p,j)=>leftCardHTML(p,j)).join('')}`);
+  await delay(500);
+  await animateCursor('#lc1',()=>{
+    const card=$('lc1');if(card)card.classList.add('highlight');
+  });
+  await delay(300);
+  setHTML('s2LRes',leftDetailHTML(LEFT_PRODUCTS[1]));
+  await delay(1500);
+  // Return to list, click product C → detail
+  setHTML('s2LRes',`<span class="result-badge warn">返回 3 条商品 — 看似不同，实为同一物料</span>${LEFT_PRODUCTS.map((p,j)=>leftCardHTML(p,j)).join('')}`);
+  await delay(500);
+  await animateCursor('#lc2',()=>{
+    const card=$('lc2');if(card)card.classList.add('highlight');
+  });
+  await delay(300);
+  setHTML('s2LRes',leftDetailHTML(LEFT_PRODUCTS[2]));
+  await delay(1500);
+  await delay(300);
+  const body=$('s2LBody');
+  if(body){
+    const ov=document.createElement('div');
+    ov.className='pain-overlay show';
+    ov.style.opacity='1';
+    ov.innerHTML=`<div class="pain-card"><div style="font-size:24px;margin-bottom:6px">⚠</div><div style="font-size:12px;font-weight:700;color:#991b1b;line-height:1.6">3个商品实为同一物料 M10×50<br>人工逐个查看无法横向比价</div></div>`;
+    body.appendChild(ov);
+  }
+  await delay(2200);
+  setHTML('s2LBody',mallNav('六角螺栓',true,false)+`<div class="result-area">${LEFT_PRODUCTS.map((p,i)=>leftCardHTML(p,i)).join('')}</div><div class="bottom-warn">审计追溯时，无法证明已进行比价择优</div>`);
+  await delay(1200);
+  phase='left-done';
+  const leftHalf=$('s2Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.add('visible');
+  updateUI();
+}
+
+const RIGHT_SUPPLIERS=[
+  {name:'ZKH震坤行',tag:'best',price:'¥0.85',period:'次日达',stock:'库存充足',stockCls:'stock-ok'},
+  {name:'上海紧固件厂',tag:'mfr',price:'¥0.92',period:'3-5日',stock:'库存充足',stockCls:'stock-ok'},
+  {name:'华东五金商贸',tag:'',price:'¥0.98',period:'2-3日',stock:'库存充足',stockCls:'stock-ok'},
+  {name:'博仕五金',tag:'',price:'¥1.05',period:'5-7日',stock:'库存紧张',stockCls:'stock-warn'}
+];
+function rightCardHTML(){
+  return `<div class="product-card" id="rcMain" style="position:relative">
+    <span class="badge-multi">一品 4 商</span>
+    <img src="${IMG}bolt.png" class="pc-img" style="margin-top:6px">
+    <div class="pc-info" style="margin-top:6px">
+      <div class="pc-name">六角螺栓 GB/T5782 M10×50 不锈钢304 全牙</div>
+      <div class="pc-meta">标准化编码：MAT-STD-1050 · 物料归一化</div>
+      <div style="display:flex;align-items:baseline;gap:8px;margin-top:3px"><span style="font-size:14px;font-weight:700;color:#16a34a">最优价 ¥0.85</span><span style="font-size:10px;color:#6b7280">/个</span><span style="font-size:10px;background:#dcfce7;color:#166534;padding:2px 6px;border-radius:3px;font-weight:600">4家供应商</span></div>
+    </div>
+  </div>`;
+}
+function rightDetailHTML(){
+  let rows='';
+  RIGHT_SUPPLIERS.forEach((s,i)=>{
+    const tag=s.tag==='best'?'<span class="tag-best">最优价</span>':s.tag==='mfr'?'<span class="tag-mfr">制造商</span>':'';
+    const cls=i===0?'best':'';
+    const btn=i===0?'<button class="btn-pick best" id="bpBest">选择此供应商</button>':'<button class="btn-pick">选择此供应商</button>';
+    rows+=`<tr class="${cls}" id="rr${i}" style="display:none"><td><b>${s.name}</b>${tag}</td><td><b>${s.price}</b>/个</td><td>${s.period}</td><td class="${s.stockCls}">${s.stock}</td><td>${btn}</td></tr>`;
+  });
+  return `<div class="detail-pane"><div style="font-size:10px;color:#6b7280;margin-bottom:6px">← 返回搜索结果 · 商品详情</div>
+    <div class="detail-head"><img src="${IMG}bolt.png"><div class="dh-info"><div class="dh-name">六角螺栓 GB/T5782 M10×50 不锈钢304 全牙</div><div class="dh-spec">标准编码：MAT-STD-1050 · 一品多商归一化</div><div class="dh-price">最低采购价 ¥0.85（ZKH震坤行）</div></div></div>
+    <div style="background:#f0f9ff;border:1px solid #bfdbfe;border-radius:6px;padding:6px 10px;font-size:10.5px;color:#1d4ed8;font-weight:600;margin-bottom:8px">📊 一品多商比价表</div>
+    <table class="data-tbl" id="cmpTbl"><thead><tr><th>供应商</th><th>单价</th><th>货期</th><th>库存</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
+async function playScene2Right(){
+  phase='playing-right';
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s2Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s2RSys',sysBarRight('idle'));
+  setHTML('s2RBody',mallNav('',false,true)+`<div class="result-area" id="s2RRes"><div style="text-align:center;padding:30px;color:#9ca3af;font-size:12px">聚合引擎待命...</div></div>`);
+  await delay(300);
+  const input=document.querySelector('#s2RBody .mall-search input');
+  if(input){input.classList.add('active');const kw='六角螺栓';for(let i=0;i<kw.length;i++){await delay(180);input.value=kw.slice(0,i+1);}}
+  await delay(400);
+  await animateCursor('#s2RBody .mall-search button');
+  const container=$('s2Right');
+  const mallBtn=document.querySelector('#s2RBody .mall-search button');
+  fireParticles(container,mallBtn,$('rEng'),'#3b82f6');
+  setHTML('s2RSys',sysBarRight('active'));await delay(900);
+  setHTML('s2RSys',sysBarRight('dispatch'));
+  await delay(900);
+  fireParticles(container,$('rEng'),$('s2RRes'),'#22c55e');
+  setHTML('s2RSys',sysBarRight('ok'));
+  await delay(500);
+  setHTML('s2RRes',`<span class="result-badge ok">精准匹配 1 条标准商品 · 多源聚合</span>${rightCardHTML()}`);
+  await delay(1500);
+  await animateCursor('#rcMain',()=>{
+    const card=$('rcMain');if(card)card.classList.add('highlight');
+  });
+  await delay(300);
+  setHTML('s2RRes',rightDetailHTML());
+  await delay(400);
+  for(let i=0;i<RIGHT_SUPPLIERS.length;i++){
+    const r=$('rr'+i);if(r){r.style.display='';r.classList.add('row-reveal');}
+    await delay(450);
+  }
+  await delay(1000);
+  await animateCursor('#bpBest',()=>{
+    const btn=$('bpBest');if(btn){btn.style.boxShadow='0 0 0 3px rgba(22,163,74,.3)';btn.style.transform='scale(1.05)';}
+  });
+  await delay(600);
+  const body=$('s2RBody');
+  if(body){
+    const toast=document.createElement('div');
+    toast.className='confirm-toast';
+    toast.innerHTML='✓ 比价决策已留痕，可审计追溯';
+    body.appendChild(toast);
+    requestAnimationFrame(()=>toast.classList.add('show'));
+    setTimeout(()=>{toast.classList.remove('show');setTimeout(()=>toast.remove(),400);},2400);
+  }
+  await delay(2400);
+  const res=$('s2RRes');
+  if(res){
+    const stat=document.createElement('div');
+    stat.className='bottom-stat';
+    stat.innerHTML='较最高报价节省 ¥0.20/个 (19%)，决策全程可追溯';
+    res.appendChild(stat);
+  }
+  await delay(1500);
+  phase='scene-done';
+  const endOverlay=$('s2ActionEnd');if(endOverlay)endOverlay.classList.add('visible');
+  updateUI();
+}
+
+// ===== SCENE 3: Architecture Comparison =====
+function buildScene3(){
+  return `<div class="scene-full active" id="s3" style="flex-direction:row;padding:0">
+    <div class="arch-half left-arch">
+      <div class="arch-title" style="color:#f87171">传统单一供应商链路</div>
+      <div class="arch-box" id="a3L1" style="background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.3);color:#93c5fd">👤 用户</div>
+      <div class="arch-line" id="a3Ln1" style="background:rgba(148,163,184,.4)"></div>
+      <div class="arch-box" id="a3L2" style="background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.3);color:#93c5fd">🏪 采购商城</div>
+      <div class="arch-line" id="a3Ln2" style="background:rgba(148,163,184,.4)"></div>
+      <div class="arch-box" id="a3L3" style="background:rgba(148,163,184,.08);border:2px solid rgba(148,163,184,.4);color:#94a3b8">📇 供应商A目录<div style="font-size:9px;opacity:.6;margin-top:2px">单一来源</div></div>
+      <div class="arch-tags" id="a3LTags"><span class="arch-tag bad">✗ 无比价</span><span class="arch-tag bad">✗ 无归一化</span><span class="arch-tag bad">✗ 无审计留痕</span></div>
+      <div style="margin-top:14px;font-size:10px;color:rgba(252,165,165,.7);text-align:center">返回单一结果</div>
+    </div>
+    <div class="arch-half right-arch">
+      <div class="arch-title" style="color:#4ade80">一品多商聚合链路</div>
+      <div class="arch-box" id="a3R1" style="background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.3);color:#93c5fd">👤 用户</div>
+      <div class="arch-line" id="a3Ln3" style="background:rgba(96,165,250,.5)"></div>
+      <div class="arch-box" id="a3R2" style="background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.4);color:#93c5fd">🏪 采购商城</div>
+      <div class="arch-line" id="a3Ln4" style="background:rgba(96,165,250,.5)"></div>
+      <div class="arch-box" id="a3R3" style="background:rgba(59,130,246,.15);border:2px solid rgba(96,165,250,.6);color:#dbeafe;box-shadow:0 0 16px rgba(59,130,246,.3)">⚙️ 供应商聚合引擎</div>
+      <div class="arch-line" id="a3Ln5" style="background:rgba(96,165,250,.5)"></div>
+      <div class="arch-row">
+        <div class="arch-box" id="a3R4" style="background:rgba(249,115,22,.08);border:1.5px solid rgba(249,115,22,.4);color:#fdba74">ZKH API</div>
+        <div class="arch-box" id="a3R5" style="background:rgba(34,197,94,.08);border:1.5px solid rgba(34,197,94,.4);color:#86efac">紧固件厂API</div>
+        <div class="arch-box" id="a3R6" style="background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.4);color:#c4b5fd">华东五金API</div>
+        <div class="arch-box" id="a3R7" style="background:rgba(148,163,184,.08);border:1.5px solid rgba(148,163,184,.4);color:#cbd5e1">博仕五金API</div>
+      </div>
+      <div class="arch-line" id="a3Ln6" style="background:rgba(96,165,250,.4);margin-top:8px"></div>
+      <div class="arch-box" id="a3R8" style="background:rgba(34,197,94,.08);border:2px solid rgba(34,197,94,.4);color:#86efac">🔗 物料归一化模块</div>
+      <div class="arch-line" id="a3Ln7" style="background:rgba(96,165,250,.4)"></div>
+      <div class="arch-box" id="a3R9" style="background:rgba(34,197,94,.1);border:2px solid rgba(34,197,94,.5);color:#86efac">📊 智能比价 + 决策留痕</div>
+      <div class="arch-tags" id="a3RTags" style="margin-top:12px"><span class="arch-tag good">✓ 比价透明</span><span class="arch-tag good">✓ 归一化</span><span class="arch-tag good">✓ 审计合规</span></div>
+      <div style="margin-top:8px;font-size:10px;color:rgba(134,239,172,.8);text-align:center">返回最优推荐</div>
+    </div>
+    <div class="action-overlay" id="s3Action"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene3(){
+  phase='playing';
+  // Left side reveals
+  showEl('a3L1');await delay(300);
+  $('a3Ln1').classList.add('show');await delay(200);
+  showEl('a3L2');await delay(300);
+  $('a3Ln2').classList.add('show');await delay(200);
+  showEl('a3L3');await delay(400);
+  $('a3LTags').classList.add('show');await delay(800);
+  // Dim left
+  const left=document.querySelector('.arch-half.left-arch');
+  if(left){left.style.transition='all .6s';left.style.opacity='.45';left.style.filter='grayscale(.6)';}
+  await delay(500);
+  // Right side reveals
+  showEl('a3R1');await delay(250);
+  $('a3Ln3').classList.add('show');await delay(200);
+  showEl('a3R2');await delay(250);
+  $('a3Ln4').classList.add('show');await delay(200);
+  showEl('a3R3');await delay(350);
+  $('a3Ln5').classList.add('show');await delay(200);
+  showEl('a3R4');await delay(150);
+  showEl('a3R5');await delay(150);
+  showEl('a3R6');await delay(150);
+  showEl('a3R7');await delay(300);
+  $('a3Ln6').classList.add('show');await delay(150);
+  showEl('a3R8');await delay(300);
+  $('a3Ln7').classList.add('show');await delay(150);
+  showEl('a3R9');await delay(400);
+  $('a3RTags').classList.add('show');
+  await delay(1500);
+  phase='scene-done';const overlay=$('s3Action');if(overlay)overlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 4: Value Summary =====
+function buildScene4(){
+  return `<div class="scene-full active" id="s4">
+    <h2 style="color:#f0f9ff;font-size:22px;font-weight:700;margin-bottom:6px">一品多商 · 价值呈现</h2>
+    <p style="color:rgba(255,255,255,.45);font-size:12px;margin-bottom:30px">同一物料 · 多家比价 · 智能择优 · 全程留痕</p>
+    <div class="metric-grid">
+      <div class="metric-card" id="mc1"><div class="metric-icon">💰</div><div class="metric-label">采购成本降低</div><div class="metric-num" id="mv1">0%</div><div class="metric-change">智能比价择优</div></div>
+      <div class="metric-card" id="mc2"><div class="metric-icon">⚡</div><div class="metric-label">比价效率提升</div><div class="metric-num" id="mv2">0倍</div><div class="metric-change">2-3天 → 3分钟</div></div>
+      <div class="metric-card" id="mc3"><div class="metric-icon">🛡️</div><div class="metric-label">审计合规率</div><div class="metric-num" id="mv3">0%</div><div class="metric-change">比价决策全程留痕</div></div>
+      <div class="metric-card" id="mc4"><div class="metric-icon">🔗</div><div class="metric-label">供应商覆盖</div><div class="metric-num" id="mv4">0+</div><div class="metric-change">多源聚合归一化</div></div>
+    </div>
+    <div class="slogan" id="sloganText">一品多商 — 同一物料多家比价，智能择优，全程留痕</div>
+  </div>`;
+}
+async function playScene4(){
+  phase='playing';await delay(400);
+  const cards=['mc1','mc2','mc3','mc4'];for(const id of cards){showEl(id);await delay(220);}await delay(300);
+  const metrics=[
+    {id:'mv1',target:20,prefix:'',suffix:'%+'},
+    {id:'mv2',target:40,prefix:'',suffix:'倍'},
+    {id:'mv3',target:100,prefix:'',suffix:'%'},
+    {id:'mv4',target:4,prefix:'',suffix:'+ 家/品'}
+  ];
+  metrics.forEach(m=>{let cur=0;const step=Math.max(1,Math.ceil(m.target/35));const iv=setInterval(()=>{cur=Math.min(cur+step,m.target);const el=$(m.id);if(el)el.textContent=m.prefix+cur+m.suffix;if(cur>=m.target)clearInterval(iv);},45);animTimers.push(iv);});
+  await delay(2000);showEl('sloganText');phase='scene-done';updateUI();
+}
+
+// ===== CONTROLLER =====
+function loadScene(idx){
+  clearAnim();paused=false;phase='idle';scene=idx;
+  hideCursor();
+  const main=$('mainArea');
+  switch(idx){
+    case 0:main.innerHTML=buildScene1();playScene1();break;
+    case 1:main.innerHTML=buildScene2();playScene2Left();break;
+    case 2:main.innerHTML=buildScene3();playScene3();break;
+    case 3:main.innerHTML=buildScene4();playScene4();break;
+  }
+  updateUI();
+}
+function triggerRight(){
+  if(phase!=='left-done')return;
+  if(scene===1)playScene2Right();
+}
+function nextScene(){if(scene<SCENES.length-1)loadScene(scene+1);}
+function prevScene(){if(scene>0)loadScene(scene-1);}
+
+function updateUI(){
+  $('sceneBadge').textContent=`场景 ${scene+1}/${SCENES.length}`;
+  $('stepText').textContent=`[${SCENES[scene].title}]`;
+  let dotsHtml='';for(let i=0;i<SCENES.length;i++){const cls=i<scene?'done':i===scene?'active':'';dotsHtml+=`<span class="dot ${cls}"></span>`;}
+  $('dots').innerHTML=dotsHtml;
+  let navHtml='';for(let i=0;i<SCENES.length;i++){
+    const cls=i===scene?'active':'';
+    navHtml+=`<span class="nav-dot ${cls}" onclick="navToScene(${i})"><span class="nav-tip">${SCENES[i].title}</span></span>`;
+  }
+  $('sceneNav').innerHTML=navHtml;
+}
+function navToScene(idx){if(idx>=0&&idx<SCENES.length){clearAnim();loadScene(idx);}}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='ArrowRight'){e.preventDefault();if(phase==='left-done')triggerRight();else if(phase==='scene-done')nextScene();}
+  if(e.code==='ArrowLeft'){e.preventDefault();prevScene();}
+  if(e.code==='Space'){e.preventDefault();}
+});
+window.addEventListener('DOMContentLoaded',()=>loadScene(0));
+</script>
+</body>
+</html>

@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>寻源定品 · 能力演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0d1117;overflow:hidden;height:100vh;color:#333}
+.header{height:52px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid rgba(59,130,246,.2)}
+.header h1{font-size:16px;font-weight:600;letter-spacing:2px}
+.header-right{position:absolute;right:16px;display:flex;align-items:center;gap:8px}
+.scene-badge{background:rgba(59,130,246,.15);padding:4px 12px;border-radius:12px;font-size:11px;border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+.scene-nav{display:flex;align-items:center;gap:6px;margin-right:12px}
+.scene-nav .nav-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:transparent;cursor:pointer;transition:all .3s;position:relative}
+.scene-nav .nav-dot:hover{border-color:#93c5fd;transform:scale(1.3)}
+.scene-nav .nav-dot.active{background:#3b82f6;border-color:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.6)}
+.scene-nav .nav-dot .nav-tip{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid rgba(59,130,246,.3);z-index:100}
+.scene-nav .nav-dot:hover .nav-tip{opacity:1}
+.main{height:calc(100vh - 52px);position:relative;overflow:hidden}
+.scene-full{position:absolute;inset:0;bottom:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;padding:30px;opacity:0;pointer-events:none;transition:opacity .8s}
+.scene-full.active{opacity:1;pointer-events:auto}
+.scene-split{position:absolute;inset:0;bottom:44px;display:flex;opacity:0;pointer-events:none;transition:opacity .8s}
+.scene-split.active{opacity:1;pointer-events:auto}
+.half{display:flex;flex:1;position:relative;overflow:hidden}
+.half-left{border-right:1px solid rgba(59,130,246,.15)}
+.half-left.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.half-right.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.col-mall{flex:3;display:flex;flex-direction:column;background:#fff;position:relative;overflow:hidden}
+.col-sys{flex:1;min-width:140px;max-width:200px;display:flex;flex-direction:column;background:linear-gradient(180deg,#0a1628,#111d35);position:relative;overflow:hidden}
+.panel-hdr{height:34px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px}
+.panel-hdr.before{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.panel-hdr.after{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.panel-body{flex:1;overflow-y:auto;position:relative;padding:0}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
+.mall-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.mall-logo{font-weight:700;font-size:13px;color:#1f2937;display:flex;align-items:center;gap:6px}
+.mall-logo::before{content:'';width:20px;height:20px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:4px}
+.mall-search{flex:1;max-width:340px;display:flex;height:34px}
+.mall-search input{flex:1;border:2px solid #e5e7eb;border-right:none;padding:0 12px;font-size:12px;border-radius:6px 0 0 6px;outline:none;background:#f9fafb}
+.mall-search input.active{border-color:#3b82f6;background:#fff}
+.mall-search button{background:#3b82f6;color:#fff;border:none;padding:0 16px;border-radius:0 6px 6px 0;font-size:12px;font-weight:600;cursor:pointer}
+.mall-user{width:28px;height:28px;background:#e5e7eb;border-radius:50%;margin-left:auto}
+.result-area{padding:12px 16px}
+.result-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;margin-bottom:8px}
+.result-badge.warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.result-badge.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.result-badge.err{background:#fecaca;color:#991b1b;border:1px solid #fca5a5}
+.data-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.data-tbl th{background:#f8fafc;border:1px solid #e5e7eb;padding:6px 8px;text-align:left;font-weight:600;color:#64748b}
+.data-tbl td{border:1px solid #e5e7eb;padding:5px 8px;color:#374151}
+.data-tbl tr:hover td{background:#f0f9ff}
+.data-tbl .hl td{background:#dcfce7!important;border-color:#86efac}
+.product-img{width:36px;height:36px;object-fit:contain;border-radius:4px;border:1px solid #e5e7eb;background:#f9fafb;padding:2px}
+.sys-inner{display:flex;flex-direction:column;align-items:center;padding:12px 6px;height:100%;justify-content:center;gap:6px}
+.sys-label{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:2px;font-weight:700}
+.sys-node{width:90%;padding:8px 4px;border-radius:8px;text-align:center;position:relative;transition:all .4s}
+.sys-node .n-icon{font-size:12px;display:block;margin-bottom:1px}
+.sys-node .n-name{font-size:9px;font-weight:700;display:block}
+.sys-node.n-blue{background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.4);color:#93c5fd}
+.sys-node.n-gray{background:rgba(148,163,184,.08);border:2px solid rgba(148,163,184,.3);color:#94a3b8}
+.sys-node.n-glow{background:rgba(59,130,246,.15);border:2px solid rgba(96,165,250,.6);color:#dbeafe;box-shadow:0 0 12px rgba(59,130,246,.3)}
+.sys-node.n-active{box-shadow:0 0 16px rgba(59,130,246,.5);border-color:#60a5fa;animation:nodeGlow 1.5s ease-in-out infinite}
+.sys-node.n-fail{border-color:#ef4444!important;box-shadow:0 0 10px rgba(239,68,68,.3)!important}
+.sys-node.n-green{background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.5);color:#86efac;box-shadow:0 0 12px rgba(34,197,94,.3)}
+.sys-node.n-green-active{box-shadow:0 0 18px rgba(34,197,94,.5);border-color:#4ade80;animation:nodeGreenGlow 1.5s ease-in-out infinite}
+.sys-connector{width:2px;height:14px;background:rgba(255,255,255,.12)}
+.sys-ch-row{display:flex;flex-direction:column;gap:4px;width:90%}
+.sys-ch{padding:6px 3px;border-radius:5px;text-align:center;font-size:9px;font-weight:700;transition:all .4s}
+.sys-ch.ch-zkh{background:rgba(59,130,246,.1);border:1.5px solid rgba(59,130,246,.35);color:#93c5fd}
+.sys-ch.ch-jd{background:rgba(239,68,68,.08);border:1.5px solid rgba(239,68,68,.3);color:#fca5a5}
+.sys-ch.ch-xy{background:rgba(249,115,22,.08);border:1.5px solid rgba(249,115,22,.3);color:#fdba74}
+.sys-ch.ch-1688{background:rgba(245,158,11,.08);border:1.5px solid rgba(245,158,11,.3);color:#fcd34d}
+.sys-ch.ch-active{box-shadow:0 0 10px currentColor}
+.sys-ch.ch-fail{border-color:#ef4444!important;box-shadow:0 0 8px rgba(239,68,68,.4)!important}
+.sys-ch.ch-ok{border-color:#22c55e!important;box-shadow:0 0 8px rgba(34,197,94,.4)!important}
+.particle{position:absolute;border-radius:50%;pointer-events:none;z-index:50}
+.node-pulse{animation:nodePulse .4s ease-out}
+.action-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;background:rgba(0,0,0,.15);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .4s}
+.action-overlay.visible{opacity:1;pointer-events:auto}
+.action-btn{padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.action-btn.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
+.action-btn.green{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff}
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(135deg,#0f172a,#1e293b);display:flex;align-items:center;padding:0 20px;gap:12px;border-top:1px solid rgba(59,130,246,.15);z-index:70}
+.step-text{flex:1;font-size:11px;color:rgba(255,255,255,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-dots{display:flex;gap:6px;align-items:center}
+.progress-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.progress-dots .dot.active{background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.5);transform:scale(1.2)}
+.progress-dots .dot.done{background:rgba(255,255,255,.5)}
+.kb-hint{font-size:10px;color:rgba(255,255,255,.3);margin-left:8px}
+.typing-cursor::after{content:'|';animation:blink .7s step-end infinite;color:#3b82f6;font-weight:700}
+/* Cursor animation */
+#simCursor{position:fixed;z-index:99999;pointer-events:none;opacity:0;transition:opacity .3s}
+#simCursor.visible{opacity:1}
+.cursor-ring{position:absolute;top:-18px;left:-18px;width:44px;height:44px;border-radius:50%;border:2px solid #4fc3f7;box-shadow:0 0 15px #4fc3f7,0 0 30px #4fc3f7;animation:ringPulse 1.5s ease-in-out infinite;pointer-events:none}
+@keyframes ringPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes cursorClick{0%{transform:scale(1)}30%{transform:scale(.6)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.tab-bar{display:flex;gap:2px;margin:10px 0 6px;border-bottom:2px solid #e5e7eb}
+.tab-btn{padding:6px 12px;font-size:10px;font-weight:600;cursor:pointer;border:none;background:transparent;color:#9ca3af;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+.tab-btn.active{color:#3b82f6;border-bottom-color:#3b82f6}
+.tab-content{min-height:60px}
+.res-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border:1px solid #e5e7eb;border-radius:6px;margin:4px 0;font-size:11px}
+.res-tag{padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700}
+.res-tag.red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.res-tag.yellow{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.res-tag.green{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.pain-overlay{position:absolute;inset:0;background:rgba(220,38,38,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .5s;pointer-events:none;z-index:10}
+.pain-overlay.show{opacity:1}
+/* AI combing panel */
+.ai-panel{background:#f0f9ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin:8px 12px;opacity:0;transform:translateY(10px);transition:all .4s}
+.ai-panel.show{opacity:1;transform:translateY(0)}
+.ai-title{font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:6px}
+.ai-line{font-size:11px;line-height:2;color:#374151;opacity:0;transform:translateX(-10px);transition:all .3s}
+.ai-line.show{opacity:1;transform:translateX(0)}
+/* Comparison table */
+.compare-tbl{width:100%;border-collapse:collapse;font-size:10px;margin:6px 0}
+.compare-tbl th{background:#f0f9ff;border:1px solid #bfdbfe;padding:6px 5px;text-align:center;font-weight:700;color:#1d4ed8;font-size:9px}
+.compare-tbl td{border:1px solid #e5e7eb;padding:5px;text-align:center;color:#374151}
+.compare-tbl tr.hl td{background:#dcfce7!important;border-color:#86efac!important}
+.rec-tag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:8px;font-weight:700}
+.rec-tag.orange{background:#fff7ed;color:#ea580c;border:1px solid #fdba74}
+.rec-tag.green{background:#f0fdf4;color:#16a34a;border:1px solid #86efac}
+.rec-tag.blue{background:#eff6ff;color:#2563eb;border:1px solid #93c5fd}
+/* QTS panel */
+.qts-panel{background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border:2px solid #86efac;border-radius:10px;padding:14px;margin:10px 12px;opacity:0;transform:scale(.95);transition:all .5s}
+.qts-panel.show{opacity:1;transform:scale(1)}
+.qts-line{font-size:11px;color:#374151;line-height:2}
+.quote-card{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 12px;margin:6px 12px;opacity:0;transform:translateY(10px);transition:all .4s;display:flex;justify-content:space-between;align-items:center;font-size:11px}
+.quote-card.show{opacity:1;transform:translateY(0)}
+/* Metrics */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:900px;width:100%}
+.metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px 20px;text-align:center;opacity:0;transform:translateY(20px);transition:all .6s}
+.metric-card.show{opacity:1;transform:translateY(0)}
+.metric-card:hover{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.03)}
+.metric-icon{font-size:28px;margin-bottom:8px}
+.metric-num{font-size:36px;font-weight:800;margin:8px 0;font-family:'Segoe UI',monospace;color:#f0f9ff}
+.metric-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+.metric-change{font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;padding:3px 10px;background:rgba(255,255,255,.05);border-radius:8px;display:inline-block}
+.slogan{font-size:20px;font-weight:700;color:#93c5fd;letter-spacing:3px;margin-top:40px;text-align:center;opacity:0;transition:opacity 1s}
+.slogan.show{opacity:1}
+.big-pain{background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.3);border-radius:12px;padding:16px 24px;text-align:center;opacity:0;transform:scale(.9);transition:all .5s}
+.big-pain.show{opacity:1;transform:scale(1)}
+.stat-note{padding:8px 12px;border-radius:6px;font-size:11px;font-weight:600;text-align:center;margin:6px 0}
+@keyframes blink{50%{opacity:0}}
+@keyframes nodeGlow{0%,100%{box-shadow:0 0 12px rgba(59,130,246,.3)}50%{box-shadow:0 0 20px rgba(59,130,246,.6)}}
+@keyframes nodeGreenGlow{0%,100%{box-shadow:0 0 12px rgba(34,197,94,.3)}50%{box-shadow:0 0 20px rgba(34,197,94,.6)}}
+@keyframes nodePulse{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 20px 4px transparent}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-spinner{display:inline-block;width:20px;height:20px;border:2px solid #e5e7eb;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>寻源定品 · 能力演示</h1>
+  <div class="header-right">
+    <div class="scene-nav" id="sceneNav"></div>
+    <span class="scene-badge" id="sceneBadge">场景 1/4</span>
+  </div>
+</div>
+<div class="main" id="mainArea"></div>
+<div class="bottom-bar">
+  <span class="step-text" id="stepText">准备开始...</span>
+  <div class="progress-dots" id="dots"></div>
+  <span class="kb-hint">← → Space</span>
+</div>
+<script>
+const IMG='./images/';
+let scene=0,phase='idle',animTimers=[],paused=false;
+function clearAnim(){animTimers.forEach(t=>{clearTimeout(t);clearInterval(t)});animTimers=[];}
+function delay(ms){return new Promise(r=>{const t=setTimeout(r,ms);animTimers.push(t);})}
+function $(id){return document.getElementById(id)}
+function setHTML(id,html){const el=$(id);if(el)el.innerHTML=html;}
+function showEl(el){if(typeof el==='string')el=$(el);if(el)el.classList.add('show');}
+
+// ===== CURSOR ANIMATION SYSTEM =====
+let cursorEl=null,cursorRing=null,lastPos={x:60,y:60};
+function initCursor(){
+  cursorEl=document.createElement('div');cursorEl.id='simCursor';
+  cursorEl.innerHTML='<svg width="22" height="28" viewBox="0 0 22 28"><path d="M1,1 L1,20 L6,15 L10.5,25 L13.5,23.5 L9,13.5 L16,13.5Z" fill="white" stroke="rgba(0,0,0,.4)" stroke-width="0.8"/></svg><div class="cursor-ring"></div>';
+  document.body.appendChild(cursorEl);
+  cursorRing=cursorEl.querySelector('.cursor-ring');
+}
+function hideCursor(){if(cursorEl)cursorEl.classList.remove('visible');}
+async function animateCursor(target,cb){
+  if(!cursorEl)initCursor();
+  const el=typeof target==='string'?document.querySelector(target):target;
+  if(!el){if(cb)cb();return;}
+  const r=el.getBoundingClientRect();
+  const tx=r.left+r.width/2,ty=r.top+r.height/2;
+  cursorEl.style.transition='none';
+  cursorEl.style.left=lastPos.x+'px';cursorEl.style.top=lastPos.y+'px';
+  cursorEl.classList.add('visible');
+  await delay(40);
+  cursorEl.style.transition='left 800ms cubic-bezier(.4,0,.2,1),top 800ms cubic-bezier(.4,0,.2,1)';
+  cursorEl.style.left=tx+'px';cursorEl.style.top=ty+'px';
+  await delay(800);
+  if(cursorRing){cursorRing.style.animation='cursorClick 350ms ease-out';setTimeout(()=>{if(cursorRing)cursorRing.style.animation='ringPulse 1.5s ease-in-out infinite';},400);}
+  await delay(500);
+  lastPos={x:tx,y:ty};
+  if(cb)cb();
+}
+
+// ===== PARTICLE SYSTEM =====
+function fireParticles(container,startEl,endEl,color,onArrive){
+  if(!container||!startEl||!endEl)return;
+  // Skip if elements are detached (no real bounding rect)
+  const sr0=startEl.getBoundingClientRect(),er0=endEl.getBoundingClientRect();
+  if((sr0.width===0&&sr0.height===0)||(er0.width===0&&er0.height===0))return;
+  const cr=container.getBoundingClientRect();
+  const x1=sr0.left+sr0.width/2-cr.left,y1=sr0.top+sr0.height/2-cr.top;
+  const x2=er0.left+er0.width/2-cr.left,y2=er0.top+er0.height/2-cr.top;
+  const dur=1200;
+  for(let i=0;i<3;i++){
+    const p=document.createElement('div'),size=i===0?7:4,op=i===0?1:.4-i*.1;
+    p.style.cssText='position:absolute;left:'+x1+'px;top:'+y1+'px;width:'+size+'px;height:'+size+'px;border-radius:50%;background:'+color+';box-shadow:0 0 8px '+color+';z-index:'+(50-i)+';opacity:'+op+';pointer-events:none;transition:left '+(dur+i*150)+'ms cubic-bezier(.4,0,.2,1),top '+(dur+i*150)+'ms cubic-bezier(.4,0,.2,1);';
+    container.appendChild(p);
+    requestAnimationFrame(()=>{p.style.left=x2+'px';p.style.top=y2+'px';});
+    setTimeout(()=>p.remove(),dur+i*150+200);
+  }
+  setTimeout(()=>{endEl.classList.add('node-pulse');setTimeout(()=>endEl.classList.remove('node-pulse'),400);if(onArrive)onArrive();},dur);
+}
+
+// ===== SYSTEM BAR BUILDERS =====
+function sysBarSrcLeft(state){
+  const cls=state==='fail'?'ch-fail':state==='active'?'ch-active':'';
+  return '<div class="sys-inner"><span class="sys-label">传统直连</span>'
+    +'<div class="sys-node n-gray" id="lMall"><span class="n-icon">🏪</span><span class="n-name">客户商城</span></div>'
+    +'<div class="sys-connector"></div>'
+    +'<div class="sys-ch-row">'
+    +'<div class="sys-ch ch-zkh '+cls+'" id="lZKH">震坤行</div>'
+    +'<div class="sys-ch ch-jd '+cls+'" id="lJD">京东工业</div>'
+    +'<div class="sys-ch ch-xy '+cls+'" id="lXY">西域</div>'
+    +'<div class="sys-ch ch-1688 '+cls+'" id="l1688">1688</div>'
+    +'</div></div>';
+}
+function sysBarSrcRight(state,hasQTS){
+  const apiCls=state==='active'||state==='ok'?'n-active':'';
+  const chCls=state==='ok'?'ch-ok':state==='fail'?'ch-fail':'';
+  const qts=hasQTS?'<div class="sys-connector" id="rcQTSLine"></div><div class="sys-node n-green" id="rQTS"><span class="n-icon">👥</span><span class="n-name">QTS线下寻源</span></div>':'';
+  return '<div class="sys-inner"><span class="sys-label">物料管家增强</span>'
+    +'<div class="sys-node n-gray" id="rMall"><span class="n-icon">🏪</span><span class="n-name">客户商城</span></div>'
+    +'<div class="sys-connector" id="rcLine1"></div>'
+    +'<div class="sys-node n-glow '+apiCls+'" id="rAPI"><span class="n-icon">🧠</span><span class="n-name">物料管家API</span></div>'
+    +'<div class="sys-connector" id="rcLine2"></div>'
+    +'<div class="sys-ch-row">'
+    +'<div class="sys-ch ch-zkh '+chCls+'" id="rZKH">震坤行</div>'
+    +'<div class="sys-ch ch-jd '+chCls+'" id="rJD">京东工业</div>'
+    +'<div class="sys-ch ch-xy '+chCls+'" id="rXY">西域</div>'
+    +'<div class="sys-ch ch-1688 '+chCls+'" id="r1688">1688</div>'
+    +'</div>'+qts+'</div>';
+}
+function mallNav(keyword,filled){
+  const v=filled?' value="'+keyword+'"':'',cls=filled?'active':'';
+  return '<div class="mall-nav"><span class="mall-logo">采购商城</span><div class="mall-search"><input class="'+cls+'" placeholder="请输入物料名称..."'+v+' readonly id="mallInput"><button id="mallSearchBtn">搜索</button></div><div class="mall-user"></div></div>';
+}
+
+// ===== SCENES =====
+const SCENES=[
+  {id:'s1',title:'单品寻源',type:'split'},
+  {id:'s2',title:'批量寻源',type:'split'},
+  {id:'s3',title:'线下兜底',type:'split'},
+  {id:'s4',title:'价值总结',type:'full'}
+];
+
+// ===== SCENE 1: Single Item Sourcing (merged with pain story on left) =====
+function buildScene1(){
+  return '<div class="scene-split active" id="s1">'
+    +'<div class="half half-left" id="s1Left"><div class="col-mall"><div class="panel-hdr before">❌ 优化前</div><div class="panel-body" id="s1LBody"></div></div><div class="col-sys" id="s1LSys"></div></div>'
+    +'<div class="half half-right dimmed" id="s1Right"><div class="col-sys" id="s1RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 优化后</div><div class="panel-body" id="s1RBody"></div></div></div>'
+    +'<div class="action-overlay" id="s1ActionMid"><button class="action-btn blue" onclick="triggerRight()">查看优化方案 →</button></div>'
+    +'<div class="action-overlay" id="s1ActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>'
+    +'</div>';
+}
+async function playScene1Left(){
+  phase='playing-left';
+  setHTML('s1LSys',sysBarSrcLeft('idle'));
+  setHTML('s1LBody',mallNav('',false)+'<div class="result-area" id="s1LRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">等待搜索...</div></div>');
+  setHTML('s1RSys',sysBarSrcRight('idle',false));
+  setHTML('s1RBody',mallNav('',false)+'<div class="result-area"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">优化方案待命...</div></div>');
+  await delay(800);
+
+  // STEP 1: Type full keyword with spec
+  const input=document.querySelector('#s1LBody #mallInput');
+  const kw='离心泵 IH50-32-160';
+  if(input){
+    input.classList.add('active');
+    for(let i=0;i<kw.length;i++){await delay(150);input.value=kw.slice(0,i+1);}
+  }
+  await delay(700);
+
+  // STEP 2: Click search → loading
+  await animateCursor('#s1LBody #mallSearchBtn',()=>{
+    setHTML('s1LRes','<div style="padding:24px;text-align:center"><div class="loading-spinner"></div><div style="margin-top:8px;font-size:11px;color:#9ca3af">商城内搜索中...</div></div>');
+  });
+  await delay(1700);
+
+  // STEP 3: 0 results in mall + 外部寻源 button
+  setHTML('s1LRes','<div style="text-align:center;padding:24px"><div style="font-size:36px;margin-bottom:8px">🔍</div><div style="font-size:13px;font-weight:700;color:#6b7280">商城未找到相关商品</div><div style="font-size:11px;color:#9ca3af;margin-top:4px">需要转向外部渠道寻源</div><button id="s1ExtBtn" style="margin-top:18px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">🔍 在外部商城寻源</button></div>');
+  await delay(1300);
+
+  // STEP 4: Click 外部寻源
+  await animateCursor('#s1ExtBtn',()=>{});
+  await delay(600);
+
+  // STEP 5: Show transition state, gray particles to 4 channels
+  setHTML('s1LRes','<div style="text-align:center;padding:20px"><div style="font-size:12px;font-weight:700;color:#374151">正在向外部4个渠道发起寻源...</div><div style="font-size:11px;color:#9ca3af;margin-top:6px">震坤行 · 京东工业 · 西域 · 1688</div></div>');
+  setHTML('s1LSys',sysBarSrcLeft('active'));
+  await delay(300);
+  const container=$('s1Left');
+  const mallBtn=document.querySelector('#s1LBody #mallSearchBtn');
+  const chIds=['lZKH','lJD','lXY','l1688'];
+  for(let i=0;i<4;i++){const el=$(chIds[i]);if(el&&mallBtn)fireParticles(container,mallBtn,el,'rgba(220,220,220,.85)');}
+  await delay(2200);
+
+  // STEP 6: Channels fail → red particles back to result area
+  setHTML('s1LSys',sysBarSrcLeft('fail'));
+  await delay(500);
+  for(let i=0;i<4;i++){const el=$(chIds[i]);const res=$('s1LRes');if(el&&res)fireParticles(container,el,res,'#ef4444');}
+  await delay(1600);
+
+  // STEP 7: Messy result table
+  const items=[
+    {name:'工业排污泵 QW50',tag:'red',tagText:'✗不匹配'},
+    {name:'管道增压泵 ISG40',tag:'red',tagText:'✗不匹配'},
+    {name:'潜水排污泵 WQ',tag:'red',tagText:'✗不匹配'},
+    {name:'离心泵 IS50-32',tag:'yellow',tagText:'部分匹配'},
+    {name:'化工离心泵 IH',tag:'red',tagText:'✗不匹配'},
+    {name:'多级离心泵 D',tag:'red',tagText:'✗不匹配'},
+    {name:'管道离心泵 ISG',tag:'red',tagText:'✗不匹配'}
+  ];
+  let resHtml='<span class="result-badge err">外部4渠道返回 23条结果</span><table class="data-tbl"><thead><tr><th></th><th>商品名称</th><th>匹配度</th></tr></thead><tbody>';
+  items.forEach(it=>{resHtml+='<tr><td><img src="'+IMG+'valve.png" class="product-img"></td><td>'+it.name+'</td><td><span class="res-tag '+it.tag+'">'+it.tagText+'</span></td></tr>';});
+  resHtml+='</tbody></table>';
+  setHTML('s1LRes',resHtml);
+  await delay(2200);
+
+  // STEP 8: Pain badge
+  const res=$('s1LRes');
+  if(res){
+    res.innerHTML += '<div style="margin-top:10px;padding:12px;background:#fef2f2;border:2px solid #fca5a5;border-radius:8px;text-align:center;animation:fadeInUp .5s"><div style="font-size:14px;font-weight:800;color:#dc2626">⚠ 原始关键词缺乏规格属性</div><div style="font-size:12px;font-weight:700;color:#ef4444;margin-top:4px">仅 1 条部分匹配 · 匹配率 4%</div></div>';
+  }
+  await delay(3000);
+
+  phase='left-done';
+  const leftHalf=$('s1Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s1ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+}
+async function playScene1Right(){
+  phase='playing-right';
+  const overlay=$('s1ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s1Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s1RSys',sysBarSrcRight('idle',false));
+  setHTML('s1RBody',mallNav('',false)+'<div class="result-area" id="s1RRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">优化方案待命...</div></div>');
+  await delay(500);
+
+  // Type keyword (simple "离心泵") in right mall input
+  const input=document.querySelector('#s1RBody #mallInput');
+  const kw='离心泵';
+  if(input){input.classList.add('active');for(let i=0;i<kw.length;i++){await delay(150);input.value=kw.slice(0,i+1);}}
+  await delay(600);
+
+  await animateCursor('#s1RBody #mallSearchBtn',()=>{});
+  await delay(500);
+
+  // Step 1: blue particles from mall → API (within right panel)
+  const container=$('s1Right');
+  const mallBtn=document.querySelector('#s1RBody #mallSearchBtn');
+  let apiEl=$('rAPI');
+  if(mallBtn&&apiEl)fireParticles(container,mallBtn,apiEl,'#3b82f6');
+  setHTML('s1RSys',sysBarSrcRight('active',false));
+  apiEl=$('rAPI'); // RE-QUERY: previous reference is detached
+  await delay(1200);
+
+  // AI panel
+  setHTML('s1RRes','<div class="ai-panel" id="s1AIPanel"><div class="ai-title">🧠 物料管家梳理中</div><div id="s1AILines"></div></div><div id="s1RResults"></div>');
+  const panel=$('s1AIPanel');if(panel)panel.classList.add('show');
+  await delay(600);
+  const lines=[
+    {text:'原始输入："离心泵"',icon:'📝'},
+    {text:'↓ AI属性补全',icon:'🤖'},
+    {text:'类型：离心泵',icon:''},
+    {text:'型号：IH50-32-160',icon:''},
+    {text:'材质：304SS',icon:''},
+    {text:'流量：25m³/h',icon:''},
+    {text:'扬程：32m',icon:''},
+    {text:'↓ 编码映射',icon:'🔄'},
+    {text:'客户码 P-2851 → 国标 GB/T3216',icon:''},
+    {text:'✓ 梳理完成',icon:'✅'}
+  ];
+  const linesEl=$('s1AILines');
+  for(const l of lines){
+    if(linesEl){const div=document.createElement('div');div.className='ai-line';div.innerHTML=(l.icon?'<span>'+l.icon+'</span> ':'')+l.text;linesEl.appendChild(div);}
+    await delay(400);
+    const last=linesEl?.lastElementChild;if(last)last.classList.add('show');
+  }
+  await delay(900);
+
+  // Re-render sys bar to "ok" state, then RE-QUERY rAPI
+  setHTML('s1RSys',sysBarSrcRight('ok',false));
+  apiEl=$('rAPI'); // CRITICAL: re-query after replacement
+
+  // Step 2: green particles from API DOWN to 4 channels (all within right panel sys bar)
+  const chIds=['rZKH','rJD','rXY','r1688'];
+  for(let i=0;i<4;i++){
+    const ch=$(chIds[i]);
+    if(apiEl&&ch)fireParticles(container,apiEl,ch,'#22c55e');
+  }
+  await delay(1400);
+
+  // Step 3: green particles from each channel → mall results area (back into right panel mall)
+  const resArea=$('s1RResults');
+  if(resArea){
+    for(let i=0;i<4;i++){
+      const ch=$(chIds[i]);
+      if(ch)fireParticles(container,ch,resArea,'#22c55e');
+    }
+  }
+  await delay(1000);
+
+  setHTML('s1RResults','<div style="padding:0 12px"><span class="result-badge ok">精准命中 3 条结果</span><table class="data-tbl"><thead><tr><th></th><th>商品</th><th>匹配度</th></tr></thead><tbody><tr class="hl"><td><img src="'+IMG+'valve.png" class="product-img" style="border-color:#22c55e"></td><td>离心泵IH50-32-160（304SS）</td><td><span class="res-tag green">✓匹配度98%</span></td></tr><tr><td><img src="'+IMG+'valve.png" class="product-img"></td><td>离心泵IH50-32-160（316L）</td><td><span class="res-tag green">✓匹配度95%</span></td></tr><tr><td><img src="'+IMG+'valve.png" class="product-img"></td><td>离心泵等效替代型号</td><td><span class="res-tag green">✓匹配度91%</span></td></tr></tbody></table><div class="stat-note" style="background:#dcfce7;border:1px solid #86efac;color:#166534;margin-top:8px">精准命中3条，匹配率98%，零人工筛选</div></div>');
+  await delay(3000);
+  phase='scene-done';
+  const endOverlay=$('s1ActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 2: Batch + Multi-supplier =====
+function buildScene2(){
+  return '<div class="scene-split active" id="s2">'
+    +'<div class="half half-left" id="s2Left"><div class="col-mall"><div class="panel-hdr before">❌ 优化前</div><div class="panel-body" id="s2LBody"></div></div><div class="col-sys" id="s2LSys"></div></div>'
+    +'<div class="half half-right dimmed" id="s2Right"><div class="col-sys" id="s2RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 优化后</div><div class="panel-body" id="s2RBody"></div></div></div>'
+    +'<div class="action-overlay" id="s2ActionMid"><button class="action-btn blue" onclick="triggerRight()">查看优化方案 →</button></div>'
+    +'<div class="action-overlay" id="s2ActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>'
+    +'</div>';
+}
+const BATCH_DATA=[
+  {no:1,name:'离心泵',spec:'IH50-32-160',qty:'2台',img:'valve'},
+  {no:2,name:'变频器',spec:'FR-E740-3.7K',qty:'5台',img:'cable'},
+  {no:3,name:'钢板',spec:'Q235B 10mm',qty:'20吨',img:'expansion'},
+  {no:4,name:'安全帽',spec:'V型 ABS',qty:'50顶',img:'helmet'},
+  {no:5,name:'阀门',spec:'Z41H DN100',qty:'3台',img:'valve'},
+  {no:6,name:'特种陶瓷管',spec:'DN100 耐磨',qty:'10根',img:'expansion'},
+  {no:7,name:'密封垫片',spec:'DN50 耐油',qty:'100片',img:'washer'},
+  {no:8,name:'电缆',spec:'YJV 3×4',qty:'500m',img:'cable'}
+];
+function batchTableHTML(progress){
+  let h='<table class="data-tbl"><thead><tr><th>#</th><th>物料名称</th><th>规格型号</th><th>数量</th><th>状态</th></tr></thead><tbody>';
+  BATCH_DATA.forEach((d,i)=>{
+    const hl=i<progress?'':'';
+    let status='';
+    if(i<progress){
+      const r=Math.random();status=r>.6?'<span style="color:#16a34a">✅已找到</span>':r>.3?'<span style="color:#d97706">⏳寻源中</span>':'<span style="color:#dc2626">❌未找到</span>';
+    }
+    h+='<tr class="'+hl+'"><td>'+d.no+'</td><td><img src="'+IMG+d.img+'.png" class="product-img" style="width:24px;height:24px"> '+d.name+'</td><td>'+d.spec+'</td><td>'+d.qty+'</td><td>'+status+'</td></tr>';
+  });
+  h+='</tbody></table>';return h;
+}
+async function playScene2Left(){
+  phase='playing-left';
+  setHTML('s2LSys',sysBarSrcLeft('idle'));
+  setHTML('s2LBody','<div style="padding:12px"><div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px">📋 物料寻源清单（8条）</div><div style="max-height:calc(100% - 80px);overflow-y:auto">'+batchTableHTML(0)+'</div><div style="margin-top:8px;text-align:center"><button id="s2StartBtn" style="background:#3b82f6;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">开始寻源</button></div><div id="s2LProgress" style="margin-top:8px;opacity:0;transition:opacity .4s"><div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden"><div id="s2LBar" style="height:100%;background:#3b82f6;width:0;transition:width 6s ease-out"></div></div><div style="font-size:10px;color:#9ca3af;margin-top:4px" id="s2LProgText">处理中 0/8</div></div><div id="s2LResult" style="margin-top:8px"></div></div>');
+  await delay(800);
+  await animateCursor('#s2StartBtn',()=>{});
+  await delay(500);
+  const prog=$('s2LProgress');if(prog)prog.style.opacity='1';
+  const bar=$('s2LBar');if(bar)bar.style.width='27%';
+  const progText=$('s2LProgText');
+  let cnt=0;const iv=setInterval(()=>{cnt++;if(cnt>3)cnt=3;if(progText)progText.textContent='处理中 '+cnt+'/8...';if(cnt>=3)clearInterval(iv);},1200);animTimers.push(iv);
+  setHTML('s2LSys',sysBarSrcLeft('active'));
+  await delay(6000);
+  setHTML('s2LSys',sysBarSrcLeft('fail'));
+  setHTML('s2LResult','<div style="display:flex;gap:6px;margin-bottom:6px"><span style="background:#dcfce7;color:#166534;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700">✅ 已找到：3</span><span style="background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700">⏳ 寻源中：3</span><span style="background:#fecaca;color:#991b1b;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700">❌ 未找到：2</span></div><div class="stat-note" style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b">逐条人工核对，平均每条15分钟，8条需2小时</div>');
+  if(progText)progText.textContent='处理中 3/8... (卡住)';
+  await delay(2500);
+  phase='left-done';const leftHalf=$('s2Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+}
+async function playScene2Right(){
+  phase='playing-right';
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s2Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s2RSys',sysBarSrcRight('idle',false));
+  setHTML('s2RBody','<div style="padding:12px"><div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:8px">📋 物料寻源清单（8条）</div><div style="max-height:calc(100% - 100px);overflow-y:auto" id="s2RTable">'+batchTableHTML(0)+'</div><div style="margin-top:8px;text-align:center"><button id="s2RStartBtn" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">🧠 智能批量寻源</button></div><div id="s2RProgress" style="margin-top:8px;opacity:0;transition:opacity .4s"><div style="height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden"><div id="s2RBar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);width:0;transition:width 3s ease-out"></div></div><div style="font-size:10px;color:#6b7280;margin-top:4px" id="s2RProgText">批量梳理 0/8</div></div><div id="s2RResult"></div></div>');
+  await delay(700);
+  await animateCursor('#s2RStartBtn',()=>{});
+  await delay(500);
+  const container=$('s2Right');
+  const startBtn=$('s2RStartBtn');
+  let apiEl=$('rAPI');
+  if(startBtn&&apiEl)fireParticles(container,startBtn,apiEl,'#3b82f6');
+  setHTML('s2RSys',sysBarSrcRight('active',false));
+  apiEl=$('rAPI'); // RE-QUERY
+  await delay(900);
+  const prog=$('s2RProgress');if(prog)prog.style.opacity='1';
+  const bar=$('s2RBar');if(bar)bar.style.width='100%';
+  const progText=$('s2RProgText');let cnt=0;const iv=setInterval(()=>{cnt+=2;if(cnt>8)cnt=8;if(progText)progText.textContent='批量梳理 '+cnt+'/8'+(cnt>=8?' ✓':'');if(cnt>=8)clearInterval(iv);},220);animTimers.push(iv);
+  await delay(3300);
+  setHTML('s2RSys',sysBarSrcRight('ok',false));
+  apiEl=$('rAPI'); // RE-QUERY after sys bar replaced
+  // Green particles from API down to channels (all within right panel sys bar)
+  const chIds=['rZKH','rJD','rXY','r1688'];
+  for(let i=0;i<4;i++){
+    const ch=$(chIds[i]);
+    if(apiEl&&ch)fireParticles(container,apiEl,ch,'#22c55e');
+  }
+  await delay(1500);
+  setHTML('s2RResult','<div style="display:flex;gap:6px;margin-bottom:6px"><span style="background:#dcfce7;color:#166534;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700">✅ 已找到：6</span><span style="background:#fef3c7;color:#92400e;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700">⏳ 寻源中：1</span><span style="background:#fecaca;color:#991b1b;padding:4px 8px;border-radius:4px;font-size:10px;font-weight:700">❌ 未找到：1</span></div><div style="padding:6px 8px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:6px;font-size:10px;color:#1d4ed8;cursor:pointer;font-weight:600" id="s2Row1">▼ 离心泵 IH50-32-160 — 点击查看比价</div><div id="s2Compare" style="max-height:0;overflow:hidden;transition:max-height .5s"></div>');
+  await delay(1200);
+  await animateCursor('#s2Row1',()=>{
+    const cmp=$('s2Compare');
+    if(cmp){cmp.style.maxHeight='300px';
+    cmp.innerHTML='<div style="padding:8px;margin-top:4px;background:#fff;border:1px solid #e5e7eb;border-radius:8px"><div style="font-size:11px;font-weight:700;color:#1f2937;margin-bottom:6px">一品多商比价 — 离心泵 IH50-32-160</div><table class="compare-tbl"><thead><tr><th>供应商</th><th>单价</th><th>交期</th><th>库存</th><th>推荐</th></tr></thead><tbody><tr><td>震坤行</td><td>¥2,850</td><td>次日达</td><td>充足</td><td><span class="rec-tag green">最快</span></td></tr><tr class="hl"><td>京东工业</td><td>¥2,680</td><td>3日达</td><td>有货</td><td><span class="rec-tag orange">最优价</span></td></tr><tr><td>1688厂商</td><td>¥2,150</td><td>5-7日</td><td>预订</td><td><span class="rec-tag blue">厂价</span></td></tr><tr><td>西域商城</td><td>¥2,920</td><td>2日达</td><td>少量</td><td></td></tr></tbody></table></div><div class="stat-note" style="background:#dcfce7;border:1px solid #86efac;color:#166534;margin-top:6px">匹配率从33%→80%，寻源周期从3天→5分钟</div>';}
+  });
+  await delay(3000);
+  phase='scene-done';const endOverlay=$('s2ActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 3: QTS Offline Fallback =====
+function buildScene3(){
+  return '<div class="scene-split active" id="s3">'
+    +'<div class="half half-left" id="s3Left"><div class="col-mall"><div class="panel-hdr before">❌ 优化前</div><div class="panel-body" id="s3LBody"></div></div><div class="col-sys" id="s3LSys"></div></div>'
+    +'<div class="half half-right dimmed" id="s3Right"><div class="col-sys" id="s3RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 优化后</div><div class="panel-body" id="s3RBody"></div></div></div>'
+    +'<div class="action-overlay" id="s3ActionMid"><button class="action-btn blue" onclick="triggerRight()">查看优化方案 →</button></div>'
+    +'<div class="action-overlay" id="s3ActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>'
+    +'</div>';
+}
+async function playScene3Left(){
+  phase='playing-left';
+  setHTML('s3LSys',sysBarSrcLeft('idle'));
+  setHTML('s3LBody',mallNav('',false)+'<div class="result-area" id="s3LRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">等待搜索...</div></div>');
+  setHTML('s3RSys',sysBarSrcRight('idle',true));
+  setHTML('s3RBody',mallNav('',false)+'<div class="result-area"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">优化方案待命...</div></div>');
+  await delay(800);
+  const input=document.querySelector('#s3LBody #mallInput');const kw='特种陶瓷管 DN100 耐磨';
+  if(input){input.classList.add('active');for(let i=0;i<kw.length;i++){await delay(150);input.value=kw.slice(0,i+1);}}
+  await delay(600);
+  await animateCursor('#s3LBody #mallSearchBtn',()=>{});
+  await delay(500);
+  const container=$('s3Left');
+  const mallBtn=document.querySelector('#s3LBody #mallSearchBtn');
+  const chIds=['lZKH','lJD','lXY','l1688'];
+  for(let i=0;i<4;i++){const el=$(chIds[i]);if(el&&mallBtn)fireParticles(container,mallBtn,el,'rgba(180,180,180,.8)');}
+  setHTML('s3LSys',sysBarSrcLeft('active'));
+  await delay(1600);
+  setHTML('s3LSys',sysBarSrcLeft('fail'));
+  for(let i=0;i<4;i++){const el=$(chIds[i]);const res=$('s3LRes');if(el&&res)fireParticles(container,el,res,'#ef4444');}
+  await delay(900);
+  setHTML('s3LRes','<div style="text-align:center;padding:30px"><div style="font-size:40px;margin-bottom:8px">⚠️</div><div style="font-size:14px;font-weight:700;color:#dc2626">四大渠道均未找到相关商品</div><div style="font-size:11px;color:#9ca3af;margin-top:8px">线上无货源，采购员束手无策</div><div style="margin-top:16px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#991b1b;font-weight:600">项目停滞，无后续操作选项</div></div>');
+  await delay(2500);
+  phase='left-done';const leftHalf=$('s3Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s3ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+}
+async function playScene3Right(){
+  phase='playing-right';
+  const overlay=$('s3ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s3Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s3RSys',sysBarSrcRight('idle',true));
+  setHTML('s3RBody',mallNav('',false)+'<div class="result-area" id="s3RRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">优化方案待命...</div></div>');
+  await delay(500);
+  const input=document.querySelector('#s3RBody #mallInput');const kw='特种陶瓷管 DN100 耐磨';
+  if(input){input.classList.add('active');for(let i=0;i<kw.length;i++){await delay(150);input.value=kw.slice(0,i+1);}}
+  await delay(600);
+  await animateCursor('#s3RBody #mallSearchBtn',()=>{});
+  await delay(500);
+  const container=$('s3Right');
+  const mallBtn=document.querySelector('#s3RBody #mallSearchBtn');
+  let apiEl=$('rAPI');
+  if(mallBtn&&apiEl)fireParticles(container,mallBtn,apiEl,'#3b82f6');
+  setHTML('s3RSys',sysBarSrcRight('active',true));
+  apiEl=$('rAPI'); // RE-QUERY
+  await delay(900);
+  // AI quick combing
+  setHTML('s3RRes','<div class="ai-panel show" style="opacity:1;transform:none"><div class="ai-title">🧠 物料管家快速梳理</div><div style="font-size:11px;color:#374151;line-height:2"><div>原始输入：特种陶瓷管 DN100 耐磨</div><div>↓ AI补全：材质→氧化铝陶瓷 耐温→1200°C</div><div>✓ 属性梳理完成</div></div></div><div id="s3RResults"></div>');
+  await delay(1200);
+  // Particles to 4 channels → all fail
+  setHTML('s3RSys',sysBarSrcRight('ok',true));
+  apiEl=$('rAPI'); // RE-QUERY
+  const chIds=['rZKH','rJD','rXY','r1688'];
+  for(let i=0;i<4;i++){const ch=$(chIds[i]);if(apiEl&&ch)fireParticles(container,apiEl,ch,'#22c55e');}
+  await delay(1300);
+  // All channels fail
+  setHTML('s3RSys',sysBarSrcRight('fail',true));
+  apiEl=$('rAPI'); // RE-QUERY
+  const rResults=$('s3RResults');
+  if(rResults)rResults.innerHTML='<div style="text-align:center;padding:12px;color:#dc2626;font-size:12px;font-weight:600">⚠️ 四大线上渠道均未找到</div>';
+  await delay(1200);
+  // KEY TURN: particles to QTS (within right panel sys bar)
+  const qtsEl=$('rQTS');
+  if(apiEl&&qtsEl)fireParticles(container,apiEl,qtsEl,'#22c55e');
+  await delay(900);
+  if(qtsEl){qtsEl.classList.add('n-green-active');qtsEl.classList.remove('n-green');}
+  const qtsLine=$('rcQTSLine');if(qtsLine){qtsLine.style.background='rgba(34,197,94,.6)';qtsLine.style.boxShadow='0 0 8px rgba(34,197,94,.4)';}
+  // Show QTS panel
+  setHTML('s3RResults','<div class="qts-panel" id="s3QTSPanel"><div style="font-size:13px;font-weight:700;color:#166534;margin-bottom:8px">🚀 QTS线下寻源已启动</div><div class="qts-line">📋 需求单号：XY-20260522-001</div><div class="qts-line" id="s3Countdown">🕐 48h倒计时：47:45:30</div><div class="qts-line">👥 全国2000名销售已接单</div><div class="qts-line">📍 华东区已匹配3家供应商</div></div><div id="s3Quotes"></div>');
+  const qtsPanel=$('s3QTSPanel');if(qtsPanel)qtsPanel.classList.add('show');
+  await delay(1200);
+  // Countdown fast-forward (3.5s total)
+  const cdEl=$('s3Countdown');const times=['47:45:30','36:20:15','24:10:08','12:05:03','02:30:00','00:00:00 — ✓ 已完成'];
+  for(const t of times){await delay(600);if(cdEl)cdEl.innerHTML='🕐 48h倒计时：'+t;}
+  await delay(700);
+  // 3 quote cards (1s interval)
+  const quotes=[
+    {name:'华迅紧固件',star:'★4.8',price:'¥180/根',min:'50根起',time:'2-3天',tag:'品牌货',tagCls:'blue'},
+    {name:'鑫展旺工业',star:'★4.6',price:'¥155/根',min:'100根起',time:'5天',tag:'最低价',tagCls:'orange'},
+    {name:'瑞腾特材',star:'★4.7',price:'¥168/根',min:'30根起',time:'次日达',tag:'最快',tagCls:'green'}
+  ];
+  let qHtml='';
+  quotes.forEach((q,i)=>{qHtml+='<div class="quote-card" id="s3Q'+i+'" style="transition-delay:'+(i*200)+'ms"><div><div style="font-weight:700">'+q.name+' <span style="color:#f59e0b">'+q.star+'</span></div><div style="font-size:10px;color:#6b7280">'+q.min+' · '+q.time+'</div></div><div style="text-align:right"><div style="font-weight:800;color:#dc2626;font-size:13px">'+q.price+'</div><span class="rec-tag '+q.tagCls+'">'+q.tag+'</span></div></div>';});
+  setHTML('s3Quotes',qHtml+'<div style="text-align:center;margin:8px 12px"><button id="s3SelectBtn" style="background:#16a34a;color:#fff;border:none;padding:8px 20px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer">✓ 选定最优报价</button></div>');
+  for(let i=0;i<3;i++){await delay(1000);showEl('s3Q'+i);}
+  await delay(900);
+  await animateCursor('#s3SelectBtn',()=>{
+    const btn=$('s3SelectBtn');if(btn){btn.textContent='✓ 已选定';btn.style.background='#991b1b';}
+  });
+  await delay(700);
+  setHTML('s3RResults',$('s3RResults').innerHTML+'<div class="stat-note" style="background:#dcfce7;border:1px solid #86efac;color:#166534;margin-top:8px">线下覆盖率92%，48h内响应，零采购盲区</div>');
+  await delay(2200);
+  phase='scene-done';const endOverlay=$('s3ActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 4: Value Summary =====
+function buildScene4(){
+  return '<div class="scene-full active" id="s4">'
+    +'<h2 style="color:#f0f9ff;font-size:22px;font-weight:700;margin-bottom:6px">📊 寻源定品 · 价值总结</h2>'
+    +'<p style="color:rgba(255,255,255,.4);font-size:12px;margin-bottom:30px">物料管家寻源定品核心指标提升</p>'
+    +'<div class="metric-grid">'
+    +'<div class="metric-card" id="mc1"><div class="metric-icon">🎯</div><div class="metric-label">寻源匹配率</div><div class="metric-num" id="mv1">0%</div><div class="metric-change">↑ 143%</div></div>'
+    +'<div class="metric-card" id="mc2"><div class="metric-icon">⚡</div><div class="metric-label">寻源周期</div><div class="metric-num" id="mv2">0min</div><div class="metric-change">↑ 860倍</div></div>'
+    +'<div class="metric-card" id="mc3"><div class="metric-icon">🛡️</div><div class="metric-label">线下覆盖</div><div class="metric-num" id="mv3">0%</div><div class="metric-change">QTS兜底</div></div>'
+    +'<div class="metric-card" id="mc4"><div class="metric-icon">💰</div><div class="metric-label">年节省人工成本</div><div class="metric-num" id="mv4">¥0万</div><div class="metric-change">直接降本</div></div>'
+    +'</div>'
+    +'<div class="slogan" id="sloganText">物料管家 · 让寻源从此精准高效</div>'
+    +'</div>';
+}
+async function playScene4(){
+  phase='playing';await delay(600);
+  const cards=['mc1','mc2','mc3','mc4'];for(const id of cards){showEl(id);await delay(350);}await delay(500);
+  const metrics=[
+    {id:'mv1',target:80,prefix:'',suffix:'%'},
+    {id:'mv2',target:5,prefix:'',suffix:'min'},
+    {id:'mv3',target:92,prefix:'',suffix:'%'},
+    {id:'mv4',target:120,prefix:'¥',suffix:'万'}
+  ];
+  metrics.forEach(m=>{
+    let cur=0;const step=Math.max(1,Math.ceil(m.target/40));
+    const iv=setInterval(()=>{
+      cur=Math.min(cur+step,m.target);
+      const el=$(m.id);if(el)el.textContent=m.prefix+cur+m.suffix;
+      if(cur>=m.target)clearInterval(iv);
+    },75);animTimers.push(iv);
+  });
+  await delay(3000);showEl('sloganText');
+  phase='scene-done';updateUI();
+}
+
+// ===== CONTROLLER =====
+function loadScene(idx){
+  clearAnim();paused=false;phase='idle';scene=idx;
+  hideCursor();
+  const main=$('mainArea');
+  switch(idx){
+    case 0:main.innerHTML=buildScene1();playScene1Left();break;
+    case 1:main.innerHTML=buildScene2();playScene2Left();break;
+    case 2:main.innerHTML=buildScene3();playScene3Left();break;
+    case 3:main.innerHTML=buildScene4();playScene4();break;
+  }
+  updateUI();
+}
+function triggerRight(){
+  if(phase!=='left-done')return;
+  if(scene===0)playScene1Right();
+  else if(scene===1)playScene2Right();
+  else if(scene===2)playScene3Right();
+}
+function nextScene(){
+  if(scene<SCENES.length-1){
+    const next=scene+1;
+    const cur=$('mainArea').firstElementChild;
+    if(cur)cur.style.opacity='0';
+    setTimeout(()=>loadScene(next),500);
+  }
+}
+function prevScene(){if(scene>0)loadScene(scene-1);}
+function updateUI(){
+  $('sceneBadge').textContent='场景 '+(scene+1)+'/'+SCENES.length;
+  $('stepText').textContent='['+SCENES[scene].title+']';
+  let dotsHtml='';for(let i=0;i<SCENES.length;i++){const cls=i<scene?'done':i===scene?'active':'';dotsHtml+='<span class="dot '+cls+'"></span>';}
+  $('dots').innerHTML=dotsHtml;
+  let navHtml='';for(let i=0;i<SCENES.length;i++){
+    const cls=i===scene?'active':'';
+    navHtml+='<span class="nav-dot '+cls+'" onclick="navToScene('+i+')"><span class="nav-tip">'+SCENES[i].title+'</span></span>';
+  }
+  $('sceneNav').innerHTML=navHtml;
+}
+function navToScene(idx){if(idx>=0&&idx<SCENES.length){clearAnim();loadScene(idx);}}
+document.addEventListener('keydown',e=>{
+  if(e.code==='ArrowRight'){e.preventDefault();if(phase==='left-done')triggerRight();else if(phase==='scene-done')nextScene();}
+  if(e.code==='ArrowLeft'){e.preventDefault();prevScene();}
+  if(e.code==='Space'){e.preventDefault();}
+});
+window.addEventListener('DOMContentLoaded',()=>loadScene(0));
+</script>
+</body>
+</html>

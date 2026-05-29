@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI商品审核 - XX生物采购平台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 14px; }
+
+  .breadcrumb { padding: 12px 24px; font-size: 13px; color: #999; background: #fafafa; border-bottom: 1px solid #eee; }
+  .breadcrumb a { color: #666; text-decoration: none; }
+  .breadcrumb a:hover { color: #1890ff; text-decoration: underline; }
+  .breadcrumb .sep { margin: 0 8px; color: #ccc; }
+  .breadcrumb .current { color: #333; font-weight: 600; }
+
+  .title-card { background: white; margin: 16px 24px; border-radius: 8px; padding: 24px; border: 1px solid #e8e8e8; }
+  .title-card h1 { font-size: 20px; font-weight: 700; color: #333; margin-bottom: 4px; }
+  .title-card p { color: #999; font-size: 13px; }
+
+  /* 进度条 */
+  .steps { display: flex; align-items: center; margin-top: 20px; }
+  .step { display: flex; flex-direction: column; align-items: center; position: relative; }
+  .step-circle { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; }
+  .step-circle.done { background: #52c41a; color: white; }
+  .step-circle.active { background: white; border: 2.5px solid #1677ff; color: #1677ff; font-size: 14px; font-weight: 700; }
+  .step-label { font-size: 12px; margin-top: 6px; white-space: nowrap; }
+  .step-label.done { color: #52c41a; }
+  .step-label.active { color: #1677ff; font-weight: 600; }
+  .step-sub { font-size: 11px; color: #aaa; margin-top: 2px; }
+  .step-line { flex: 1; height: 2px; background: #52c41a; margin: 0 8px; margin-bottom: 24px; min-width: 60px; }
+
+  /* 来源横幅 */
+  .source-banner { background: white; margin: 0 24px 16px; border-radius: 8px; padding: 14px 20px; border: 1px solid #e8e8e8; display: flex; align-items: center; gap: 12px; font-size: 14px; color: #555; }
+  .source-badge { padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .badge-zkh { background: #52c41a; color: white; }
+  .badge-jd { background: #fa8c16; color: white; }
+  .badge-xiyu { background: #722ed1; color: white; }
+  .badge-ali1688 { background: #ff4d4f; color: white; }
+
+  /* 主体两列 */
+  .main-content { margin: 0 24px 80px; display: flex; gap: 20px; }
+  .left-col { flex: 0 0 40%; }
+  .right-col { flex: 1; }
+
+  .card { background: white; border-radius: 8px; border: 1px solid #e8e8e8; overflow: hidden; }
+  .card-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; font-weight: 600; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+
+  /* 左侧商品 */
+  .product-img-box { margin: 16px 20px; border: 1px solid #e8e8e8; border-radius: 6px; height: 200px; display: flex; align-items: center; justify-content: center; background: #fafafa; overflow: hidden; }
+  .product-img-box img { width: 100%; height: 200px; object-fit: contain; }
+  .img-placeholder { display: flex; flex-direction: column; align-items: center; gap: 8px; color: #bbb; }
+  .img-placeholder .letter { width: 64px; height: 64px; background: #e8e8e8; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 700; color: #999; }
+
+  .product-info { padding: 0 20px 20px; }
+  .product-name { font-size: 18px; font-weight: 700; color: #222; margin-bottom: 12px; line-height: 1.4; }
+  .info-row { display: flex; padding: 8px 0; border-bottom: 1px solid #f5f5f5; align-items: flex-start; gap: 8px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: #999; font-size: 13px; width: 68px; flex-shrink: 0; }
+  .info-val { color: #333; font-size: 13px; }
+  .price-val { color: #c00; font-size: 18px; font-weight: 700; }
+  .source-tag { padding: 2px 8px; border-radius: 3px; font-size: 11px; font-weight: 600; }
+
+  /* 右侧AI结果 */
+  .ai-loading { padding: 48px 20px; text-align: center; }
+  .spinner { width: 44px; height: 44px; border: 3px solid #e8e8e8; border-top: 3px solid #1677ff; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: #666; font-size: 14px; }
+  .loading-sub { color: #aaa; font-size: 12px; margin-top: 6px; }
+
+  .ai-result { display: none; }
+  .result-summary { padding: 16px 20px; background: #f6ffed; border-bottom: 1px solid #b7eb8f; display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .result-title { font-weight: 600; font-size: 15px; color: #333; margin-right: auto; }
+  .result-badge { padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+  .badge-pass { background: #52c41a; color: white; }
+  .badge-warn { background: #fa8c16; color: white; }
+  .badge-fail { background: #ff4d4f; color: white; }
+  .confidence { color: #52c41a; font-weight: 700; font-size: 14px; }
+  .result-meta { padding: 10px 20px; background: #fafafa; border-bottom: 1px solid #f0f0f0; display: flex; gap: 24px; font-size: 12px; color: #999; }
+
+  /* 检测项 */
+  .check-list { padding: 8px 0; }
+  .check-item { padding: 12px 20px 12px 16px; border-left: 3px solid transparent; margin: 0; border-bottom: 1px solid #fafafa; transition: background 0.2s; }
+  .check-item:hover { background: #fafafa; }
+  .check-item.pass { border-left-color: #52c41a; }
+  .check-item.warn { border-left-color: #fa8c16; }
+  .check-item.fail { border-left-color: #ff4d4f; }
+  .check-item-header { display: flex; align-items: center; gap: 8px; }
+  .check-icon { font-size: 16px; }
+  .check-name { font-weight: 600; font-size: 13px; color: #333; flex: 1; }
+  .check-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .cb-pass { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+  .cb-warn { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+  .cb-fail { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffa39e; }
+  .check-desc { font-size: 12px; color: #999; margin-top: 5px; padding-left: 24px; line-height: 1.6; }
+
+  /* AI摘要折叠 */
+  .summary-toggle { margin: 12px 20px; border: 1px solid #e8e8e8; border-radius: 6px; overflow: hidden; }
+  .summary-toggle-btn { padding: 12px 16px; background: #fafafa; cursor: pointer; font-size: 13px; font-weight: 600; color: #555; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+  .summary-toggle-btn:hover { background: #f0f0f0; }
+  .summary-body { display: none; padding: 14px 16px; background: white; font-size: 13px; line-height: 1.8; color: #555; }
+  .summary-body.open { display: block; }
+  .summary-row { margin-bottom: 8px; }
+  .summary-row strong { color: #333; }
+
+  /* 底部操作栏 */
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; z-index: 100; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
+  .bottom-tip { font-size: 13px; color: #666; }
+  .bottom-actions { display: flex; gap: 12px; }
+  .btn-reject { background: white; border: 1px solid #d9d9d9; color: #666; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .btn-reject:hover { border-color: #ff4d4f; color: #ff4d4f; }
+  .btn-confirm { background: #52c41a; color: white; border: none; padding: 10px 24px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-confirm:hover { background: #73d13d; }
+
+  /* 成功弹窗 */
+  .success-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center; z-index: 9999; }
+  .success-overlay.show { display: flex; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .success-card { background: white; border-radius: 12px; padding: 48px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: scaleIn 0.3s ease; }
+  @keyframes scaleIn { from { transform: scale(0.85); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .success-emoji { font-size: 64px; margin-bottom: 16px; }
+  .success-title { font-size: 22px; font-weight: 700; color: #333; margin-bottom: 8px; }
+  .success-desc { color: #666; margin-bottom: 16px; line-height: 1.7; font-size: 14px; }
+  .success-countdown { color: #999; font-size: 13px; }
+  .countdown-num { color: #1677ff; font-weight: 700; }
+
+  /* 演示提示条 */
+  .demo-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(30,30,30,0.92);
+    color: #fff;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 99999;
+    font-size: 13px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+  }
+  .demo-bar.collapsed {
+    transform: translateY(100%);
+  }
+  .demo-bar-title {
+    background: #1890ff;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+  .demo-hint {
+    background: rgba(255,255,255,0.12);
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin: 0 6px;
+    color: #8ecfff;
+    white-space: nowrap;
+  }
+  .demo-bar-right {
+    display: flex;
+    gap: 8px;
+  }
+  .demo-collapse-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #ccc;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .demo-expand-btn {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(30,30,30,0.85);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 99998;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header style="background:#c00;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div style="width:36px;height:36px;background:white;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#c00;font-size:18px;">生</div>
+    <div>
+      <div style="color:white;font-size:16px;font-weight:700;">XX生物采购平台</div>
+      <div style="color:rgba(255,255,255,0.8);font-size:11px;">企业级工业品一站式采购</div>
+    </div>
+  </div>
+  <nav style="display:flex;gap:4px;">
+    <a href="mall.html" style="color:rgba(255,255,255,0.85);text-decoration:none;padding:6px 12px;font-size:14px;">首页</a>
+    <span style="color:rgba(255,255,255,0.85);padding:6px 12px;font-size:14px;">采购中心</span>
+  </nav>
+</header>
+
+<!-- 面包屑 -->
+<nav class="breadcrumb">
+  <a href="mall.html">首页</a>
+  <span class="sep">›</span>
+  <a href="external-search.html">外部商城寻源</a>
+  <span class="sep">›</span>
+  <span class="current">商品审核</span>
+</nav>
+
+<!-- 标题区（进度条） -->
+<div class="title-card">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div>
+      <h1>🤖 AI商品审核</h1>
+      <p style="margin-top:4px;">自动对外部商品进行多维度合规检测，辅助人工审核决策</p>
+    </div>
+  </div>
+  <div class="steps" style="margin-top:24px;">
+    <div class="step">
+      <div class="step-circle done">✓</div>
+      <div class="step-label done">① 获取商品信息</div>
+      <div class="step-sub">已完成</div>
+    </div>
+    <div class="step-line"></div>
+    <div class="step">
+      <div class="step-circle done">✓</div>
+      <div class="step-label done">② AI多维度检测</div>
+      <div class="step-sub">完成（1.2秒）</div>
+    </div>
+    <div class="step-line" style="background:#e8e8e8;"></div>
+    <div class="step">
+      <div class="step-circle active">3</div>
+      <div class="step-label active">③ 人工确认上架</div>
+      <div class="step-sub" style="color:#1677ff;">进行中</div>
+    </div>
+  </div>
+</div>
+
+<!-- 来源横幅 -->
+<div class="source-banner" id="sourceBanner">
+  <span id="sourceBadge" class="source-badge badge-zkh">ZKH震坤行</span>
+  <span id="sourceTip">此商品来自 <strong id="sourceNameTxt"></strong>，已完成AI多维度检测，请确认是否上架到本商城</span>
+</div>
+
+<!-- 主体 -->
+<div class="main-content">
+  <!-- 左侧商品信息 -->
+  <div class="left-col">
+    <div class="card">
+      <div class="card-header">
+        <span>🏷️</span> 商品详情
+      </div>
+      <div class="product-img-box" id="productImgBox">
+        <!-- 动态填充 -->
+      </div>
+      <div class="product-info">
+        <div class="product-name" id="productName">—</div>
+        <div class="info-row">
+          <span class="info-label">品牌</span>
+          <span class="info-val" id="productBrand">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">规格型号</span>
+          <span class="info-val" id="productSpec">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">参考价格</span>
+          <span class="price-val" id="productPrice">—</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">来源渠道</span>
+          <span class="info-val" id="productSource">—</span>
+        </div>
+        <div class="info-row" style="border:none;">
+          <span class="info-label">供应标识</span>
+          <span id="supplyTag">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧AI检测 -->
+  <div class="right-col">
+    <div class="card">
+      <div class="card-header">
+        <span>🤖</span> AI检测结果
+        <div style="flex:1;"></div>
+        <div style="font-size:12px;color:#aaa;font-weight:400;">由大语言模型驱动</div>
+      </div>
+
+      <!-- 加载动画 -->
+      <div class="ai-loading" id="aiLoading">
+        <div class="spinner"></div>
+        <div class="loading-text">AI检测中，正在进行多维度分析...</div>
+        <div class="loading-sub">正在检测文本合规 · 品类匹配 · 价格异常 · 重复商品</div>
+      </div>
+
+      <!-- 结果面板 -->
+      <div class="ai-result" id="aiResult">
+        <div class="result-summary">
+          <span class="result-title">AI审核结果</span>
+          <span class="result-badge badge-pass">✅ 建议通过</span>
+          <span class="confidence">置信度：94%</span>
+        </div>
+        <div class="result-meta">
+          <span>⏱ 检测耗时：1.2秒</span>
+          <span id="detectTime">🕐 检测时间：—</span>
+        </div>
+        <div class="check-list">
+          <div class="check-item pass">
+            <div class="check-item-header">
+              <span class="check-icon">✅</span>
+              <span class="check-name">文本合规检测</span>
+              <span class="check-badge cb-pass">通过</span>
+            </div>
+            <div class="check-desc">商品名称及描述规范，未检测到违禁词或敏感信息</div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-item-header">
+              <span class="check-icon">✅</span>
+              <span class="check-name">品类校验</span>
+              <span class="check-badge cb-pass">通过</span>
+            </div>
+            <div class="check-desc">已自动匹配类目：紧固件 → 螺栓 → 六角螺栓（置信度 96%）</div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-item-header">
+              <span class="check-icon">✅</span>
+              <span class="check-name">参数规范校验</span>
+              <span class="check-badge cb-pass">通过</span>
+            </div>
+            <div class="check-desc">规格参数完整，符合行业规范标准（GB/T 5782-2016）</div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-item-header">
+              <span class="check-icon">✅</span>
+              <span class="check-name">图片合规检测</span>
+              <span class="check-badge cb-pass">通过</span>
+            </div>
+            <div class="check-desc">主图清晰，无水印遮挡，符合上架要求</div>
+          </div>
+          <div class="check-item warn">
+            <div class="check-item-header">
+              <span class="check-icon">⚠️</span>
+              <span class="check-name">价格异常检测</span>
+              <span class="check-badge cb-warn">警告</span>
+            </div>
+            <div class="check-desc" id="priceCheckDesc">当前价格 ¥—，略高于市场均价约 8%，建议人工核实</div>
+          </div>
+          <div class="check-item pass">
+            <div class="check-item-header">
+              <span class="check-icon">✅</span>
+              <span class="check-name">重复商品检测</span>
+              <span class="check-badge cb-pass">通过</span>
+            </div>
+            <div class="check-desc">已检索商城现有 24 件商品，未发现重复或高度相似商品</div>
+          </div>
+        </div>
+
+        <!-- AI摘要折叠 -->
+        <div class="summary-toggle">
+          <div class="summary-toggle-btn" id="summaryBtn" onclick="toggleSummary()">
+            <span>📋 AI分析摘要</span>
+            <span id="summaryArrow">▼</span>
+          </div>
+          <div class="summary-body" id="summaryBody">
+            <div class="summary-row"><strong>总体评估：</strong>商品信息完整，品类匹配准确，适合上架到本商城的紧固件类目。</div>
+            <div class="summary-row"><strong>价格建议：</strong>当前报价偏高，建议与供应商议价或考虑替代供应商。</div>
+            <div class="summary-row"><strong>推荐操作：</strong>上架并在商品描述中标注"参考采购价"，允许买家询价。</div>
+          </div>
+        </div>
+        <div style="height:12px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部操作栏 -->
+<div class="bottom-bar">
+  <div class="bottom-tip">ℹ️ AI建议通过，1处警告提示（价格偏高）</div>
+  <div class="bottom-actions">
+    <button class="btn-reject" onclick="history.back()">驳回，不上架</button>
+    <button class="btn-confirm" onclick="confirmListing()">✅ 忽略警告，确认上架</button>
+  </div>
+</div>
+
+<!-- 成功弹窗 -->
+<div class="success-overlay" id="successOverlay">
+  <div class="success-card">
+    <div class="success-emoji">✅</div>
+    <div class="success-title">商品已成功上架！</div>
+    <div class="success-desc" id="successDesc">商品已通过AI审核<br>即将返回商城首页...</div>
+    <div class="success-countdown">
+      <span class="countdown-num" id="countdownNum">3</span> 秒后自动跳转
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===== 图片映射表 =====
+  const PRODUCT_IMAGES = {
+    '螺栓': 'images/bolt.png',
+    '螺钉': 'images/inner_hex.png',
+    '内六角': 'images/inner_hex.png',
+    '螺母': 'images/oring.png',
+    '垫圈': 'images/washer.png',
+    '断路器': 'images/breaker.png',
+    '手套': 'images/gloves.png',
+    '面具': 'images/mask.png',
+    '口罩': 'images/mask.png',
+    '扳手': 'images/wrench.png',
+    '阀': 'images/valve.png',
+    '电缆': 'images/cable.png',
+    '钳形': 'images/wrench.png',
+    '清洗': 'images/cleaner.png',
+    '油': 'images/oil.png',
+    '管': 'images/expansion.png',
+    '头盔': 'images/helmet.png',
+    '安全帽': 'images/helmet.png',
+  };
+
+  function getProductImage(name, imgParam) {
+    if (imgParam && imgParam !== 'null' && imgParam !== 'undefined' && imgParam !== '') return imgParam;
+    for (const [keyword, url] of Object.entries(PRODUCT_IMAGES)) {
+      if (name && name.includes(keyword)) return url;
+    }
+    return 'images/bolt.png';
+  }
+
+  // ===== 解析 URL 参数 =====
+  const params = new URLSearchParams(location.search);
+  const source = params.get('source') || 'zkh';
+  const sourceName = params.get('sourceName') || '震坤行';
+  const name = decodeURIComponent(params.get('name') || '商品名称');
+  const brand = decodeURIComponent(params.get('brand') || '—');
+  const spec = decodeURIComponent(params.get('spec') || '—');
+  const price = decodeURIComponent(params.get('price') || '—');
+  const img = decodeURIComponent(params.get('img') || '');
+
+  // ===== 填充商品信息 =====
+  document.getElementById('productName').textContent = name;
+  document.getElementById('productBrand').textContent = brand;
+  document.getElementById('productSpec').textContent = spec;
+  document.getElementById('productPrice').textContent = price ? '¥' + price : '—';
+  document.getElementById('priceCheckDesc').textContent = '当前价格 ¥' + price + '，略高于市场均价约 8%，建议人工核实';
+
+  // 图片区域
+  const imgBox = document.getElementById('productImgBox');
+  const finalImg = getProductImage(name, img);
+  imgBox.innerHTML = '<img src="' + finalImg + '" alt="商品图片" style="width:100%;max-height:240px;object-fit:contain;background:#f9f9f9;border-radius:8px;" onerror="this.style.display=\'none\'">'; 
+
+  // 来源标识
+  const sourceMap = {
+    zkh: { badgeClass: 'badge-zkh', badgeText: 'ZKH震坤行', tagText: '震坤行官方供应', tagStyle: 'background:#f6ffed;color:#52c41a;border:1px solid #b7eb8f;' },
+    jd: { badgeClass: 'badge-jd', badgeText: '京东工业', tagText: '京东工业自营', tagStyle: 'background:#fff7e6;color:#fa8c16;border:1px solid #ffd591;' },
+    xiyu: { badgeClass: 'badge-xiyu', badgeText: '西域', tagText: '西域自营', tagStyle: 'background:#f9f0ff;color:#722ed1;border:1px solid #d3adf7;' },
+    ali1688: { badgeClass: 'badge-ali1688', badgeText: '1688', tagText: '1688认证', tagStyle: 'background:#fff2f0;color:#ff4d4f;border:1px solid #ffa39e;' },
+  };
+  const sInfo = sourceMap[source] || sourceMap['zkh'];
+  document.getElementById('sourceBadge').className = 'source-badge ' + sInfo.badgeClass;
+  document.getElementById('sourceBadge').textContent = sInfo.badgeText;
+  document.getElementById('sourceNameTxt').textContent = sourceName;
+  document.getElementById('productSource').innerHTML = '<span class="source-badge ' + sInfo.badgeClass + '" style="font-size:12px;padding:2px 8px;">' + sInfo.badgeText + '</span>';
+  document.getElementById('supplyTag').innerHTML = '<span class="source-tag" style="' + sInfo.tagStyle + 'padding:2px 8px;border-radius:3px;font-size:12px;font-weight:600;">' + sInfo.tagText + '</span>';
+
+  // ===== AI检测加载动画 =====
+  setTimeout(function() {
+    document.getElementById('aiLoading').style.display = 'none';
+    document.getElementById('aiResult').style.display = 'block';
+    // 动画出现
+    document.getElementById('aiResult').style.animation = 'fadeIn 0.4s ease';
+    // 填充检测时间
+    const now = new Date();
+    const timeStr = now.getFullYear() + '-' + pad(now.getMonth()+1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+    document.getElementById('detectTime').textContent = '🕐 检测时间：' + timeStr;
+  }, 1500);
+
+  function pad(n) { return n < 10 ? '0' + n : n; }
+
+  // ===== 折叠摘要 =====
+  function toggleSummary() {
+    const body = document.getElementById('summaryBody');
+    const arrow = document.getElementById('summaryArrow');
+    body.classList.toggle('open');
+    arrow.textContent = body.classList.contains('open') ? '▲' : '▼';
+  }
+
+  // ===== 推断商品类目 =====
+  function inferCat(name) {
+    if (/螺栓|螺钉|螺母|垫圈/.test(name)) return '紧固件';
+    if (/断路器|开关|电缆|绝缘/.test(name)) return '电气电工';
+    if (/手套|面具|口罩|防护|安全帽|头盔/.test(name)) return '劳保防护';
+    if (/阀|管/.test(name)) return '管阀';
+    if (/润滑|油脂/.test(name)) return '润滑油脂';
+    if (/密封|O型/.test(name)) return '密封件';
+    if (/清洗/.test(name)) return '清洁用品';
+    if (/仪|仪表|钳形|流量计/.test(name)) return '仪器仪表';
+    return '五金工具';
+  }
+
+  // ===== 确认上架 =====
+  function confirmListing() {
+    // 构造新商品对象并存入 localStorage
+    const newProduct = {
+      id: Date.now(),
+      name: name,
+      cat: inferCat(name),
+      cat2: inferCat(name),
+      cat3: inferCat(name),
+      brand: brand !== '—' ? brand : '外部引入',
+      img: getProductImage(name, img),
+      unit: '个',
+      badge: '已标准化',
+      isNew: true,
+      source: source,
+      listedAt: new Date().toISOString(),
+      suppliers: [{
+        name: sourceName || 'ZKH震坤行',
+        tags: ['最优价'],
+        price: parseFloat(price) || 0,
+        delivery: '次日达',
+        stock: 'in',
+        stockText: '库存充足',
+        detailUrl: 'supplier-detail.html?s=external&pid=0'
+      }]
+    };
+
+    const listed = JSON.parse(localStorage.getItem('listedProducts') || '[]');
+    // 按 name 去重
+    const exists = listed.findIndex(p => p.name === newProduct.name);
+    if (exists !== -1) listed.splice(exists, 1);
+    listed.unshift(newProduct);
+    localStorage.setItem('listedProducts', JSON.stringify(listed));
+
+    document.getElementById('successDesc').innerHTML = '『' + name + '』已通过AI审核<br>即将返回商城首页...';
+    const overlay = document.getElementById('successOverlay');
+    overlay.classList.add('show');
+    let sec = 3;
+    const timer = setInterval(function() {
+      sec--;
+      document.getElementById('countdownNum').textContent = sec;
+      if (sec <= 0) {
+        clearInterval(timer);
+        location.href = 'mall.html?newproduct=1&name=' + encodeURIComponent(name);
+      }
+    }, 1000);
+  }
+
+  // ===== 演示提示条 =====
+  function toggleDemoBar() {
+    const bar = document.querySelector('.demo-bar');
+    const btn = document.querySelector('.demo-expand-btn');
+    bar.classList.toggle('collapsed');
+    btn.style.display = bar.classList.contains('collapsed') ? 'block' : 'none';
+  }
+</script>
+
+<!-- 演示提示条 -->
+<div class="demo-bar">
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+    <span class="demo-bar-title">演示提示</span>
+    <span class="demo-hint">1. 等待1.5秒AI自动完成6维检测</span>
+    <span class="demo-hint">2. 查看各维度检测详情（绿色通过/红色警告）</span>
+    <span class="demo-hint">3. 点击"确认上架"→写入商城并跳转首页</span>
+  </div>
+  <div class="demo-bar-right">
+    <button class="demo-collapse-btn" onclick="toggleDemoBar()">收起 ▼</button>
+  </div>
+</div>
+<button class="demo-expand-btn" onclick="toggleDemoBar()">📋 演示提示</button>
+
+</body>
+</html>

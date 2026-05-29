@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物料梳理 - XX生物采购平台</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif; background: #f5f5f5; color: #333; font-size: 14px; }
+
+  .breadcrumb { padding: 12px 24px; font-size: 13px; color: #999; background: #fafafa; border-bottom: 1px solid #eee; }
+  .breadcrumb a { color: #666; text-decoration: none; }
+  .breadcrumb a:hover { color: #1890ff; text-decoration: underline; }
+  .breadcrumb .sep { margin: 0 8px; color: #ccc; }
+  .breadcrumb .current { color: #333; font-weight: 600; }
+
+  /* 标题卡片 */
+  .title-card { background: white; margin: 16px 24px 0; border-radius: 8px; padding: 24px; border: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+  .title-left h1 { font-size: 22px; font-weight: 700; color: #333; margin-bottom: 6px; }
+  .title-left p { color: #999; font-size: 13px; line-height: 1.6; max-width: 600px; }
+  .title-actions { display: flex; gap: 10px; }
+  .btn-primary { background: #1677ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-primary:hover { background: #4096ff; }
+  .btn-default { background: white; color: #555; border: 1px solid #d9d9d9; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .btn-default:hover { border-color: #1677ff; color: #1677ff; }
+
+  /* 统计卡片 */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 16px 24px 0; }
+  .stat-card { background: white; border-radius: 8px; border: 1px solid #e8e8e8; padding: 18px 20px; cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden; }
+  .stat-card:hover { border-color: #1677ff; box-shadow: 0 4px 12px rgba(22,119,255,0.12); transform: translateY(-2px); }
+  .stat-card.active { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.2); }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 8px 8px 0 0; }
+  .stat-card.orange::before { background: #fa8c16; }
+  .stat-card.green::before { background: #52c41a; }
+  .stat-card.blue::before { background: #1677ff; }
+  .stat-card.purple::before { background: #722ed1; }
+  .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .stat-label { font-size: 13px; color: #888; }
+  .stat-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .stat-icon.orange { background: #fff7e6; }
+  .stat-icon.green { background: #f6ffed; }
+  .stat-icon.blue { background: #e6f4ff; }
+  .stat-icon.purple { background: #f9f0ff; }
+  .stat-num { font-size: 30px; font-weight: 800; line-height: 1; }
+  .stat-num.orange { color: #fa8c16; }
+  .stat-num.green { color: #52c41a; }
+  .stat-num.blue { color: #1677ff; }
+  .stat-num.purple { color: #722ed1; }
+  .stat-unit { font-size: 13px; color: #aaa; margin-left: 4px; }
+
+  /* 进度提示 */
+  .progress-bar-card { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px; margin: 14px 24px 0; padding: 14px 20px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .progress-label { color: #595959; font-size: 13px; font-weight: 600; white-space: nowrap; }
+  .progress-info { color: #595959; font-size: 13px; white-space: nowrap; }
+  .progress-track { flex: 1; min-width: 120px; max-width: 240px; height: 8px; background: #e8e8e8; border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #1677ff, #69b1ff); border-radius: 4px; animation: progressAnim 2s ease-in-out infinite alternate; }
+  @keyframes progressAnim { from { opacity: 0.8; } to { opacity: 1; } }
+  .progress-time { font-size: 12px; color: #999; }
+
+  /* 主体两列 */
+  .body-wrap { display: flex; gap: 16px; margin: 14px 24px 80px; }
+  .list-col { flex: 0 0 65%; min-width: 0; }
+  .detail-col { flex: 1; min-width: 0; }
+
+  /* 列表工具栏 */
+  .list-toolbar { background: white; border: 1px solid #e8e8e8; border-radius: 8px 8px 0 0; padding: 12px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #f0f0f0; }
+  .search-input { flex: 1; min-width: 160px; height: 34px; border: 1px solid #d9d9d9; border-radius: 6px; padding: 0 12px; font-size: 13px; outline: none; transition: border 0.2s; }
+  .search-input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+  .filter-select { height: 34px; border: 1px solid #d9d9d9; border-radius: 6px; padding: 0 10px; font-size: 13px; color: #555; outline: none; cursor: pointer; background: white; }
+  .toolbar-btn { height: 34px; padding: 0 14px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+  .toolbar-btn.default { background: white; border: 1px solid #d9d9d9; color: #555; }
+  .toolbar-btn.default:hover { border-color: #1677ff; color: #1677ff; }
+
+  /* 表格 */
+  .list-table-wrap { background: white; border: 1px solid #e8e8e8; border-top: none; border-radius: 0 0 8px 8px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead tr { background: #fafafa; }
+  th { padding: 10px 12px; font-size: 12px; font-weight: 600; color: #666; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; }
+  tbody tr { cursor: pointer; transition: background 0.15s; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+  tbody tr:hover { background: #e6f4ff !important; }
+  tbody tr.active-row { background: #e6f4ff !important; border-left: 3px solid #1677ff; }
+  td { padding: 10px 12px; font-size: 13px; color: #333; border-bottom: 1px solid #f5f5f5; vertical-align: middle; }
+  td.hidden-row { display: none; }
+
+  /* 置信度颜色 */
+  .conf-high { color: #52c41a; font-weight: 700; }
+  .conf-mid { color: #fa8c16; font-weight: 700; }
+  .conf-low { color: #ff4d4f; font-weight: 700; }
+
+  /* 状态badge */
+  .status-badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
+  .sb-pending { background: #fffbe6; color: #d48806; border: 1px solid #ffe58f; }
+  .sb-doing { background: #e6f4ff; color: #1677ff; border: 1px solid #91caff; }
+  .sb-wait { background: #f5f5f5; color: #8c8c8c; border: 1px solid #d9d9d9; }
+  .sb-done { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+
+  /* 操作按钮 */
+  .action-btn { padding: 3px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; border: 1px solid; transition: all 0.15s; margin-right: 4px; }
+  .action-btn.confirm { background: #f6ffed; color: #52c41a; border-color: #b7eb8f; }
+  .action-btn.confirm:hover { background: #52c41a; color: white; }
+  .action-btn.view { background: #e6f4ff; color: #1677ff; border-color: #91caff; }
+  .action-btn.view:hover { background: #1677ff; color: white; }
+  .action-btn.ai { background: #fff7e6; color: #fa8c16; border-color: #ffd591; }
+  .action-btn.ai:hover { background: #fa8c16; color: white; }
+
+  /* 右侧详情 */
+  .detail-panel { background: white; border: 1px solid #e8e8e8; border-radius: 8px; height: fit-content; position: sticky; top: 16px; }
+  .detail-empty { padding: 60px 20px; text-align: center; color: #bbb; font-size: 14px; }
+  .detail-empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .detail-content { display: none; }
+  .detail-header { padding: 16px 20px; border-bottom: 1px solid #f0f0f0; font-weight: 700; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+  .detail-section { padding: 14px 20px; border-bottom: 1px solid #f5f5f5; }
+  .section-title { font-size: 12px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #f0f0f0; }
+  .detail-row { display: flex; gap: 8px; margin-bottom: 7px; font-size: 13px; }
+  .detail-key { color: #999; width: 72px; flex-shrink: 0; }
+  .detail-val { color: #333; line-height: 1.5; }
+  .ai-desc { background: #f6f8ff; border-left: 3px solid #1677ff; padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 12px; color: #555; line-height: 1.7; margin-top: 6px; }
+  .attr-tag { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; background: #f5f5f5; border-radius: 4px; font-size: 12px; color: #555; margin: 3px 3px 3px 0; }
+  .attr-ai { font-size: 10px; color: #1677ff; background: #e6f4ff; padding: 1px 4px; border-radius: 3px; }
+
+  /* 行业库匹配 */
+  .match-item { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid #e8e8e8; border-radius: 6px; margin-bottom: 6px; font-size: 12px; }
+  .match-score { font-weight: 700; color: #52c41a; min-width: 50px; }
+  .match-score.mid { color: #fa8c16; }
+
+  /* SKU卡片 */
+  .sku-card { border: 1px solid #e8e8e8; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; transition: all 0.2s; }
+  .sku-card:hover { border-color: #1677ff; box-shadow: 0 2px 8px rgba(22,119,255,0.1); }
+  .sku-name { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 4px; }
+  .sku-info { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .sku-price { color: #c00; font-weight: 700; font-size: 14px; }
+  .sku-supplier { font-size: 11px; color: #888; }
+  .sku-btn { padding: 3px 8px; background: #1677ff; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer; white-space: nowrap; }
+  .sku-btn:hover { background: #4096ff; }
+
+  /* 底部操作栏 */
+  .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #eee; padding: 14px 24px; display: flex; justify-content: flex-end; gap: 12px; align-items: center; z-index: 100; box-shadow: 0 -4px 12px rgba(0,0,0,0.06); }
+  .btn-success { background: #52c41a; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-success:hover { background: #73d13d; }
+  .btn-export { background: white; border: 1px solid #d9d9d9; color: #555; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+  .btn-export:hover { border-color: #1677ff; color: #1677ff; }
+  .btn-back { background: #c00; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+  .btn-back:hover { background: #e00; }
+
+  /* 筛选高亮 */
+  .filter-active { outline: 2px solid #1677ff; outline-offset: 2px; }
+
+  /* 演示提示条 */
+  .demo-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(30,30,30,0.92);
+    color: #fff;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 99999;
+    font-size: 13px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+    transition: transform 0.3s;
+  }
+  .demo-bar.collapsed {
+    transform: translateY(100%);
+  }
+  .demo-bar-title {
+    background: #1890ff;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-right: 16px;
+    white-space: nowrap;
+  }
+  .demo-hint {
+    background: rgba(255,255,255,0.12);
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin: 0 6px;
+    color: #8ecfff;
+    white-space: nowrap;
+  }
+  .demo-bar-right {
+    display: flex;
+    gap: 8px;
+  }
+  .demo-collapse-btn {
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #ccc;
+    padding: 4px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .demo-expand-btn {
+    position: fixed;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(30,30,30,0.85);
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    z-index: 99998;
+    display: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header style="background:#c00;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;">
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div style="width:36px;height:36px;background:white;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:900;color:#c00;font-size:18px;">生</div>
+    <div>
+      <div style="color:white;font-size:16px;font-weight:700;">XX生物采购平台</div>
+      <div style="color:rgba(255,255,255,0.8);font-size:11px;">企业级工业品一站式采购</div>
+    </div>
+  </div>
+  <nav style="display:flex;gap:4px;">
+    <a href="mall.html" style="color:rgba(255,255,255,0.85);text-decoration:none;padding:6px 12px;font-size:14px;">首页</a>
+    <span style="color:rgba(255,255,255,0.85);padding:6px 12px;font-size:14px;">采购中心</span>
+  </nav>
+</header>
+
+<!-- 面包屑 -->
+<nav class="breadcrumb">
+  <a href="mall.html">首页</a>
+  <span class="sep">›</span>
+  <span class="current">物料梳理</span>
+</nav>
+
+<!-- 标题区 -->
+<div class="title-card">
+  <div class="title-left">
+    <h1>📦 物料梳理</h1>
+    <p>将企业现有物料与震坤行行业标准库对照映射，提升搜索准确率和采购效率</p>
+  </div>
+  <div class="title-actions">
+    <button class="btn-primary" onclick="alert('批量梳理功能：将上传企业物料清单，AI将自动进行标准化处理')">🚀 开始批量梳理</button>
+    <button class="btn-default" onclick="alert('示例模板已生成，正在下载...')">📥 下载示例模板</button>
+  </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="stats-row">
+  <div class="stat-card orange" id="card-pending" onclick="filterByStatus('待确认', this)">
+    <div class="stat-header">
+      <span class="stat-label">待梳理</span>
+      <div class="stat-icon orange">⏳</div>
+    </div>
+    <div><span class="stat-num orange" id="count-pending">23</span><span class="stat-unit">个</span></div>
+  </div>
+  <div class="stat-card green" id="card-done" onclick="filterByStatus('已标准化', this)">
+    <div class="stat-header">
+      <span class="stat-label">已标准化</span>
+      <div class="stat-icon green">✅</div>
+    </div>
+    <div><span class="stat-num green" id="count-done">147</span><span class="stat-unit">个</span></div>
+  </div>
+  <div class="stat-card blue" id="card-doing" onclick="filterByStatus('梳理中', this)">
+    <div class="stat-header">
+      <span class="stat-label">梳理中</span>
+      <div class="stat-icon blue"><span class="spin">⚙️</span></div>
+    </div>
+    <div><span class="stat-num blue" id="count-doing">5</span><span class="stat-unit">个</span></div>
+  </div>
+  <div class="stat-card purple" id="card-monthly" onclick="alert('本月共完成 31 个物料标准化，较上月提升 12%')">
+    <div class="stat-header">
+      <span class="stat-label">本月完成</span>
+      <div class="stat-icon purple">📈</div>
+    </div>
+    <div><span class="stat-num purple">31</span><span class="stat-unit">个</span></div>
+  </div>
+</div>
+
+<!-- AI进度提示 -->
+<div class="progress-bar-card">
+  <span style="font-size:18px;">🤖</span>
+  <span class="progress-label">AI正在后台梳理中...</span>
+  <span class="progress-info">已处理 78/175 个物料（44%）</span>
+  <div class="progress-track">
+    <div class="progress-fill" style="width:44%;"></div>
+  </div>
+  <span class="progress-time">预计完成时间：约 15 分钟</span>
+</div>
+
+<!-- 主体 -->
+<div class="body-wrap">
+  <!-- 左侧列表 -->
+  <div class="list-col">
+    <div class="list-toolbar">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 搜索物料名称..." oninput="filterTable()">
+      <select class="filter-select" id="statusFilter" onchange="filterTable()">
+        <option value="">全部状态</option>
+        <option value="待确认">待确认</option>
+        <option value="梳理中">梳理中</option>
+        <option value="待梳理">待梳理</option>
+        <option value="已标准化">已标准化</option>
+      </select>
+      <button class="toolbar-btn default" onclick="alert('报告已生成，正在下载...')">📊 导出报告</button>
+      <button class="toolbar-btn default" onclick="batchConfirm()">✅ 批量确认</button>
+    </div>
+    <div class="list-table-wrap">
+      <table id="materialTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>原始物料名称</th>
+            <th>AI标准名称</th>
+            <th>标准类目</th>
+            <th>置信度</th>
+            <th>推荐SKU</th>
+            <th>状态</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- 动态生成 -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 右侧详情 -->
+  <div class="detail-col">
+    <div class="detail-panel" id="detailPanel">
+      <div class="detail-empty" id="detailEmpty">
+        <div class="detail-empty-icon">🔍</div>
+        <div>点击左侧物料查看详情</div>
+        <div style="font-size:12px;margin-top:6px;color:#ccc;">AI已分析物料标准属性及匹配信息</div>
+      </div>
+      <div class="detail-content" id="detailContent">
+        <!-- 动态内容 -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 底部操作栏 -->
+<div class="bottom-bar">
+  <button class="btn-success" onclick="batchConfirm()">✅ 批量确认已标准化</button>
+  <button class="btn-export" onclick="alert('报告已生成，正在下载...')">📊 导出梳理报告</button>
+  <button class="btn-back" onclick="location.href='mall.html'">← 返回商城</button>
+</div>
+
+<script>
+// ===== 数据源 =====
+var materials = [
+  {
+    id: 1, raw: 'M8螺栓Q235', std: 'M8六角螺栓 Q235钢 8.8级',
+    category: '紧固件>螺栓>六角螺栓', conf: 92, sku: 3, status: '待确认',
+    detail: {
+      source: '企业采购系统导入', importTime: '2026-05-10',
+      aiDesc: '原始名称"Q235"为材质信息，规格"M8"为螺纹规格，综合判断为8.8级六角螺栓',
+      attrs: [{ name: '材质', val: 'Q235碳钢', ai: true }, { name: '强度等级', val: '8.8级', ai: true }, { name: '表面处理', val: '镀锌', ai: true }, { name: '标准号', val: 'GB/T 5782-2016', ai: false }],
+      matches: [{ score: 92, name: 'M8×30六角螺栓 Q235 8.8级' }, { score: 88, name: 'M8×25六角螺栓 Q235 8.8级' }, { score: 85, name: 'M8×40六角螺栓 Q235 8.8级' }],
+      skus: [{ name: '晋亿实业 M8×30六角螺栓', price: '¥0.18/个', supplier: 'ZKH震坤行' }, { name: '旭升紧固 M8×30六角螺栓', price: '¥0.16/个', supplier: '制造商直供' }, { name: '国标M8六角螺栓', price: '¥0.14/个', supplier: '认证经销商' }]
+    }
+  },
+  {
+    id: 2, raw: '电缆线3×4', std: '铜芯电力电缆 3×4mm²',
+    category: '电气>电线>动力电缆', conf: 87, sku: 5, status: '待确认',
+    detail: {
+      source: '企业采购系统导入', importTime: '2026-05-11',
+      aiDesc: '规格"3×4"表示3芯4平方毫米，结合常见用途判断为铜芯动力电缆',
+      attrs: [{ name: '导体材质', val: '铜芯', ai: true }, { name: '截面积', val: '4mm²', ai: false }, { name: '芯数', val: '3芯', ai: false }, { name: '绝缘材质', val: '聚氯乙烯', ai: true }],
+      matches: [{ score: 87, name: '铜芯电力电缆 VV 3×4mm²' }, { score: 82, name: '铜芯电力电缆 YJV 3×4mm²' }, { score: 79, name: '铜芯软电缆 RVV 3×4mm²' }],
+      skus: [{ name: '远东电缆 VV 3×4mm²', price: '¥28.5/米', supplier: 'ZKH震坤行' }, { name: '中天科技 YJV 3×4mm²', price: '¥32.0/米', supplier: '制造商直供' }, { name: '通用型铜芯电缆 3×4', price: '¥25.8/米', supplier: '认证经销商' }]
+    }
+  },
+  {
+    id: 3, raw: '正泰断路器C16', std: '正泰断路器 NB1-63 C16A 1P',
+    category: '电气>开关电器>断路器', conf: 95, sku: 2, status: '待确认',
+    detail: {
+      source: 'ERP系统同步', importTime: '2026-05-12',
+      aiDesc: '"正泰"为品牌，"C16"为额定电流16A C型曲线，自动匹配主流型号NB1-63系列',
+      attrs: [{ name: '品牌', val: '正泰', ai: false }, { name: '额定电流', val: '16A', ai: false }, { name: '极数', val: '1P', ai: true }, { name: '脱扣特性', val: 'C型', ai: false }],
+      matches: [{ score: 95, name: '正泰 NB1-63 C16A 1P 断路器' }, { score: 88, name: '正泰 DZ47-63 C16A 1P 断路器' }, { score: 72, name: '正泰 NB1-63H C16A 1P 断路器' }],
+      skus: [{ name: '正泰NB1-63 C16A 1P', price: '¥18.5/个', supplier: 'ZKH震坤行' }, { name: '正泰DZ47-63 C16A', price: '¥15.8/个', supplier: '品牌授权商' }]
+    }
+  },
+  {
+    id: 4, raw: '劳保手套L码', std: '丁腈涂层防护手套 L码',
+    category: '劳保>手部防护>涂层手套', conf: 78, sku: 8, status: '待确认',
+    detail: {
+      source: '企业采购系统导入', importTime: '2026-05-10',
+      aiDesc: '"劳保手套"类目宽泛，AI根据常见工业场景推断为丁腈涂层手套，置信度偏低建议人工确认材质',
+      attrs: [{ name: '涂层材质', val: '丁腈橡胶', ai: true }, { name: '尺码', val: 'L码', ai: false }, { name: '防护等级', val: 'EN388', ai: true }, { name: '基材', val: '尼龙', ai: true }],
+      matches: [{ score: 78, name: '丁腈涂层手套 L码 EN388' }, { score: 71, name: 'PU涂层防护手套 L码' }, { score: 68, name: '乳胶涂层手套 L码' }],
+      skus: [{ name: '星宇N510丁腈涂层手套L', price: '¥3.8/双', supplier: 'ZKH震坤行' }, { name: '霍尼韦尔丁腈手套L', price: '¥12.5/双', supplier: '品牌授权商' }]
+    }
+  },
+  {
+    id: 5, raw: '六角扳手17mm', std: '镀铬抛光六角扳手 17mm',
+    category: '五金工具>扳手>活扳手', conf: 88, sku: 4, status: '待确认',
+    detail: {
+      source: '企业采购系统导入', importTime: '2026-05-13',
+      aiDesc: '"17mm"为开口尺寸，常见工业用途推断为镀铬抛光表面处理，满足防锈要求',
+      attrs: [{ name: '开口尺寸', val: '17mm', ai: false }, { name: '表面处理', val: '镀铬抛光', ai: true }, { name: '材质', val: '铬钒钢', ai: true }, { name: '标准', val: 'DIN3110', ai: true }],
+      matches: [{ score: 88, name: '镀铬抛光六角扳手 17mm' }, { score: 83, name: '双开口呆扳手 17mm×19mm' }, { score: 79, name: '铬钒钢梅花扳手 17mm' }],
+      skus: [{ name: '力易得呆扳手17mm', price: '¥8.5/把', supplier: 'ZKH震坤行' }, { name: '达威牌扳手17mm', price: '¥6.8/把', supplier: '认证经销商' }]
+    }
+  },
+  {
+    id: 6, raw: 'DN25球阀', std: 'DN25不锈钢球阀 PN16',
+    category: '管阀>阀门>球阀', conf: 91, sku: 6, status: '待确认',
+    detail: {
+      source: 'ERP系统同步', importTime: '2026-05-09',
+      aiDesc: '"DN25"为公称通径25mm，工业管道常用PN16压力等级，AI推断材质为304不锈钢',
+      attrs: [{ name: '通径', val: 'DN25', ai: false }, { name: '压力等级', val: 'PN16', ai: true }, { name: '材质', val: '304不锈钢', ai: true }, { name: '连接方式', val: '内螺纹', ai: true }],
+      matches: [{ score: 91, name: 'DN25不锈钢球阀 PN16 内螺纹' }, { score: 86, name: 'DN25碳钢球阀 PN16 法兰' }, { score: 82, name: 'DN25不锈钢球阀 PN25 内螺纹' }],
+      skus: [{ name: '纽威DN25不锈钢球阀', price: '¥68/个', supplier: 'ZKH震坤行' }, { name: '杰宝DN25球阀PN16', price: '¥52/个', supplier: '制造商直供' }]
+    }
+  },
+  {
+    id: 7, raw: '导线2.5平方', std: '铜芯聚氯乙烯绝缘线 BV 2.5mm²',
+    category: '电气>电线>布线电线', conf: 93, sku: 3, status: '梳理中',
+    detail: { source: '企业采购系统导入', importTime: '2026-05-14', aiDesc: 'AI正在处理中...', attrs: [], matches: [], skus: [] }
+  },
+  {
+    id: 8, raw: 'M16螺杆 全牙', std: 'M16全牙螺杆 碳钢 8.8级',
+    category: '紧固件>螺栓>全牙螺杆', conf: 85, sku: 4, status: '梳理中',
+    detail: { source: 'ERP系统同步', importTime: '2026-05-14', aiDesc: 'AI正在处理中...', attrs: [], matches: [], skus: [] }
+  },
+  {
+    id: 9, raw: '工字钢100', std: '热轧工字钢 I10 Q235B',
+    category: '化工原料>型材>工字钢', conf: 72, sku: 2, status: '待梳理',
+    detail: { source: '手工录入', importTime: '2026-05-08', aiDesc: '等待AI梳理...', attrs: [], matches: [], skus: [] }
+  },
+  {
+    id: 10, raw: '压力表0-1MPa', std: '不锈钢压力表 Y-60 0-1MPa',
+    category: '仪器仪表>压力测量>压力表', conf: 89, sku: 5, status: '已标准化',
+    detail: {
+      source: '企业采购系统导入', importTime: '2026-05-07',
+      aiDesc: '"0-1MPa"为量程，Y-60为表盘直径60mm标准型，不锈钢外壳适配工业环境',
+      attrs: [{ name: '量程', val: '0-1MPa', ai: false }, { name: '表盘直径', val: '60mm', ai: true }, { name: '壳体材质', val: '不锈钢', ai: true }, { name: '接口', val: 'G1/4', ai: true }],
+      matches: [{ score: 89, name: '不锈钢压力表 Y-60 0-1MPa G1/4' }, { score: 84, name: '不锈钢压力表 Y-100 0-1MPa G1/2' }, { score: 78, name: '耐震压力表 YN-60 0-1MPa' }],
+      skus: [{ name: '上仪304不锈钢压力表Y-60', price: '¥35/个', supplier: 'ZKH震坤行' }, { name: '天河压力表Y-60 0-1MPa', price: '¥28/个', supplier: '认证经销商' }]
+    }
+  }
+];
+
+// ===== 渲染表格 =====
+function renderTable(data) {
+  var tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  if (!data || data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#bbb;padding:32px;">暂无匹配数据</td></tr>';
+    return;
+  }
+  data.forEach(function(item) {
+    var confClass = item.conf >= 90 ? 'conf-high' : (item.conf >= 75 ? 'conf-mid' : 'conf-low');
+    var statusBadge = getStatusBadge(item.status);
+    var actionBtns = getActionBtns(item);
+    var tr = document.createElement('tr');
+    tr.id = 'row-' + item.id;
+    tr.setAttribute('data-id', item.id);
+    tr.setAttribute('data-status', item.status);
+    tr.setAttribute('data-raw', item.raw);
+    tr.innerHTML =
+      '<td style="color:#999;">' + item.id + '</td>' +
+      '<td style="font-weight:600;">' + item.raw + '</td>' +
+      '<td>' + item.std + '</td>' +
+      '<td style="color:#888;font-size:12px;">' + item.category + '</td>' +
+      '<td><span class="' + confClass + '">' + item.conf + '%</span></td>' +
+      '<td><span style="color:#1677ff;font-weight:600;">' + item.sku + '个</span></td>' +
+      '<td>' + statusBadge + '</td>' +
+      '<td>' + actionBtns + '</td>';
+    tr.onclick = function() { selectRow(item.id); };
+    tbody.appendChild(tr);
+  });
+}
+
+function getStatusBadge(status) {
+  var map = {
+    '待确认': '<span class="status-badge sb-pending">待确认</span>',
+    '梳理中': '<span class="status-badge sb-doing"><span class="spin">⚙</span>梳理中</span>',
+    '待梳理': '<span class="status-badge sb-wait">待梳理</span>',
+    '已标准化': '<span class="status-badge sb-done">✓ 已标准化</span>'
+  };
+  return map[status] || status;
+}
+
+function getActionBtns(item) {
+  if (item.status === '待确认') {
+    return '<button class="action-btn confirm" onclick="event.stopPropagation();confirmItem(' + item.id + ')">确认</button>' +
+           '<button class="action-btn view" onclick="event.stopPropagation();selectRow(' + item.id + ')">查看</button>';
+  } else if (item.status === '梳理中') {
+    return '<span style="color:#aaa;font-size:12px;">处理中...</span>';
+  } else if (item.status === '待梳理') {
+    return '<button class="action-btn ai" onclick="event.stopPropagation();submitAI(' + item.id + ')">提交AI梳理</button>';
+  } else {
+    return '<button class="action-btn view" onclick="event.stopPropagation();selectRow(' + item.id + ')">查看</button>';
+  }
+}
+
+// ===== 选中行，显示详情 =====
+function selectRow(id) {
+  // 清除之前的 active
+  var rows = document.querySelectorAll('#tableBody tr');
+  rows.forEach(function(r) { r.classList.remove('active-row'); });
+  var row = document.getElementById('row-' + id);
+  if (row) row.classList.add('active-row');
+
+  var item = materials.find(function(m) { return m.id === id; });
+  if (!item) return;
+  document.getElementById('detailEmpty').style.display = 'none';
+  var dc = document.getElementById('detailContent');
+  dc.style.display = 'block';
+  dc.innerHTML = buildDetail(item);
+}
+
+function buildDetail(item) {
+  var d = item.detail;
+  var html = '';
+  html += '<div class="detail-header"><span>🏷️ 物料详情</span><span style="font-size:12px;color:#999;font-weight:400;">#' + item.id + '</span></div>';
+
+  // 原始信息
+  html += '<div class="detail-section">';
+  html += '<div class="section-title">原始信息</div>';
+  html += '<div class="detail-row"><span class="detail-key">原始名称</span><span class="detail-val" style="font-weight:600;">' + item.raw + '</span></div>';
+  html += '<div class="detail-row"><span class="detail-key">来源</span><span class="detail-val">' + d.source + '</span></div>';
+  html += '<div class="detail-row"><span class="detail-key">导入时间</span><span class="detail-val">' + d.importTime + '</span></div>';
+  html += '</div>';
+
+  // AI识别
+  html += '<div class="detail-section">';
+  html += '<div class="section-title">AI识别结果</div>';
+  html += '<div class="detail-row"><span class="detail-key">标准名称</span><span class="detail-val" style="font-weight:600;color:#1677ff;">' + item.std + '</span></div>';
+  html += '<div class="detail-row"><span class="detail-key">类目</span><span class="detail-val">' + item.category.replace(/>/g, ' > ') + '</span></div>';
+  html += '<div class="ai-desc">' + d.aiDesc + '</div>';
+  html += '</div>';
+
+  // 属性
+  if (d.attrs && d.attrs.length > 0) {
+    html += '<div class="detail-section">';
+    html += '<div class="section-title">补全的属性</div>';
+    d.attrs.forEach(function(attr) {
+      html += '<span class="attr-tag">' + attr.name + '：' + attr.val + (attr.ai ? '<span class="attr-ai">AI推断</span>' : '') + '</span>';
+    });
+    html += '</div>';
+  }
+
+  // 行业库匹配
+  if (d.matches && d.matches.length > 0) {
+    html += '<div class="detail-section">';
+    html += '<div class="section-title">行业库匹配</div>';
+    d.matches.forEach(function(m) {
+      var cls = m.score >= 90 ? '' : 'mid';
+      html += '<div class="match-item"><span class="match-score ' + cls + '">' + m.score + '%</span><span style="font-size:13px;color:#333;">' + m.name + '</span></div>';
+    });
+    html += '</div>';
+  }
+
+  // 推荐SKU
+  if (d.skus && d.skus.length > 0) {
+    html += '<div class="detail-section">';
+    html += '<div class="section-title">推荐商城SKU（' + d.skus.length + '个）</div>';
+    d.skus.forEach(function(sku, i) {
+      html += '<div class="sku-card"><div class="sku-name">' + sku.name + '</div>';
+      html += '<div class="sku-info"><span class="sku-price">' + sku.price + '</span><span class="sku-supplier">' + sku.supplier + '</span>';
+      html += '<button class="sku-btn" onclick="alert(\'已将【' + sku.name + '】加入采购清单\')">加入购物清单</button></div></div>';
+    });
+    html += '</div>';
+  }
+
+  // 操作按钮
+  if (item.status === '待确认') {
+    html += '<div style="padding:14px 20px;display:flex;gap:10px;">';
+    html += '<button style="flex:1;background:#52c41a;color:white;border:none;padding:10px 0;border-radius:6px;font-size:14px;cursor:pointer;font-weight:600;" onclick="confirmItem(' + item.id + ')">✅ 确认标准化</button>';
+    html += '<button style="flex:1;background:white;border:1px solid #d9d9d9;color:#666;padding:10px 0;border-radius:6px;font-size:14px;cursor:pointer;" onclick="alert(\'已标记为待人工复核\')">⚑ 标记复核</button>';
+    html += '</div>';
+  }
+
+  return html;
+}
+
+// ===== 确认单项 =====
+function confirmItem(id) {
+  var item = materials.find(function(m) { return m.id === id; });
+  if (!item || item.status === '已标准化') return;
+  var prev = item.status;
+  item.status = '已标准化';
+  renderTable(getFilteredData());
+  updateCounts();
+  if (document.getElementById('detailContent').style.display === 'block') {
+    selectRow(id);
+  }
+  // 闪烁提示
+  var row = document.getElementById('row-' + id);
+  if (row) { row.style.transition = 'background 0.3s'; row.style.background = '#f6ffed'; }
+}
+
+// ===== 批量确认 =====
+function batchConfirm() {
+  var pending = materials.filter(function(m) { return m.status === '待确认'; });
+  if (pending.length === 0) { alert('暂无待确认物料'); return; }
+  pending.forEach(function(m) { m.status = '已标准化'; });
+  renderTable(getFilteredData());
+  updateCounts();
+  alert('已将 ' + pending.length + ' 个待确认物料标记为已标准化');
+}
+
+// ===== 提交AI梳理 =====
+function submitAI(id) {
+  var item = materials.find(function(m) { return m.id === id; });
+  if (!item) return;
+  item.status = '梳理中';
+  renderTable(getFilteredData());
+  updateCounts();
+  alert('已提交AI梳理队列，预计5-10分钟完成');
+}
+
+// ===== 统计数字更新 =====
+function updateCounts() {
+  var pending = materials.filter(function(m) { return m.status === '待确认'; }).length;
+  var done = materials.filter(function(m) { return m.status === '已标准化'; }).length;
+  var doing = materials.filter(function(m) { return m.status === '梳理中'; }).length;
+  document.getElementById('count-pending').textContent = pending + 17; // 加上表外数量
+  document.getElementById('count-done').textContent = done + 137;
+  document.getElementById('count-doing').textContent = doing + 3;
+}
+
+// ===== 过滤 =====
+function getFilteredData() {
+  var keyword = (document.getElementById('searchInput').value || '').toLowerCase();
+  var status = document.getElementById('statusFilter').value;
+  return materials.filter(function(m) {
+    var matchKey = !keyword || m.raw.toLowerCase().indexOf(keyword) >= 0 || m.std.toLowerCase().indexOf(keyword) >= 0;
+    var matchStatus = !status || m.status === status;
+    return matchKey && matchStatus;
+  });
+}
+
+function filterTable() {
+  renderTable(getFilteredData());
+}
+
+// ===== 统计卡片筛选 =====
+var currentCardFilter = '';
+function filterByStatus(status, el) {
+  var cards = document.querySelectorAll('.stat-card');
+  if (currentCardFilter === status) {
+    // 取消筛选
+    currentCardFilter = '';
+    document.getElementById('statusFilter').value = '';
+    cards.forEach(function(c) { c.classList.remove('filter-active'); });
+  } else {
+    currentCardFilter = status;
+    document.getElementById('statusFilter').value = status;
+    cards.forEach(function(c) { c.classList.remove('filter-active'); });
+    el.classList.add('filter-active');
+  }
+  filterTable();
+}
+
+// ===== 初始化 =====
+renderTable(materials);
+updateCounts();
+
+// ===== 演示提示条 =====
+function toggleDemoBar() {
+  const bar = document.querySelector('.demo-bar');
+  const btn = document.querySelector('.demo-expand-btn');
+  bar.classList.toggle('collapsed');
+  btn.style.display = bar.classList.contains('collapsed') ? 'block' : 'none';
+}
+</script>
+
+<!-- 演示提示条 -->
+<div class="demo-bar">
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+    <span class="demo-bar-title">演示提示</span>
+    <span class="demo-hint">1. 查看统计卡片（待梳理/已标准化/梳理中）</span>
+    <span class="demo-hint">2. 点击表格中任一行→右侧展开AI识别详情</span>
+    <span class="demo-hint">3. 查看推荐SKU和行业库匹配结果</span>
+    <span class="demo-hint">4. 点击"确认标准化"完成梳理</span>
+  </div>
+  <div class="demo-bar-right">
+    <button class="demo-collapse-btn" onclick="toggleDemoBar()">收起 ▼</button>
+  </div>
+</div>
+<button class="demo-expand-btn" onclick="toggleDemoBar()">📋 演示提示</button>
+
+</body>
+</html>

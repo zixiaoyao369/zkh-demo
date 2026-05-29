@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>提交需求单 - 巨石集团采购平台</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; background: #f4f4f4; color: #333; }
+
+    /* Header */
+    .header { background: #c0392b; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; max-width: 1300px; margin: 0 auto; }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #c0392b; font-size: 17px; flex-shrink: 0; }
+    .logo-text { color: white; font-size: 16px; font-weight: 700; }
+    .logo-sub { color: rgba(255,255,255,0.75); font-size: 11px; margin-top: 1px; }
+    .header-nav { display: flex; gap: 4px; }
+    .header-nav a, .header-nav span { color: rgba(255,255,255,0.85); text-decoration: none; padding: 6px 12px; font-size: 14px; border-radius: 4px; transition: background 0.15s; }
+    .header-nav a:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* Breadcrumb */
+    .breadcrumb { padding: 12px 24px; font-size: 13px; color: #999; background: #fafafa; border-bottom: 1px solid #eee; }
+    .breadcrumb a { color: #666; text-decoration: none; }
+    .breadcrumb a:hover { color: #1890ff; text-decoration: underline; }
+    .breadcrumb .sep { margin: 0 8px; color: #ccc; }
+    .breadcrumb .current { color: #333; font-weight: 600; }
+
+    /* Page Title */
+    .page-title-bar { background: white; border-bottom: 1px solid #eee; padding: 20px 24px; }
+    .page-title-bar h1 { margin: 0 0 4px; font-size: 20px; color: #333; font-weight: 700; }
+    .page-title-bar p { margin: 0; font-size: 13px; color: #999; }
+    .page-title-bar p .warn-text { color: #fa8c16; font-weight: 600; }
+
+    /* Main Layout */
+    .main-content { max-width: 1300px; margin: 0 auto; padding: 24px 24px 100px; display: flex; gap: 24px; align-items: flex-start; }
+
+    /* Form Card */
+    .form-card { flex: 1; background: white; border-radius: 6px; border: 1px solid #e8e8e8; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .form-card-title { font-size: 15px; font-weight: 700; color: #333; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+    .form-card-title::before { content: ''; display: inline-block; width: 3px; height: 16px; background: #c0392b; border-radius: 2px; }
+
+    /* Form Elements */
+    .form-item { margin-bottom: 20px; }
+    .form-label { display: block; font-size: 14px; color: #333; margin-bottom: 7px; font-weight: 500; }
+    .form-label .req { color: #c0392b; margin-left: 2px; }
+    .form-input {
+      width: 100%; border: 1px solid #d9d9d9; border-radius: 4px;
+      padding: 9px 12px; font-size: 14px; outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit; color: #333; background: #fff;
+    }
+    .form-input:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+    .form-input::placeholder { color: #bbb; }
+    .form-input:hover { border-color: #aaa; }
+    textarea.form-input { resize: vertical; min-height: 80px; }
+
+    /* Inline group (qty + unit, price range) */
+    .form-inline { display: flex; gap: 8px; align-items: center; }
+    .form-inline .form-input { flex: 1; }
+    .form-inline select.form-input { flex: 0 0 80px; }
+    .form-inline .sep { color: #999; font-size: 13px; flex-shrink: 0; }
+    .price-prefix { color: #999; font-size: 13px; flex-shrink: 0; padding: 0 2px; }
+
+    /* Upload area */
+    .upload-zone {
+      border: 2px dashed #d9d9d9; border-radius: 4px;
+      padding: 20px; text-align: center; cursor: pointer;
+      transition: all 0.2s; background: #fafafa;
+    }
+    .upload-zone:hover { border-color: #1677ff; background: #f0f6ff; }
+    .upload-zone .upload-icon { font-size: 28px; margin-bottom: 8px; }
+    .upload-zone .upload-text { font-size: 13px; color: #666; }
+    .upload-zone .upload-hint { font-size: 12px; color: #bbb; margin-top: 4px; }
+
+    /* Sidebar */
+    .sidebar { width: 280px; flex-shrink: 0; position: sticky; top: 80px; }
+    .side-card { background: white; border-radius: 6px; border: 1px solid #e8e8e8; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .side-card-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .side-card-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: #1677ff; border-radius: 2px; }
+
+    /* Steps */
+    .steps-list { position: relative; padding-left: 0; }
+    .step-item { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 0; position: relative; padding-left: 28px; padding-bottom: 20px; }
+    .step-item:last-child { padding-bottom: 0; }
+    .step-item:not(:last-child)::before {
+      content: ''; position: absolute; left: 11px; top: 24px; bottom: 0;
+      width: 2px; background: linear-gradient(to bottom, #1677ff, #52c41a);
+      opacity: 0.3;
+    }
+    .step-dot {
+      position: absolute; left: 0; top: 2px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(135deg, #1677ff, #0958d9);
+      color: white; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; box-shadow: 0 2px 6px rgba(22,119,255,0.35);
+    }
+    .step-content .step-title { font-size: 13px; font-weight: 600; color: #333; margin-bottom: 3px; }
+    .step-content .step-desc { font-size: 12px; color: #888; line-height: 1.5; }
+
+    /* Meta tags */
+    .meta-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; padding-top: 14px; border-top: 1px solid #f0f0f0; }
+    .meta-tag { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #666; background: #f5f5f5; padding: 4px 10px; border-radius: 12px; }
+    .meta-tag.green { background: #e8f5e9; color: #52c41a; }
+    .meta-tag.orange { background: #fff3e0; color: #fa8c16; }
+
+    /* Stats card */
+    .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stat-item { text-align: center; background: #f8f9fa; border-radius: 6px; padding: 12px 8px; }
+    .stat-num { font-size: 20px; font-weight: 800; color: #c0392b; line-height: 1; margin-bottom: 4px; }
+    .stat-label { font-size: 11px; color: #888; }
+
+    /* Bottom bar */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      padding: 14px 24px; display: flex;
+      justify-content: flex-end; align-items: center;
+      gap: 12px; z-index: 100;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+    }
+    .btn-cancel {
+      background: white; border: 1px solid #d9d9d9; color: #666;
+      padding: 10px 24px; border-radius: 6px; font-size: 14px;
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .btn-cancel:hover { border-color: #aaa; color: #333; }
+    .btn-submit {
+      background: #c0392b; color: white; border: none;
+      padding: 10px 28px; border-radius: 6px; font-size: 14px;
+      cursor: pointer; font-weight: 600; transition: all 0.15s;
+      font-family: inherit; display: flex; align-items: center; gap: 6px;
+    }
+    .btn-submit:hover { background: #a93226; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(192,57,43,0.35); }
+    .btn-submit:disabled { background: #e0e0e0; color: #aaa; cursor: not-allowed; transform: none; box-shadow: none; }
+    .placeholder-spacer { height: 70px; }
+
+    /* Tips row */
+    .tips-row { background: #fffbe6; border: 1px solid #ffe58f; border-radius: 4px; padding: 10px 14px; font-size: 12px; color: #ad6800; margin-bottom: 20px; line-height: 1.6; }
+
+    /* 演示提示条 */
+    .demo-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(30,30,30,0.92);
+      color: #fff;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 99999;
+      font-size: 13px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+    }
+    .demo-bar.collapsed {
+      transform: translateY(100%);
+    }
+    .demo-bar-title {
+      background: #1890ff;
+      color: white;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-right: 16px;
+      white-space: nowrap;
+    }
+    .demo-hint {
+      background: rgba(255,255,255,0.12);
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin: 0 6px;
+      color: #8ecfff;
+      white-space: nowrap;
+    }
+    .demo-bar-right {
+      display: flex;
+      gap: 8px;
+    }
+    .demo-collapse-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #ccc;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .demo-expand-btn {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(30,30,30,0.85);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      z-index: 99998;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    /* ===== Tab切换 ===== */
+    .mode-tabs {
+      display: flex;
+      border-bottom: 2px solid #f0f0f0;
+      margin-bottom: 20px;
+      gap: 0;
+    }
+    .mode-tab {
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #999;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mode-tab:hover { color: #1677ff; }
+    .mode-tab.active {
+      color: #c0392b;
+      border-bottom-color: #c0392b;
+    }
+    .mode-tab .tab-icon { font-size: 16px; }
+    .mode-panel { display: none; }
+    .mode-panel.active { display: block; }
+
+    /* ===== Excel上传区域 ===== */
+    .excel-upload-zone {
+      border: 2px dashed #d9d9d9;
+      border-radius: 8px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      background: #fafafa;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .excel-upload-zone:hover {
+      border-color: #1677ff;
+      background: #f0f6ff;
+    }
+    .excel-upload-zone.dragover {
+      border-color: #1677ff;
+      border-style: solid;
+      background: #e6f4ff;
+      box-shadow: 0 0 0 3px rgba(22,119,255,0.12);
+    }
+    .excel-upload-zone .upload-icon-big { font-size: 48px; margin-bottom: 12px; }
+    .excel-upload-zone .upload-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 8px; }
+    .excel-upload-zone .upload-subtitle { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .excel-upload-zone .upload-formats {
+      display: inline-flex;
+      gap: 8px;
+    }
+    .excel-upload-zone .format-tag {
+      background: #f0f0f0;
+      color: #666;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .excel-upload-zone input[type="file"] { display: none; }
+
+    /* 解析中动画 */
+    .parsing-overlay {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.92);
+      border-radius: 8px;
+      z-index: 5;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .parsing-overlay.show { display: flex; }
+    .parsing-spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #e8e8e8;
+      border-top-color: #1677ff;
+      border-radius: 50%;
+      animation: excelSpin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes excelSpin { to { transform: rotate(360deg); } }
+    .parsing-text { font-size: 14px; color: #1677ff; font-weight: 600; }
+    .parsing-sub { font-size: 12px; color: #999; margin-top: 4px; }
+
+    /* Excel提示信息 */
+    .excel-tips {
+      background: #fffbe6;
+      border: 1px solid #ffe58f;
+      border-radius: 4px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #ad6800;
+      line-height: 1.6;
+    }
+    .excel-tips strong { color: #d48806; }
+
+    /* ===== 字段映射弹窗 ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: white;
+      border-radius: 10px;
+      width: 700px;
+      max-width: 95vw;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+      animation: modalIn 0.25s ease-out;
+    }
+    @keyframes modalIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .modal-header {
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-header h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+    }
+    .modal-header .modal-close {
+      width: 32px; height: 32px;
+      border: none; background: #f5f5f5;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      color: #999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-header .modal-close:hover { background: #e8e8e8; color: #333; }
+    .modal-body { padding: 20px 24px; }
+    .modal-footer {
+      padding: 16px 24px 20px;
+      border-top: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* 映射表格 */
+    .mapping-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .mapping-table thead tr { background: #fafafa; }
+    .mapping-table th {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .mapping-table td {
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #333;
+      border-bottom: 1px solid #f5f5f5;
+      vertical-align: middle;
+    }
+    .mapping-table tbody tr:nth-child(even) { background: #fafafa; }
+    .mapping-table tbody tr:hover { background: #f0f6ff; }
+    .mapping-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .mapping-status.matched { color: #52c41a; background: #f6ffed; }
+    .mapping-status.unmatched { color: #fa8c16; background: #fff7e6; }
+    .mapping-select {
+      width: 100%;
+      border: 1px solid #d9d9d9;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+      outline: none;
+      background: #fff;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+    .mapping-select:focus { border-color: #1677ff; box-shadow: 0 0 0 2px rgba(22,119,255,0.1); }
+
+    .mapping-count {
+      font-size: 13px;
+      color: #1677ff;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* 预览数据区 */
+    .preview-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed #e8e8e8;
+    }
+    .preview-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #e8e8e8;
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 12px;
+    }
+    .preview-table thead tr { background: #f0f6ff; }
+    .preview-table th {
+      padding: 8px 10px;
+      font-weight: 600;
+      color: #1677ff;
+      text-align: left;
+      border-bottom: 1px solid #d6e4ff;
+    }
+    .preview-table td {
+      padding: 8px 10px;
+      color: #333;
+      border-bottom: 1px solid #f5f5f5;
+    }
+    .preview-table tbody tr:nth-child(even) { background: #fafafa; }
+
+    /* 成功提示 */
+    .success-toast {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border-radius: 12px;
+      padding: 40px 48px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+      z-index: 20000;
+      animation: modalIn 0.3s ease-out;
+    }
+    .success-toast.show { display: block; }
+    .success-toast .success-icon { font-size: 48px; margin-bottom: 12px; }
+    .success-toast .success-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 8px; }
+    .success-toast .success-desc { font-size: 14px; color: #888; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-icon">巨</div>
+      <div>
+        <div class="logo-text">巨石集团采购平台</div>
+        <div class="logo-sub">企业级工业品一站式采购</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="mall.html">首页</a>
+      <span>采购中心</span>
+    </nav>
+  </div>
+</header>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="mall.html">首页</a>
+  <span class="sep">›</span>
+  <span class="current">需求提报</span>
+</nav>
+
+<!-- Page Title -->
+<div class="page-title-bar">
+  <h1>提交线下需求单</h1>
+  <p>由震坤行专属采购顾问人工寻源，<span class="warn-text">预计 48 小时内</span>收到供应商报价</p>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+
+  <!-- Left Form -->
+  <div class="form-card">
+    <div class="form-card-title">需求信息</div>
+
+    <!-- 模式切换Tab -->
+    <div class="mode-tabs">
+      <div class="mode-tab active" onclick="switchMode('manual')" id="tabManual">
+        <span class="tab-icon">✏️</span> 手动填写
+      </div>
+      <div class="mode-tab" onclick="switchMode('excel')" id="tabExcel">
+        <span class="tab-icon">📊</span> Excel批量导入
+      </div>
+    </div>
+
+    <!-- 手动填写面板 -->
+    <div class="mode-panel active" id="manualPanel">
+    <div class="tips-row">
+      💡 请尽量填写完整的物料信息（规格、数量、期望价格等），信息越详细，获得的报价越精准
+    </div>
+
+    <!-- 物料名称 -->
+    <div class="form-item">
+      <label class="form-label">物料名称 <span class="req">*</span></label>
+      <input type="text" id="materialName" class="form-input" placeholder="请输入物料名称，如：六角螺栓、离心泵、轴承">
+    </div>
+
+    <!-- 规格型号 -->
+    <div class="form-item">
+      <label class="form-label">规格 / 型号</label>
+      <input type="text" id="spec" class="form-input" placeholder="如：M12×60，10.9级，镀锌；或型号编码">
+    </div>
+
+    <!-- 采购数量 -->
+    <div class="form-item">
+      <label class="form-label">采购数量 <span class="req">*</span></label>
+      <div class="form-inline">
+        <input type="number" id="quantity" class="form-input" placeholder="请输入数量" min="1" style="flex:1;">
+        <select id="unit" class="form-input" style="flex:0 0 90px;">
+          <option value="个">个</option>
+          <option value="套">套</option>
+          <option value="台">台</option>
+          <option value="米">米</option>
+          <option value="千克">千克</option>
+          <option value="箱">箱</option>
+          <option value="件">件</option>
+          <option value="批">批</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 期望单价区间 -->
+    <div class="form-item">
+      <label class="form-label">期望单价区间（选填）</label>
+      <div class="form-inline">
+        <span class="price-prefix">¥</span>
+        <input type="number" id="priceMin" class="form-input" placeholder="最低" min="0" step="0.01">
+        <span class="sep">～</span>
+        <span class="price-prefix">¥</span>
+        <input type="number" id="priceMax" class="form-input" placeholder="最高" min="0" step="0.01">
+      </div>
+    </div>
+
+    <!-- 需求日期 -->
+    <div class="form-item">
+      <label class="form-label">期望到货日期 <span class="req">*</span></label>
+      <input type="date" id="needDate" class="form-input">
+    </div>
+
+    <!-- 使用项目 -->
+    <div class="form-item">
+      <label class="form-label">使用项目（选填）</label>
+      <input type="text" id="project" class="form-input" placeholder="如：1号车间设备维修、技改项目备件">
+    </div>
+
+    <!-- 图片/附件 -->
+    <div class="form-item">
+      <label class="form-label">图片 / 附件（选填）</label>
+      <div class="upload-zone" onclick="alert('📎 文件上传功能演示\n\n支持格式：JPG、PNG、PDF、DWG\n最大文件大小：20MB\n\n（实际上传功能待后端接入）')">
+        <div class="upload-icon">📎</div>
+        <div class="upload-text">点击上传图片或文件</div>
+        <div class="upload-hint">支持 JPG、PNG、PDF、DWG，单文件不超过 20MB</div>
+      </div>
+    </div>
+
+    <!-- 备注 -->
+    <div class="form-item" style="margin-bottom:0;">
+      <label class="form-label">备注（选填）</label>
+      <textarea id="remark" class="form-input" rows="3" placeholder="其他需要说明的信息，如：特殊材质要求、认证要求、包装要求等"></textarea>
+    </div>
+    </div><!-- /manualPanel -->
+
+    <!-- Excel批量导入面板 -->
+    <div class="mode-panel" id="excelPanel">
+      <div class="excel-upload-zone" id="excelDropZone">
+        <div class="parsing-overlay" id="parsingOverlay">
+          <div class="parsing-spinner"></div>
+          <div class="parsing-text">正在解析 Excel 文件...</div>
+          <div class="parsing-sub">AI正在智能识别字段，请稍候</div>
+        </div>
+        <div class="upload-icon-big">📂</div>
+        <div class="upload-title">拖拽Excel文件到此处，或点击选择文件</div>
+        <div class="upload-subtitle">支持批量导入物料需求，AI自动识别字段映射</div>
+        <div class="upload-formats">
+          <span class="format-tag">.xlsx</span>
+          <span class="format-tag">.xls</span>
+          <span class="format-tag">.csv</span>
+        </div>
+        <input type="file" id="excelFileInput" accept=".xlsx,.xls,.csv">
+      </div>
+      <div class="excel-tips">
+        💡 <strong>使用提示：</strong>请确保Excel中包含物料名称、规格、数量等关键列。系统将自动识别列名并匹配系统字段，您可在弹窗中确认或调整映射关系。
+      </div>
+    </div><!-- /excelPanel -->
+
+  </div><!-- /form-card -->
+
+  <!-- Right Sidebar -->
+  <div class="sidebar">
+
+    <!-- QTS流程卡片 -->
+    <div class="side-card">
+      <div class="side-card-title">震坤行线下寻源（QTS）</div>
+      <div class="steps-list">
+        <div class="step-item">
+          <div class="step-dot">1</div>
+          <div class="step-content">
+            <div class="step-title">📤 提交需求单</div>
+            <div class="step-desc">填写物料详情，发起寻源请求</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-dot">2</div>
+          <div class="step-content">
+            <div class="step-title">📢 全国销售接单</div>
+            <div class="step-desc">华东 / 华南 / 华北各区域销售团队同步接单</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-dot">3</div>
+          <div class="step-content">
+            <div class="step-title">🔍 人工寻源报价</div>
+            <div class="step-desc">线下联系供应商，获取最优报价</div>
+          </div>
+        </div>
+        <div class="step-item">
+          <div class="step-dot" style="background:linear-gradient(135deg,#52c41a,#389e0d);">4</div>
+          <div class="step-content">
+            <div class="step-title">📊 报价汇总对比</div>
+            <div class="step-desc">汇聚多家报价，一键对比选优</div>
+          </div>
+        </div>
+      </div>
+      <div class="meta-tags">
+        <div class="meta-tag orange">⏱ 预计时效：48小时内</div>
+        <div class="meta-tag green">✅ 历史完单率：92%</div>
+        <div class="meta-tag" style="width:100%;justify-content:center;">📞 工作日 08:00-20:00 实时响应</div>
+      </div>
+    </div>
+
+    <!-- 成功案例卡片 -->
+    <div class="side-card">
+      <div class="side-card-title">服务数据</div>
+      <div class="stat-grid">
+        <div class="stat-item">
+          <div class="stat-num">3,241</div>
+          <div class="stat-label">上月完成寻源（单）</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">4.2</div>
+          <div class="stat-label">平均报价数（家/单）</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">96.8%</div>
+          <div class="stat-label">客户满意率</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">28h</div>
+          <div class="stat-label">平均完成时效</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:10px;background:#f8f9fa;border-radius:4px;font-size:12px;color:#888;text-align:center;line-height:1.6;">
+        📈 上月最快寻源记录：<strong style="color:#52c41a;">2.5小时</strong><br>
+        涵盖机械、电气、五金、化工等全品类
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+
+</div><!-- /main-content -->
+
+<div class="placeholder-spacer"></div>
+
+<!-- 字段映射确认弹窗 -->
+<div class="modal-overlay" id="mappingModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>🤖 AI字段识别结果 - 请确认映射关系</h3>
+      <button class="modal-close" onclick="closeMappingModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- 映射表格 -->
+      <table class="mapping-table">
+        <thead>
+          <tr>
+            <th style="width:30%;">Excel列名</th>
+            <th style="width:40%;">映射到系统字段</th>
+            <th style="width:20%;">状态</th>
+            <th style="width:10%;">示例数据</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>物料名称</strong></td>
+            <td>
+              <select class="mapping-select">
+                <option value="物料名称" selected>物料名称</option>
+                <option value="规格参数">规格参数</option>
+                <option value="需求数量">需求数量</option>
+                <option value="需求部门">需求部门</option>
+                <option value="期望交付日期">期望交付日期</option>
+                <option value="备注">备注</option>
+              </select>
+            </td>
+            <td><span class="mapping-status matched">✓ 自动匹配</span></td>
+            <td style="color:#999;font-size:12px;">六角螺栓</td>
+          </tr>
+          <tr>
+            <td><strong>规格型号</strong></td>
+            <td>
+              <select class="mapping-select">
+                <option value="物料名称">物料名称</option>
+                <option value="规格参数" selected>规格参数</option>
+                <option value="需求数量">需求数量</option>
+                <option value="需求部门">需求部门</option>
+                <option value="期望交付日期">期望交付日期</option>
+                <option value="备注">备注</option>
+              </select>
+            </td>
+            <td><span class="mapping-status matched">✓ 自动匹配</span></td>
+            <td style="color:#999;font-size:12px;">M10×50</td>
+          </tr>
+          <tr>
+            <td><strong>数量</strong></td>
+            <td>
+              <select class="mapping-select">
+                <option value="物料名称">物料名称</option>
+                <option value="规格参数">规格参数</option>
+                <option value="需求数量" selected>需求数量</option>
+                <option value="需求部门">需求部门</option>
+                <option value="期望交付日期">期望交付日期</option>
+                <option value="备注">备注</option>
+              </select>
+            </td>
+            <td><span class="mapping-status matched">✓ 自动匹配</span></td>
+            <td style="color:#999;font-size:12px;">500</td>
+          </tr>
+          <tr>
+            <td><strong>用途部门</strong></td>
+            <td>
+              <select class="mapping-select">
+                <option value="物料名称">物料名称</option>
+                <option value="规格参数">规格参数</option>
+                <option value="需求数量">需求数量</option>
+                <option value="需求部门" selected>需求部门</option>
+                <option value="期望交付日期">期望交付日期</option>
+                <option value="备注">备注</option>
+              </select>
+            </td>
+            <td><span class="mapping-status matched">✓ 自动匹配</span></td>
+            <td style="color:#999;font-size:12px;">设备维护部</td>
+          </tr>
+          <tr>
+            <td><strong>期望交期</strong></td>
+            <td>
+              <select class="mapping-select">
+                <option value="物料名称">物料名称</option>
+                <option value="规格参数">规格参数</option>
+                <option value="需求数量">需求数量</option>
+                <option value="需求部门">需求部门</option>
+                <option value="期望交付日期" selected>期望交付日期</option>
+                <option value="备注">备注</option>
+              </select>
+            </td>
+            <td><span class="mapping-status matched">✓ 自动匹配</span></td>
+            <td style="color:#999;font-size:12px;">2024-03-15</td>
+          </tr>
+          <tr>
+            <td><strong>备注说明</strong></td>
+            <td>
+              <select class="mapping-select">
+                <option value="物料名称">物料名称</option>
+                <option value="规格参数">规格参数</option>
+                <option value="需求数量">需求数量</option>
+                <option value="需求部门">需求部门</option>
+                <option value="期望交付日期">期望交付日期</option>
+                <option value="备注" selected>备注</option>
+                <option value="">-- 不映射 --</option>
+              </select>
+            </td>
+            <td><span class="mapping-status unmatched">⚠ 手动匹配</span></td>
+            <td style="color:#999;font-size:12px;">加急</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 数据预览 -->
+      <div class="preview-section">
+        <div class="preview-title">📋 数据预览（前5行）</div>
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>物料名称</th>
+              <th>规格型号</th>
+              <th>数量</th>
+              <th>用途部门</th>
+              <th>期望交期</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>六角螺栓</td><td>M10×50 8.8级</td><td>500</td><td>设备维护部</td><td>2024-03-15</td></tr>
+            <tr><td>2</td><td>密封O型圈</td><td>Φ30×3.5 丁腈橡胶</td><td>200</td><td>生产一车间</td><td>2024-03-10</td></tr>
+            <tr><td>3</td><td>轴承</td><td>6205-2RS</td><td>50</td><td>动力车间</td><td>2024-03-20</td></tr>
+            <tr><td>4</td><td>液压油</td><td>L-HM46 18L/桶</td><td>20</td><td>设备维护部</td><td>2024-03-12</td></tr>
+            <tr><td>5</td><td>绝缘胶带</td><td>PVC 18mm×20m</td><td>100</td><td>电气车间</td><td>2024-03-08</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="mapping-count">📦 识别到 <strong style="font-size:18px;">28</strong> 条物料需求</div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn-cancel" onclick="closeMappingModal()">返回修改</button>
+        <button class="btn-submit" onclick="confirmMapping()" style="background:#1677ff;">✅ 确认并提交</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 成功提示 -->
+<div class="success-toast" id="successToast">
+  <div class="success-icon">✅</div>
+  <div class="success-title" id="successTitle">已导入28条物料需求</div>
+  <div class="success-desc" id="successDesc">正在进入物料梳理...</div>
+</div>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <button class="btn-cancel" onclick="history.back()">返回</button>
+  <button class="btn-submit" id="submitBtn" onclick="submitDemand()">📋 提交需求单</button>
+</div>
+
+<script>
+  // 预填 keyword
+  const kw = new URLSearchParams(location.search).get('keyword') || '';
+  if (kw) document.getElementById('materialName').value = kw;
+
+  // 默认日期 = 今天 + 7 天
+  (function() {
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    document.getElementById('needDate').value = yyyy + '-' + mm + '-' + dd;
+  })();
+
+  function submitDemand() {
+    const name = document.getElementById('materialName').value.trim();
+    const qty = document.getElementById('quantity').value.trim();
+    const date = document.getElementById('needDate').value;
+
+    if (!name) {
+      alert('⚠️ 请填写物料名称');
+      document.getElementById('materialName').focus();
+      return;
+    }
+    if (!qty || Number(qty) <= 0) {
+      alert('⚠️ 请填写有效的采购数量');
+      document.getElementById('quantity').focus();
+      return;
+    }
+    if (!date) {
+      alert('⚠️ 请选择期望到货日期');
+      document.getElementById('needDate').focus();
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.textContent = '提交中...';
+    btn.disabled = true;
+
+    setTimeout(function() {
+      const orderId = 'QTS-' + new Date().toISOString().slice(0, 10).replace(/-/g, '') + '-' + Date.now().toString().slice(-4);
+      const params = new URLSearchParams({ keyword: name, orderId: orderId });
+      location.href = 'sourcing-progress.html?' + params.toString();
+    }, 1200);
+  }
+
+  // ===== 模式切换 =====
+  function switchMode(mode) {
+    var tabManual = document.getElementById('tabManual');
+    var tabExcel = document.getElementById('tabExcel');
+    var manualPanel = document.getElementById('manualPanel');
+    var excelPanel = document.getElementById('excelPanel');
+
+    if (mode === 'manual') {
+      tabManual.classList.add('active');
+      tabExcel.classList.remove('active');
+      manualPanel.classList.add('active');
+      excelPanel.classList.remove('active');
+    } else {
+      tabExcel.classList.add('active');
+      tabManual.classList.remove('active');
+      excelPanel.classList.add('active');
+      manualPanel.classList.remove('active');
+    }
+  }
+
+  // ===== Excel拖拽上传 =====
+  (function() {
+    var dropZone = document.getElementById('excelDropZone');
+    var fileInput = document.getElementById('excelFileInput');
+
+    // 点击上传
+    dropZone.addEventListener('click', function(e) {
+      if (e.target.tagName !== 'INPUT') {
+        fileInput.click();
+      }
+    });
+
+    fileInput.addEventListener('change', function() {
+      if (this.files && this.files.length > 0) {
+        startParsing(this.files[0].name);
+      }
+    });
+
+    // 拖拽事件
+    dropZone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.classList.remove('dragover');
+      var files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        startParsing(files[0].name);
+      }
+    });
+  })();
+
+  // ===== 模拟解析 =====
+  function startParsing(fileName) {
+    var overlay = document.getElementById('parsingOverlay');
+    overlay.classList.add('show');
+
+    setTimeout(function() {
+      overlay.classList.remove('show');
+      showMappingModal(fileName);
+    }, 1500);
+  }
+
+  // ===== 字段映射弹窗 =====
+  function showMappingModal(fileName) {
+    document.getElementById('mappingModal').classList.add('show');
+  }
+
+  function closeMappingModal() {
+    document.getElementById('mappingModal').classList.remove('show');
+  }
+
+  // 点击遮罩关闭
+  document.getElementById('mappingModal').addEventListener('click', function(e) {
+    if (e.target === this) closeMappingModal();
+  });
+
+  // ===== 确认映射并提交 =====
+  function confirmMapping() {
+    closeMappingModal();
+    var toast = document.getElementById('successToast');
+    toast.classList.add('show');
+
+    // 2秒后跳转
+    setTimeout(function() {
+      location.href = 'material-combing.html?source=excel&count=28';
+    }, 2000);
+  }
+
+  // ===== 演示提示条 =====
+  function toggleDemoBar() {
+    const bar = document.querySelector('.demo-bar');
+    const btn = document.querySelector('.demo-expand-btn');
+    bar.classList.toggle('collapsed');
+    btn.style.display = bar.classList.contains('collapsed') ? 'block' : 'none';
+  }
+</script>
+
+<!-- 演示提示条 -->
+<div class="demo-bar">
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+    <span class="demo-bar-title">演示提示</span>
+    <span class="demo-hint">1. 关键词已自动预填（来自搜索页）</span>
+    <span class="demo-hint">2. 切换"Excel批量导入"→拖入文件</span>
+    <span class="demo-hint">3. AI自动识别字段→人工确认映射</span>
+    <span class="demo-hint">4. 确认后跳转物料梳理</span>
+  </div>
+  <div class="demo-bar-right">
+    <button class="demo-collapse-btn" onclick="toggleDemoBar()">收起 ▼</button>
+  </div>
+</div>
+<button class="demo-expand-btn" onclick="toggleDemoBar()">📋 演示提示</button>
+
+</body>
+</html>

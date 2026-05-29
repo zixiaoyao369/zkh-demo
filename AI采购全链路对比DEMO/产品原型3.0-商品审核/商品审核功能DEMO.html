@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品审核 · AI六维审核能力演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0a0e1a;overflow:hidden;height:100vh;color:#e2e8f0}
+.header{height:52px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid rgba(59,130,246,.2)}
+.header h1{font-size:16px;font-weight:600;letter-spacing:2px}
+.header-right{position:absolute;right:16px;display:flex;align-items:center;gap:8px}
+.scene-badge{background:rgba(59,130,246,.15);padding:4px 12px;border-radius:12px;font-size:11px;border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+.scene-nav{display:flex;align-items:center;gap:6px;margin-right:12px}
+.scene-nav .nav-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:transparent;cursor:pointer;transition:all .3s;position:relative}
+.scene-nav .nav-dot:hover{border-color:#93c5fd;transform:scale(1.3)}
+.scene-nav .nav-dot.active{background:#3b82f6;border-color:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.6)}
+.scene-nav .nav-dot .nav-tip{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid rgba(59,130,246,.3);z-index:100}
+.scene-nav .nav-dot:hover .nav-tip{opacity:1}
+.main{height:calc(100vh - 52px);position:relative;overflow:hidden}
+.scene-full{position:absolute;inset:0;bottom:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0a0e1a;padding:40px;opacity:0;pointer-events:none;transition:opacity .5s;overflow:hidden}
+.scene-full.active{opacity:1;pointer-events:auto}
+.scene-split{position:absolute;inset:0;bottom:44px;display:flex;opacity:0;pointer-events:none;transition:opacity .5s}
+.scene-split.active{opacity:1;pointer-events:auto}
+.half{display:flex;flex:1;position:relative;overflow:hidden}
+.half-left{border-right:1px solid rgba(59,130,246,.15)}
+.half-left.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.half-right.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.col-mall{flex:3;display:flex;flex-direction:column;background:#fff;position:relative;overflow:hidden}
+.col-sys{flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,#0a1628,#111d35);position:relative;overflow:hidden}
+.panel-hdr{height:34px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px}
+.panel-hdr.before{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.panel-hdr.after{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.panel-body{flex:1;overflow-y:auto;position:relative;padding:0}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
+.mall-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 14px;display:flex;align-items:center;gap:10px}
+.mall-logo{font-weight:700;font-size:13px;color:#1f2937;display:flex;align-items:center;gap:6px}
+.mall-logo::before{content:'';width:20px;height:20px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:4px}
+.product-card{display:flex;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin:8px 12px;background:#fff;position:relative}
+.product-card img{width:56px;height:56px;object-fit:contain;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;padding:3px}
+.product-card .pc-info{flex:1}
+.product-card .pc-name{font-size:12px;font-weight:600;color:#1f2937;margin-bottom:4px}
+.product-card .pc-price{font-size:14px;font-weight:700;color:#dc2626;margin-bottom:3px}
+.product-card .pc-source{display:inline-block;font-size:9px;padding:2px 7px;border-radius:3px;font-weight:600}
+.product-card .pc-source.green{background:#dcfce7;color:#166534}
+.product-card .pc-source.red{background:#fecaca;color:#991b1b}
+.btn-shelf{background:#3b82f6;color:#fff;border:none;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;margin-top:4px;transition:all .3s}
+.btn-shelf.clicked{background:#16a34a;transform:scale(.95)}
+/* System bar nodes */
+.sys-inner{display:flex;flex-direction:column;align-items:center;padding:12px 6px;height:100%;justify-content:center;gap:6px}
+.sys-label{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase}
+.sys-node{width:88%;padding:8px 5px;border-radius:8px;text-align:center;position:relative;transition:all .4s}
+.sys-node .n-icon{font-size:13px;display:block;margin-bottom:2px}
+.sys-node .n-name{font-size:9.5px;font-weight:700;display:block}
+.sys-node .n-desc{font-size:8px;display:block;margin-top:2px;opacity:.6}
+.sys-node.n-blue{background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.4);color:#93c5fd}
+.sys-node.n-gray{background:rgba(148,163,184,.08);border:2px solid rgba(148,163,184,.3);color:#94a3b8}
+.sys-node.n-green{background:rgba(34,197,94,.08);border:2px solid rgba(34,197,94,.3);color:#86efac}
+.sys-node.n-glow{background:rgba(59,130,246,.15);border:2px solid rgba(96,165,250,.6);color:#dbeafe;box-shadow:0 0 12px rgba(59,130,246,.3)}
+.sys-node.n-active{box-shadow:0 0 16px rgba(59,130,246,.5);border-color:#60a5fa;animation:nodeGlow 1.5s ease-in-out infinite}
+.sys-connector{width:2px;height:14px;background:rgba(255,255,255,.1);position:relative}
+.sys-connector-label{font-size:8px;color:rgba(255,255,255,.35);text-align:center;margin:2px 0}
+.sys-sub-row{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:88%}
+.sys-sub-node{padding:4px 2px;border-radius:5px;text-align:center;font-size:8px;font-weight:700;transition:all .4s}
+.sys-sub-node.sn-gray{background:rgba(148,163,184,.08);border:1.5px solid rgba(148,163,184,.25);color:#94a3b8}
+.sys-sub-node.sn-active{box-shadow:0 0 8px currentColor;border-color:currentColor}
+/* Particle */
+.particle{position:absolute;border-radius:50%;pointer-events:none;z-index:50}
+.node-pulse{animation:nodePulse .4s ease-out}
+/* Action overlay */
+.action-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;background:rgba(0,0,0,.15);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .4s}
+.action-overlay.visible{opacity:1;pointer-events:auto}
+.action-btn{padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.action-btn.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
+.action-btn.green{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff}
+/* Transition overlay */
+.transition-overlay{position:absolute;inset:0;bottom:44px;display:flex;align-items:center;justify-content:center;background:rgba(10,14,26,.92);z-index:80;opacity:0;pointer-events:none;transition:opacity .4s}
+.transition-overlay.visible{opacity:1;pointer-events:auto}
+.transition-text{color:#93c5fd;font-size:16px;font-weight:600;letter-spacing:1px;animation:fadeInUp .5s ease-out}
+/* Bottom bar */
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(135deg,#0f172a,#1e293b);display:flex;align-items:center;padding:0 20px;gap:12px;border-top:1px solid rgba(59,130,246,.15);z-index:70}
+.step-text{flex:1;font-size:11px;color:rgba(255,255,255,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-dots{display:flex;gap:6px;align-items:center}
+.progress-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.progress-dots .dot.active{background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.5);transform:scale(1.2)}
+.progress-dots .dot.done{background:rgba(255,255,255,.5)}
+.kb-hint{font-size:10px;color:rgba(255,255,255,.3);margin-left:8px}
+/* Scene 1 specific */
+.s1-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-width:800px;width:100%;margin:20px auto}
+.s1-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px;text-align:center;position:relative;min-height:120px}
+.s1-card img{width:44px;height:44px;object-fit:contain;border-radius:6px;margin-bottom:6px}
+.s1-card .card-name{font-size:11px;color:#e2e8f0;font-weight:600;margin-bottom:3px}
+.s1-card .card-price{font-size:10px;color:#94a3b8}
+.s1-card .red-tag{position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;font-size:9px;padding:3px 7px;border-radius:4px;font-weight:700;opacity:0;transform:scale(.8);transition:all .4s;white-space:nowrap;box-shadow:0 2px 8px rgba(220,38,38,.4)}
+.s1-card .red-tag.show{opacity:1;transform:scale(1)}
+.stat-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.stat-item{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);padding:8px 16px;border-radius:8px;font-size:12px;color:#fca5a5;font-weight:600;opacity:0;transform:translateY(10px);transition:all .5s}
+.stat-item.show{opacity:1;transform:translateY(0)}
+.pain-pulse{color:#ef4444;font-size:16px;font-weight:700;margin-top:16px;opacity:0;animation:nonePulse 1.5s ease-in-out infinite;transition:opacity .5s}
+.pain-pulse.show{opacity:1}
+/* Audit result panel */
+.audit-panel{padding:10px 12px;margin:8px 12px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px}
+.audit-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;margin-bottom:4px;font-size:11px;opacity:0;transform:translateX(-10px);transition:all .4s}
+.audit-item.show{opacity:1;transform:translateX(0)}
+.audit-item.pass{background:#dcfce7;border:1px solid #86efac;color:#166534}
+.audit-item.warn{background:#fef3c7;border:1px solid #fde68a;color:#92400e}
+.audit-item.fail{background:#fecaca;border:1px solid #fca5a5;color:#991b1b}
+.audit-item.warn-pulse{animation:warnPulse 1s ease-in-out 3}
+.audit-icon{font-size:14px;flex-shrink:0}
+.audit-text{flex:1;font-weight:600}
+.audit-summary{display:flex;align-items:center;gap:12px;padding:10px 12px;margin:8px 12px;border-radius:8px;font-size:13px;font-weight:700;opacity:0;transition:all .5s}
+.audit-summary.show{opacity:1}
+.audit-summary.pass-bg{background:#dcfce7;border:2px solid #22c55e;color:#166534}
+.audit-summary.fail-bg{background:#fecaca;border:2px solid #ef4444;color:#991b1b}
+/* Batch grid */
+.batch-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;padding:12px;max-width:320px}
+.batch-cell{width:100%;aspect-ratio:1;border-radius:3px;background:rgba(148,163,184,.2);transition:background .3s,transform .2s}
+.batch-cell.green{background:#22c55e;box-shadow:0 0 4px rgba(34,197,94,.5)}
+.batch-cell.orange{background:#f59e0b;box-shadow:0 0 4px rgba(245,158,11,.5)}
+.batch-cell.red{background:#ef4444;box-shadow:0 0 4px rgba(239,68,68,.5)}
+/* Metric cards */
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:900px;width:100%}
+.metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px 20px;text-align:center;opacity:0;transform:translateY(20px);transition:all .6s}
+.metric-card.show{opacity:1;transform:translateY(0)}
+.metric-card:hover{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.03)}
+.metric-icon{font-size:28px;margin-bottom:8px}
+.metric-num{font-size:32px;font-weight:800;margin:8px 0;font-family:'Segoe UI',monospace;color:#f0f9ff}
+.metric-label{font-size:11px;color:rgba(255,255,255,.5);margin-top:4px}
+.metric-change{font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;padding:3px 10px;background:rgba(255,255,255,.05);border-radius:8px;display:inline-block}
+.slogan{font-size:18px;font-weight:700;color:#93c5fd;letter-spacing:3px;margin-top:40px;text-align:center;opacity:0;transition:opacity 1s}
+.slogan.show{opacity:1}
+/* Excel sim */
+.excel-sim{border:1px solid #d1d5db;border-radius:4px;margin:8px 12px;overflow:hidden;font-size:10px}
+.excel-sim .excel-row{display:grid;grid-template-columns:30px 1fr 60px 50px;border-bottom:1px solid #e5e7eb;padding:4px 6px;align-items:center}
+.excel-sim .excel-row.hdr{background:#f1f5f9;font-weight:700;color:#64748b}
+.excel-sim .excel-row .cell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#374151}
+.progress-bar-sim{height:4px;background:#e5e7eb;border-radius:2px;margin:8px 12px;overflow:hidden}
+.progress-bar-sim .fill{height:100%;background:#3b82f6;border-radius:2px;transition:width 3s linear}
+/* Batch result columns */
+.batch-columns{display:flex;gap:8px;padding:8px 12px}
+.batch-col{flex:1;border-radius:8px;padding:8px;text-align:center}
+.batch-col.col-green{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.3)}
+.batch-col.col-orange{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3)}
+.batch-col.col-red{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3)}
+.batch-col .col-count{font-size:20px;font-weight:800}
+.batch-col .col-label{font-size:9px;color:#6b7280;margin-top:2px}
+.batch-col .col-items{font-size:9px;color:#374151;margin-top:4px;line-height:1.6}
+@keyframes nodeGlow{0%,100%{box-shadow:0 0 12px rgba(59,130,246,.3)}50%{box-shadow:0 0 20px rgba(59,130,246,.6)}}
+@keyframes nodePulse{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 20px 4px transparent}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes warnPulse{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0)}50%{box-shadow:0 0 12px 4px rgba(245,158,11,.3)}}
+@keyframes nonePulse{0%,100%{opacity:.6}50%{opacity:1}}
+@keyframes batchFlash{0%{transform:scale(1)}50%{transform:scale(1.05)}100%{transform:scale(1)}}
+/* Cursor animation */
+#simCursor{position:fixed;z-index:99999;pointer-events:none;opacity:0;transition:opacity .3s}
+#simCursor.visible{opacity:1}
+.cursor-ring{position:absolute;top:-18px;left:-18px;width:44px;height:44px;border-radius:50%;border:2px solid #4fc3f7;box-shadow:0 0 15px #4fc3f7,0 0 30px #4fc3f7;animation:ringPulse 1.5s ease-in-out infinite;pointer-events:none}
+@keyframes ringPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes cursorClick{0%{transform:scale(1)}30%{transform:scale(.6)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>商品审核 · AI六维审核能力演示</h1>
+  <div class="header-right">
+    <div class="scene-nav" id="sceneNav"></div>
+    <span class="scene-badge" id="sceneBadge">场景 1/4</span>
+  </div>
+</div>
+<div class="main" id="mainArea"></div>
+<div class="transition-overlay" id="transOverlay"><span class="transition-text" id="transText"></span></div>
+<div class="bottom-bar">
+  <span class="step-text" id="stepText">准备开始...</span>
+  <div class="progress-dots" id="dots"></div>
+  <span class="kb-hint">← → Space</span>
+</div>
+<script>
+const IMG='./images/';
+let scene=0,phase='idle',animTimers=[],paused=false,inSubScene=false;
+function clearAnim(){hideCursor();animTimers.forEach(t=>{clearTimeout(t);clearInterval(t)});animTimers=[];}
+function delay(ms){return new Promise(r=>{const t=setTimeout(r,ms);animTimers.push(t);})}
+const SCENES=[
+  {id:'s1',title:'痛点引入',type:'full'},
+  {id:'s2',title:'单品审核',type:'split'},
+  {id:'s3',title:'批量审核',type:'split'},
+  {id:'s4',title:'价值总结',type:'full'}
+];
+function $(id){return document.getElementById(id)}
+function setHTML(id,html){const el=$(id);if(el)el.innerHTML=html;}
+function showEl(el){if(typeof el==='string')el=$(el);if(el)el.classList.add('show');}
+
+// ===== CURSOR ANIMATION SYSTEM =====
+let cursorEl=null,cursorRing=null,lastPos={x:60,y:60};
+function initCursor(){
+  cursorEl=document.createElement('div');cursorEl.id='simCursor';
+  cursorEl.innerHTML='<svg width="22" height="28" viewBox="0 0 22 28"><path d="M1,1 L1,20 L6,15 L10.5,25 L13.5,23.5 L9,13.5 L16,13.5Z" fill="white" stroke="rgba(0,0,0,.4)" stroke-width="0.8"/></svg><div class="cursor-ring"></div>';
+  document.body.appendChild(cursorEl);
+  cursorRing=cursorEl.querySelector('.cursor-ring');
+}
+function hideCursor(){if(cursorEl)cursorEl.classList.remove('visible');}
+async function animateCursor(target,cb){
+  if(!cursorEl)initCursor();
+  const el=typeof target==='string'?document.querySelector(target):target;
+  if(!el){if(cb)cb();return;}
+  const r=el.getBoundingClientRect();
+  const tx=r.left+r.width/2,ty=r.top+r.height/2;
+  cursorEl.style.transition='none';
+  cursorEl.style.left=lastPos.x+'px';cursorEl.style.top=lastPos.y+'px';
+  cursorEl.classList.add('visible');
+  await delay(30);
+  cursorEl.style.transition='left 500ms cubic-bezier(.4,0,.2,1),top 500ms cubic-bezier(.4,0,.2,1)';
+  cursorEl.style.left=tx+'px';cursorEl.style.top=ty+'px';
+  await delay(800);
+  if(cursorRing){cursorRing.style.animation='cursorClick 250ms ease-out';setTimeout(()=>{if(cursorRing)cursorRing.style.animation='ringPulse 1.5s ease-in-out infinite';},300);}
+  await delay(250);
+  lastPos={x:tx,y:ty};
+  if(cb)cb();
+}
+
+function fireParticles(container,startEl,endEl,color,onArrive){
+  if(!container||!startEl||!endEl)return;
+  const cr=container.getBoundingClientRect();
+  const sr=startEl.getBoundingClientRect();
+  const er=endEl.getBoundingClientRect();
+  const x1=sr.left+sr.width/2-cr.left,y1=sr.top+sr.height/2-cr.top;
+  const x2=er.left+er.width/2-cr.left,y2=er.top+er.height/2-cr.top;
+  const dur=800;
+  for(let i=0;i<3;i++){
+    const p=document.createElement('div');
+    const size=i===0?7:4;const op=i===0?1:0.4-i*0.1;
+    p.style.cssText=`position:absolute;left:${x1}px;top:${y1}px;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};z-index:${50-i};opacity:${op};pointer-events:none;transition:left ${dur+i*120}ms cubic-bezier(.4,0,.2,1),top ${dur+i*120}ms cubic-bezier(.4,0,.2,1);`;
+    container.appendChild(p);
+    requestAnimationFrame(()=>{p.style.left=x2+'px';p.style.top=y2+'px';});
+    setTimeout(()=>p.remove(),dur+i*120+100);
+  }
+  setTimeout(()=>{endEl.classList.add('node-pulse');setTimeout(()=>endEl.classList.remove('node-pulse'),400);if(onArrive)onArrive();},dur);
+}
+
+function sysBarLeft(){
+  return `<div class="sys-inner"><span class="sys-label">系统链路</span>
+    <div class="sys-node n-gray" id="lSrc"><span class="n-icon">🌐</span><span class="n-name">外部商城</span></div>
+    <div class="sys-connector"></div>
+    <div class="sys-connector-label">无审核环节</div>
+    <div class="sys-connector"></div>
+    <div class="sys-node n-gray" id="lDst"><span class="n-icon">🏪</span><span class="n-name">采购商城</span></div></div>`;
+}
+function sysBarRight(state){
+  const apiCls=state==='active'?'n-glow n-active':state==='ok'?'n-glow':'n-glow';
+  const subCls=state==='ok'?' sn-active':'';
+  return `<div class="sys-inner"><span class="sys-label">系统链路</span>
+    <div class="sys-node n-blue" id="rSrc"><span class="n-icon">🌐</span><span class="n-name">外部商城</span></div>
+    <div class="sys-connector" id="rConn1"></div>
+    <div class="sys-node ${apiCls}" id="rAPI"><span class="n-icon">🛡️</span><span class="n-name">商品审核API</span><span class="n-desc">六维检测</span></div>
+    <div class="sys-connector" id="rConn2"></div>
+    <div class="sys-sub-row" id="rSubRow">
+      <div class="sys-sub-node sn-gray${subCls}" id="rNLP">文本NLP</div>
+      <div class="sys-sub-node sn-gray${subCls}" id="rCV">CV图像</div>
+      <div class="sys-sub-node sn-gray${subCls}" id="rPrice">价格模型</div>
+      <div class="sys-sub-node sn-gray${subCls}" id="rMDM">MDM比对</div>
+    </div>
+    <div class="sys-connector" id="rConn3"></div>
+    <div class="sys-node n-green" id="rDst"><span class="n-icon">🏪</span><span class="n-name">采购商城</span></div></div>`;
+}
+
+// ===== SCENE 1 =====
+function buildScene1(){
+  return `<div class="scene-full active" id="s1">
+    <h2 style="color:#f87171;font-size:22px;font-weight:700;margin-bottom:6px">没有AI审核，商城在失控</h2>
+    <p style="color:rgba(255,255,255,.4);font-size:12px;margin-bottom:20px">商品上架无门槛，问题商品持续涌入</p>
+    <div class="s1-grid" id="s1Grid">
+      <div class="s1-card"><img src="${IMG}bolt.png" onerror="this.style.background='#334155'"><div class="card-name">M12螺栓</div><div class="card-price">¥3.20</div><span class="red-tag" id="rt1">命名不规范❌</span></div>
+      <div class="s1-card"><img src="${IMG}inner_hex.png" onerror="this.style.background='#334155'"><div class="card-name">紧固件-其他</div><div class="card-price">¥1.50</div><span class="red-tag" id="rt2">分类错误❌</span></div>
+      <div class="s1-card"><img src="${IMG}washer.png" onerror="this.style.background='#334155'"><div class="card-name">高强垫圈</div><div class="card-price">¥28.00</div><span class="red-tag" id="rt3">价格虚高320%❌</span></div>
+      <div class="s1-card"><img src="${IMG}bolt.png" style="filter:blur(3px)" onerror="this.style.background='#334155'"><div class="card-name">螺栓配件</div><div class="card-price">¥5.60</div><span class="red-tag" id="rt4">图片不合规❌</span></div>
+      <div class="s1-card"><img src="${IMG}bolt.png" onerror="this.style.background='#334155'"><div class="card-name">M12螺栓</div><div class="card-price">¥3.50</div><span class="red-tag" id="rt5">重复上架❌</span></div>
+    </div>
+    <div class="stat-row" id="s1Stats">
+      <div class="stat-item" id="si1">年均漏检率 35%</div>
+      <div class="stat-item" id="si2">问题商品平均 3 个月才被发现</div>
+      <div class="stat-item" id="si3">每年因不规范商品导致采购纠纷 47 起</div>
+    </div>
+    <div class="pain-pulse" id="s1Pain">⚠️ 商城信任度持续下降</div>
+    <div class="action-overlay" id="s1Action"><button class="action-btn blue" onclick="nextScene()">查看AI审核方案 →</button></div>
+  </div>`;
+}
+async function playScene1(){
+  phase='playing';await delay(800);
+  const tags=['rt1','rt2','rt3','rt4','rt5'];
+  for(const id of tags){showEl(id);await delay(1200);}
+  await delay(800);
+  showEl('si1');await delay(500);showEl('si2');await delay(500);showEl('si3');
+  await delay(1000);
+  const pain=$('s1Pain');if(pain)pain.classList.add('show');
+  await delay(2000);
+  phase='scene-done';const overlay=$('s1Action');if(overlay)overlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s1Action .action-btn',()=>{nextScene();});
+}
+
+// ===== SCENE 2 =====
+function buildScene2(){
+  return `<div class="scene-split active" id="s2">
+    <div class="half half-left" id="s2Left"><div class="col-mall"><div class="panel-hdr before">❌ 无AI审核</div><div class="panel-body" id="s2LBody"></div></div><div class="col-sys" id="s2LSys"></div></div>
+    <div class="half half-right dimmed" id="s2Right"><div class="col-sys" id="s2RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ AI六维审核</div><div class="panel-body" id="s2RBody"></div></div></div>
+    <div class="action-overlay" id="s2ActionMid"><button class="action-btn blue" onclick="triggerRight()">查看AI审核 →</button></div>
+    <div class="action-overlay" id="s2ActionEnd"><button class="action-btn green" onclick="transTo2b()">继续：问题拦截 →</button></div>
+  </div>`;
+}
+async function playScene2Left(){
+  phase='playing-left';
+  setHTML('s2LSys',sysBarLeft());
+  setHTML('s2RSys',sysBarRight('idle'));
+  setHTML('s2RBody',`<div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI审核引擎待命...</div>`);
+  // Left: show product card + direct shelf
+  setHTML('s2LBody',`<div class="mall-nav"><span class="mall-logo">外部商城</span></div>
+    <div class="product-card" id="s2Card"><img src="${IMG}bolt.png" onerror="this.style.background='#f1f5f9'"><div class="pc-info"><div class="pc-name">M12×80 高强度六角螺栓 10.9级</div><div class="pc-price">¥3.20/个</div><span class="pc-source green">震坤行</span><br><button class="btn-shelf" id="s2ShelfBtn">申请上架</button></div></div>
+    <div id="s2LFlow" style="padding:8px 12px"></div>`);
+  await delay(1500);
+  await animateCursor('#s2ShelfBtn',()=>{
+    const btn=$('s2ShelfBtn');if(btn){btn.classList.add('clicked');btn.textContent='已上架 ✓';}
+  });
+  await delay(1000);
+  // Show manual review scene
+  setHTML('s2LFlow',`<div style="font-size:11px;color:#6b7280;margin:8px 0;font-weight:600">📋 人工审核流程：</div>
+    <div class="excel-sim"><div class="excel-row hdr"><span class="cell">#</span><span class="cell">商品名</span><span class="cell">状态</span><span class="cell">耗时</span></div><div class="excel-row"><span class="cell" style="color:#9ca3af">1</span><span class="cell">M12×80螺栓</span><span class="cell" style="color:#16a34a">✓</span><span class="cell" style="color:#9ca3af">12min</span></div><div class="excel-row"><span class="cell" style="color:#9ca3af">2</span><span class="cell">绝缘手套</span><span class="cell" style="color:#d97706">审核中</span><span class="cell" style="color:#9ca3af">—</span></div></div>
+    <div class="progress-bar-sim"><div class="fill" id="s2ProgFill" style="width:0"></div></div>
+    <div style="text-align:center;font-size:10px;color:#9ca3af;margin-top:4px">平均审核耗时 15分钟/件</div>
+    <div id="s2PainNote" style="opacity:0;transition:opacity .5s;margin-top:12px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#991b1b;text-align:center;font-weight:600">⚠️ 人工审核效率低，漏检率高</div>`);
+  await delay(500);
+  const fill=$('s2ProgFill');if(fill)fill.style.width='15%';
+  await delay(2500);
+  const pain=$('s2PainNote');if(pain)pain.style.opacity='1';
+  await delay(2000);
+  phase='left-done';
+  const leftHalf=$('s2Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s2ActionMid .action-btn',()=>{triggerRight();});
+}
+async function playScene2Right(){
+  phase='playing-right';
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s2Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s2RSys',sysBarRight('idle'));
+  setHTML('s2RBody',`<div class="mall-nav"><span class="mall-logo">外部商城</span></div>
+    <div class="product-card" id="s2RCard"><img src="${IMG}bolt.png" onerror="this.style.background='#f1f5f9'"><div class="pc-info"><div class="pc-name">M12×80 高强度六角螺栓 10.9级</div><div class="pc-price">¥3.20/个</div><span class="pc-source green">震坤行</span><br><button class="btn-shelf" id="s2RShelfBtn">申请上架</button></div></div>
+    <div id="s2RAudit"></div><div id="s2RSummary"></div>`);
+  await delay(600);
+  const btn=$('s2RShelfBtn');
+  await animateCursor('#s2RShelfBtn',()=>{
+    if(btn){btn.classList.add('clicked');btn.textContent='提交审核...';}
+  });
+  await delay(500);
+  // Particle: card -> API
+  const container=$('s2Right');const cardEl=$('s2RCard');const apiEl=$('rAPI');
+  fireParticles(container,cardEl,apiEl,'#3b82f6');
+  setHTML('s2RSys',sysBarRight('active'));
+  await delay(1000);
+  // Dispatch to sub modules
+  const subs=['rNLP','rCV','rPrice','rMDM'];
+  for(const id of subs){const el=$(id);if(el){el.classList.add('sn-active');el.style.color='#93c5fd';}await delay(200);}
+  await delay(600);
+  setHTML('s2RSys',sysBarRight('ok'));
+  // Return particle green
+  const apiEl2=$('rAPI');const auditArea=$('s2RAudit');
+  if(apiEl2&&auditArea)fireParticles(container,apiEl2,auditArea,'#22c55e');
+  await delay(800);
+  // 6-dimension audit results - scheme C rhythm
+  const items=[
+    {icon:'✅',text:'文本合规：商品名称及描述规范',cls:'pass',pauseMs:500},
+    {icon:'✅',text:'品类校验：已匹配 紧固件→螺栓→六角螺栓（96%）',cls:'pass',pauseMs:500},
+    {icon:'✅',text:'参数规范：符合GB/T 5782-2016',cls:'pass',pauseMs:500},
+    {icon:'✅',text:'图片合规：主图清晰，符合上架要求',cls:'pass',pauseMs:500},
+    {icon:'⚠️',text:'价格异常：当前¥3.2，高于市场均价约8%，建议人工核实',cls:'warn',pauseMs:2000},
+    {icon:'✅',text:'重复商品：已检索24件商品，未发现重复',cls:'pass',pauseMs:500}
+  ];
+  let auditHTML='<div class="audit-panel" id="s2AuditPanel">';
+  items.forEach((_,i)=>{auditHTML+=`<div class="audit-item ${items[i].cls}" id="ai${i}"><span class="audit-icon">${items[i].icon}</span><span class="audit-text">${items[i].text}</span></div>`;});
+  auditHTML+='</div>';
+  setHTML('s2RAudit',auditHTML);
+  for(let i=0;i<items.length;i++){
+    showEl('ai'+i);
+    if(i===4){const el=$('ai4');if(el)el.classList.add('warn-pulse');}
+    await delay(items[i].pauseMs);
+  }
+  await delay(500);
+  // Summary
+  setHTML('s2RSummary',`<div class="audit-summary pass-bg" id="s2Sum"><span style="font-size:18px">✅</span><span>置信度 94% | 建议通过</span></div>`);
+  showEl('s2Sum');
+  await delay(500);
+  await animateCursor('#s2RShelfBtn',()=>{
+    if(btn){btn.textContent='确认上架 ✓';btn.style.background='#16a34a';btn.style.animation='nonePulse 1s ease-in-out 3';}
+  });
+  await delay(2000);
+  phase='scene-done';const endOverlay=$('s2ActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s2ActionEnd .action-btn',()=>{transTo2b();});
+}
+
+// Transition to Scene 2b
+async function transTo2b(){
+  const endOverlay=$('s2ActionEnd');if(endOverlay)endOverlay.classList.remove('visible');
+  const trans=$('transOverlay');const transText=$('transText');
+  if(transText)transText.textContent='接下来：问题商品拦截演示';
+  if(trans)trans.classList.add('visible');
+  await delay(1500);
+  if(trans)trans.classList.remove('visible');
+  await delay(300);
+  inSubScene=true;loadScene2b();
+}
+function loadScene2b(){
+  clearAnim();phase='idle';
+  $('mainArea').innerHTML=buildScene2b();
+  $('stepText').textContent='[单品审核 — 问题拦截]';
+  playScene2bLeft();
+}
+function buildScene2b(){
+  return `<div class="scene-split active" id="s2b">
+    <div class="half half-left" id="s2bLeft"><div class="col-mall"><div class="panel-hdr before">❌ 无AI审核</div><div class="panel-body" id="s2bLBody"></div></div><div class="col-sys" id="s2bLSys"></div></div>
+    <div class="half half-right dimmed" id="s2bRight"><div class="col-sys" id="s2bRSys"></div><div class="col-mall"><div class="panel-hdr after">✅ AI六维审核</div><div class="panel-body" id="s2bRBody"></div></div></div>
+    <div class="action-overlay" id="s2bActionMid"><button class="action-btn blue" onclick="triggerRight()">查看AI审核 →</button></div>
+    <div class="action-overlay" id="s2bActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene2bLeft(){
+  phase='playing-left';
+  setHTML('s2bLSys',sysBarLeft());
+  setHTML('s2bRSys',sysBarRight('idle'));
+  setHTML('s2bRBody',`<div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI审核引擎待命...</div>`);
+  setHTML('s2bLBody',`<div class="mall-nav"><span class="mall-logo">外部商城</span></div>
+    <div class="product-card" id="s2bCard"><img src="${IMG}bolt.png" style="filter:blur(3px)" onerror="this.style.background='#f1f5f9'"><div class="pc-info"><div class="pc-name">M12螺栓</div><div class="pc-price">¥28.00/个</div><span class="pc-source red">1688</span><br><button class="btn-shelf" id="s2bShelfBtn">申请上架</button></div></div>
+    <div id="s2bLNote" style="opacity:0;transition:opacity .5s;margin:10px 12px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#991b1b;text-align:center;font-weight:600">⚠️ 无审核→问题商品持续涌入</div>`);
+  await delay(1200);
+  await animateCursor('#s2bShelfBtn',()=>{
+    const btn=$('s2bShelfBtn');if(btn){btn.classList.add('clicked');btn.textContent='已上架 ✓';}
+  });
+  await delay(1500);
+  const note=$('s2bLNote');if(note)note.style.opacity='1';
+  await delay(2000);
+  phase='left-done';
+  const leftHalf=$('s2bLeft');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s2bActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s2bActionMid .action-btn',()=>{triggerRight();});
+}
+async function playScene2bRight(){
+  phase='playing-right';
+  const overlay=$('s2bActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s2bRight');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s2bRSys',sysBarRight('idle'));
+  setHTML('s2bRBody',`<div class="mall-nav"><span class="mall-logo">外部商城</span></div>
+    <div class="product-card" id="s2bRCard"><img src="${IMG}bolt.png" style="filter:blur(3px)" onerror="this.style.background='#f1f5f9'"><div class="pc-info"><div class="pc-name">M12螺栓</div><div class="pc-price">¥28.00/个</div><span class="pc-source red">1688</span><br><button class="btn-shelf" id="s2bRBtn">申请上架</button></div></div>
+    <div id="s2bRAudit"></div><div id="s2bRSummary"></div>`);
+  await delay(600);
+  const btn=$('s2bRBtn');
+  await animateCursor('#s2bRBtn',()=>{
+    if(btn){btn.classList.add('clicked');btn.textContent='提交审核...';}
+  });
+  await delay(500);
+  const container=$('s2bRight');const cardEl=$('s2bRCard');const apiEl=$('rAPI');
+  fireParticles(container,cardEl,apiEl,'#3b82f6');
+  setHTML('s2bRSys',sysBarRight('active'));
+  await delay(1000);
+  const subs=['rNLP','rCV','rPrice','rMDM'];
+  for(const id of subs){const el=$(id);if(el){el.classList.add('sn-active');el.style.color='#fca5a5';}await delay(200);}
+  await delay(600);
+  setHTML('s2bRSys',sysBarRight('ok'));
+  const apiEl2=$('rAPI');const auditArea=$('s2bRAudit');
+  if(apiEl2&&auditArea)fireParticles(container,apiEl2,auditArea,'#ef4444');
+  await delay(800);
+  const items=[
+    {icon:'❌',text:'文本合规：名称缺少规格型号，不符合命名规范',cls:'fail',pauseMs:600},
+    {icon:'⚠️',text:'品类校验：无法精准匹配类目，置信度仅42%',cls:'warn',pauseMs:600},
+    {icon:'❌',text:'参数规范：缺少材质、强度等级等关键参数',cls:'fail',pauseMs:600},
+    {icon:'❌',text:'图片合规：图片模糊，分辨率低于要求',cls:'fail',pauseMs:600},
+    {icon:'❌',text:'价格异常：¥28，高于市场均价320%',cls:'fail',pauseMs:2000},
+    {icon:'⚠️',text:'重复商品：与现有"M12×80六角螺栓"相似度78%',cls:'warn',pauseMs:600}
+  ];
+  let auditHTML='<div class="audit-panel" id="s2bAuditPanel">';
+  items.forEach((_,i)=>{auditHTML+=`<div class="audit-item ${items[i].cls}" id="bi${i}"><span class="audit-icon">${items[i].icon}</span><span class="audit-text">${items[i].text}</span></div>`;});
+  auditHTML+='</div>';
+  setHTML('s2bRAudit',auditHTML);
+  for(let i=0;i<items.length;i++){
+    showEl('bi'+i);
+    if(i===4){const el=$('bi4');if(el)el.classList.add('warn-pulse');}
+    await delay(items[i].pauseMs);
+  }
+  await delay(500);
+  setHTML('s2bRSummary',`<div class="audit-summary fail-bg" id="s2bSum"><span style="font-size:18px">❌</span><span>置信度 18% | 建议驳回</span></div>
+    <div style="margin:8px 12px;padding:10px;background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;font-size:10px;color:#991b1b;line-height:1.8;opacity:0;transition:opacity .5s" id="s2bFix"><b>修改建议：</b><br>1. 补充完整规格型号（如M12×80）<br>2. 添加材质及强度等级<br>3. 上传清晰主图（≥800×800）<br>4. 核实价格合理性</div>`);
+  showEl('s2bSum');
+  await delay(600);
+  const fix=$('s2bFix');if(fix)fix.style.opacity='1';
+  await animateCursor('#s2bRBtn',()=>{
+    if(btn){btn.textContent='已驳回 ✗';btn.style.background='#dc2626';}
+  });
+  await delay(2000);
+  phase='scene-done';inSubScene=false;
+  const endOverlay=$('s2bActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s2bActionEnd .action-btn',()=>{nextScene();});
+}
+
+// ===== SCENE 3 =====
+function buildScene3(){
+  return `<div class="scene-split active" id="s3">
+    <div class="half half-left" id="s3Left"><div class="col-mall"><div class="panel-hdr before">❌ 人工逐个审核</div><div class="panel-body" id="s3LBody"></div></div><div class="col-sys" id="s3LSys"></div></div>
+    <div class="half half-right dimmed" id="s3Right"><div class="col-sys" id="s3RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ AI批量审核</div><div class="panel-body" id="s3RBody"></div></div></div>
+    <div class="action-overlay" id="s3ActionMid"><button class="action-btn blue" onclick="triggerRight()">查看AI批量审核 →</button></div>
+    <div class="action-overlay" id="s3ActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene3Left(){
+  phase='playing-left';
+  setHTML('s3LSys',sysBarLeft());
+  setHTML('s3RSys',sysBarRight('idle'));
+  setHTML('s3RBody',`<div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI批量引擎待命...</div>`);
+  const items=['M12×80六角螺栓','绝缘手套 L码','BV电缆 2.5mm²','DN50球阀','M10弹垫','安全帽 白色','304不锈钢管','防护口罩 N95','膨胀螺栓 M8','润滑油 5L'];
+  const imgs=['bolt.png','gloves.png','cable.png','valve.png','washer.png','helmet.png','bolt.png','mask.png','expansion.png','oil.png'];
+  let listHTML='<div style="padding:8px 12px"><div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">📦 待上架队列（100件）</div><div style="max-height:200px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px">';
+  for(let i=0;i<10;i++){
+    listHTML+=`<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;border-bottom:1px solid #f1f5f9;font-size:10px"><img src="${IMG}${imgs[i]}" style="width:24px;height:24px;object-fit:contain;border-radius:3px" onerror="this.style.background='#f1f5f9'"><span style="flex:1;color:#374151">${items[i]}</span><span style="color:#9ca3af">待审</span></div>`;
+  }
+  listHTML+=`<div style="text-align:center;padding:6px;color:#9ca3af;font-size:9px">...还有90件</div></div>`;
+  listHTML+=`<div style="margin-top:8px"><div style="font-size:10px;color:#6b7280;margin-bottom:4px">人工审核进度：</div><div class="progress-bar-sim"><div class="fill" id="s3ProgFill" style="width:0"></div></div><div style="display:flex;justify-content:space-between;font-size:9px;color:#9ca3af;margin-top:3px"><span id="s3ProgCount">0/100</span><span>预计耗时 25小时</span></div></div>`;
+  listHTML+=`<div id="s3PainNote" style="opacity:0;transition:opacity .5s;margin-top:10px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#991b1b;text-align:center;font-weight:600">⚠️ 效率极低，漏检不可避免</div></div>`;
+  setHTML('s3LBody',listHTML);
+  await delay(1000);
+  const fill=$('s3ProgFill');if(fill)fill.style.width='3%';
+  const countEl=$('s3ProgCount');
+  let c=0;const iv=setInterval(()=>{c++;if(c>3)c=3;if(countEl)countEl.textContent=c+'/100';if(c>=3)clearInterval(iv);},1000);animTimers.push(iv);
+  await delay(3500);
+  const pain=$('s3PainNote');if(pain)pain.style.opacity='1';
+  await delay(2000);
+  phase='left-done';
+  const leftHalf=$('s3Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s3ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s3ActionMid .action-btn',()=>{triggerRight();});
+}
+async function playScene3Right(){
+  phase='playing-right';
+  const overlay=$('s3ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s3Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s3RSys',sysBarRight('idle'));
+  // Build 10x10 grid
+  let gridHTML='<div style="padding:8px 12px"><div style="font-size:11px;font-weight:600;color:#374151;margin-bottom:6px">🛡️ AI批量审核</div><div style="display:flex;align-items:center;gap:12px;margin-bottom:8px"><span style="font-size:10px;color:#6b7280">已审核：</span><span style="font-size:16px;font-weight:800;color:#1d4ed8" id="s3Counter">0</span><span style="font-size:10px;color:#6b7280">/100</span><span id="s3Timer" style="font-size:10px;color:#16a34a;margin-left:auto;opacity:0;transition:opacity .5s">✓ 耗时 8.2秒</span></div><div class="batch-grid" id="s3Grid">';
+  for(let i=0;i<100;i++){gridHTML+=`<div class="batch-cell" id="bc${i}"></div>`;}
+  gridHTML+='</div><div id="s3Result" style="margin-top:10px;opacity:0;transition:opacity .5s"></div></div>';
+  setHTML('s3RBody',gridHTML);
+  await delay(500);
+  // Particle to API
+  const container=$('s3Right');const gridEl=$('s3Grid');const apiEl=$('rAPI');
+  fireParticles(container,gridEl,apiEl,'#3b82f6');
+  setHTML('s3RSys',sysBarRight('active'));
+  await delay(800);
+  const subs=['rNLP','rCV','rPrice','rMDM'];
+  for(const id of subs){const el=$(id);if(el){el.classList.add('sn-active');el.style.color='#93c5fd';}await delay(100);}
+  setHTML('s3RSys',sysBarRight('ok'));
+  await delay(300);
+  // Animate cells coloring - beat 1
+  const colors=[];
+  for(let i=0;i<100;i++){const r=Math.random();colors.push(r<0.82?'green':r<0.94?'orange':'red');}
+  const counter=$('s3Counter');
+  let count=0;
+  const cellInterval=setInterval(()=>{
+    if(count>=100){clearInterval(cellInterval);return;}
+    const el=$('bc'+count);if(el)el.classList.add(colors[count]);
+    count++;if(counter)counter.textContent=count;
+    if(count>=100){clearInterval(cellInterval);}
+  },45);
+  animTimers.push(cellInterval);
+  await delay(5000);
+  // Timer appears
+  const timer=$('s3Timer');if(timer)timer.style.opacity='1';
+  await delay(800);
+  // Flash grid
+  const grid=$('s3Grid');if(grid)grid.style.animation='batchFlash .3s ease-out';
+  await delay(1500);
+  // Beat 2: show categorized results
+  const result=$('s3Result');if(result)result.style.opacity='1';
+  const greenCount=colors.filter(c=>c==='green').length;
+  const orangeCount=colors.filter(c=>c==='orange').length;
+  const redCount=colors.filter(c=>c==='red').length;
+  setHTML('s3Result',`<div class="batch-columns">
+    <div class="batch-col col-green"><div class="col-count" style="color:#16a34a">${greenCount}</div><div class="col-label">通过上架</div><div class="col-items">M12×80螺栓<br>绝缘手套 L码</div></div>
+    <div class="batch-col col-orange"><div class="col-count" style="color:#d97706">${orangeCount}</div><div class="col-label">需人工复核</div><div class="col-items">DN50球阀<br>润滑油 5L</div></div>
+    <div class="batch-col col-red"><div class="col-count" style="color:#dc2626">${redCount}</div><div class="col-label">驳回</div><div class="col-items">M12螺栓(不规范)<br>模糊图商品</div></div>
+  </div>
+  <div style="margin-top:8px;padding:8px 10px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:6px;display:flex;gap:12px;justify-content:center;font-size:10px;color:#1d4ed8;font-weight:600;flex-wrap:wrap"><span>AI审核耗时 8.2秒</span><span>拦截率 ${orangeCount+redCount}%</span><span>预计节省人工 25小时</span></div>`);
+  await delay(2500);
+  phase='scene-done';const endOverlay=$('s3ActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+  await delay(800);
+  await animateCursor('#s3ActionEnd .action-btn',()=>{nextScene();});
+}
+
+// ===== SCENE 4 =====
+function buildScene4(){
+  return `<div class="scene-full active" id="s4">
+    <h2 style="color:#f0f9ff;font-size:22px;font-weight:700;margin-bottom:6px">AI商品审核 · 能力价值</h2>
+    <p style="color:rgba(255,255,255,.4);font-size:12px;margin-bottom:30px">六维度全覆盖 · 秒级响应 · 批量处理 · 零漏检</p>
+    <div class="metric-grid">
+      <div class="metric-card" id="mc1"><div class="metric-icon">⚡</div><div class="metric-label">审核效率</div><div class="metric-num" id="mv1">0</div><div class="metric-change">15分钟/件 → 1.2秒/件</div></div>
+      <div class="metric-card" id="mc2"><div class="metric-icon">🛡️</div><div class="metric-label">拦截率</div><div class="metric-num" id="mv2">0%</div><div class="metric-change">人工漏检35% → AI拦截99.2%</div></div>
+      <div class="metric-card" id="mc3"><div class="metric-icon">📦</div><div class="metric-label">批量能力</div><div class="metric-num" id="mv3">0</div><div class="metric-change">日处理100件 → 日处理10,000件</div></div>
+      <div class="metric-card" id="mc4"><div class="metric-icon">💰</div><div class="metric-label">成本节约</div><div class="metric-num" id="mv4">¥0万</div><div class="metric-change">年节省审核人力</div></div>
+    </div>
+    <div class="slogan" id="sloganText">六维度全覆盖 · 秒级响应 · 批量处理 · 零漏检</div>
+  </div>`;
+}
+async function playScene4(){
+  phase='playing';await delay(400);
+  const cards=['mc1','mc2','mc3','mc4'];for(const id of cards){showEl(id);await delay(200);}await delay(300);
+  // CountUp animations
+  const metrics=[
+    {id:'mv1',target:750,prefix:'提速',suffix:'倍'},
+    {id:'mv2',target:99.2,prefix:'',suffix:'%',decimal:true},
+    {id:'mv3',target:10000,prefix:'',suffix:'件/日'},
+    {id:'mv4',target:80,prefix:'¥',suffix:'万'}
+  ];
+  metrics.forEach(m=>{
+    let cur=0;const steps=40;const step=m.target/steps;
+    const iv=setInterval(()=>{
+      cur=Math.min(cur+step,m.target);
+      const el=$(m.id);
+      if(el)el.textContent=m.prefix+(m.decimal?cur.toFixed(1):Math.round(cur))+m.suffix;
+      if(cur>=m.target)clearInterval(iv);
+    },40);
+    animTimers.push(iv);
+  });
+  await delay(2200);showEl('sloganText');
+  phase='scene-done';updateUI();
+}
+
+// ===== CONTROLLER =====
+function loadScene(idx){
+  clearAnim();paused=false;phase='idle';inSubScene=false;scene=idx;
+  const main=$('mainArea');
+  switch(idx){
+    case 0:main.innerHTML=buildScene1();playScene1();break;
+    case 1:main.innerHTML=buildScene2();playScene2Left();break;
+    case 2:main.innerHTML=buildScene3();playScene3Left();break;
+    case 3:main.innerHTML=buildScene4();playScene4();break;
+  }
+  updateUI();
+}
+function triggerRight(){
+  if(phase!=='left-done')return;
+  if(scene===1&&!inSubScene)playScene2Right();
+  else if(scene===1&&inSubScene)playScene2bRight();
+  else if(scene===2)playScene3Right();
+}
+function nextScene(){
+  if(inSubScene){inSubScene=false;scene=2;loadScene(2);return;}
+  if(scene<SCENES.length-1)loadScene(scene+1);
+}
+function prevScene(){if(scene>0)loadScene(scene-1);}
+
+function updateUI(){
+  $('sceneBadge').textContent=`场景 ${scene+1}/4`;
+  $('stepText').textContent=inSubScene?'[单品审核 — 问题拦截]':`[${SCENES[scene].title}]`;
+  let dotsHtml='';for(let i=0;i<4;i++){const cls=i<scene?'done':i===scene?'active':'';dotsHtml+=`<span class="dot ${cls}"></span>`;}
+  $('dots').innerHTML=dotsHtml;
+  let navHtml='';for(let i=0;i<SCENES.length;i++){
+    const cls=i===scene?'active':'';
+    navHtml+=`<span class="nav-dot ${cls}" onclick="navToScene(${i})"><span class="nav-tip">${SCENES[i].title}</span></span>`;
+  }
+  $('sceneNav').innerHTML=navHtml;
+}
+function navToScene(idx){if(idx>=0&&idx<SCENES.length){clearAnim();loadScene(idx);}}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='ArrowRight'){e.preventDefault();if(phase==='left-done')triggerRight();else if(phase==='scene-done'){if(scene===1&&!inSubScene)transTo2b();else nextScene();}}
+  if(e.code==='ArrowLeft'){e.preventDefault();prevScene();}
+  if(e.code==='Space'){e.preventDefault();}
+});
+window.addEventListener('DOMContentLoaded',()=>{initCursor();loadScene(0);});
+</script>
+</body>
+</html>

@@ -1,0 +1,338 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>巨石集团采购平台 - 外部商城寻源</title>
+  <link rel="stylesheet" href="css/external-search.css">
+<style>
+.demo-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(30,30,30,0.92);
+  color: #fff;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 99999;
+  font-size: 13px;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+  transition: transform 0.3s;
+}
+.demo-bar.collapsed {
+  transform: translateY(100%);
+}
+.demo-bar-title {
+  background: #1890ff;
+  color: white;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-weight: 600;
+  margin-right: 16px;
+  white-space: nowrap;
+}
+.demo-hint {
+  background: rgba(255,255,255,0.12);
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin: 0 6px;
+  color: #8ecfff;
+  white-space: nowrap;
+}
+.demo-bar-right {
+  display: flex;
+  gap: 8px;
+}
+.demo-collapse-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #ccc;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.demo-expand-btn {
+  position: fixed;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(30,30,30,0.85);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  z-index: 99998;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- ========== Header ========== -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo-area">
+      <div class="logo-icon">巨</div>
+      <div>
+        <div class="logo-text">巨石集团采购平台</div>
+        <div class="logo-sub">企业级工业品一站式采购</div>
+      </div>
+    </div>
+    <a class="nav-back" href="mall.html">
+      ← 返回商城首页
+    </a>
+  </div>
+</div>
+
+<!-- ========== 主内容 ========== -->
+<div class="main">
+
+  <!-- 面包屑 -->
+  <div class="breadcrumb">
+    <a href="mall.html">首页</a>
+    <span>›</span>
+    <span>外部商城寻源</span>
+  </div>
+
+  <!-- 页面标题 -->
+  <div class="page-header">
+    <div class="page-title">外部商城协同寻源</div>
+    <div class="page-subtitle">通过震坤行在线商城搜索或批量导入物料清单，快速获取商品报价与寻源服务</div>
+  </div>
+
+  <!-- Tab 切换 -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="search">🔍 直接搜索</button>
+    <button class="tab-btn" data-tab="batch">📋 Excel 批量导入</button>
+  </div>
+
+  <!-- ===== Tab 1: 直接搜索 ===== -->
+  <div class="tab-content active" id="tab-search">
+
+    <!-- 搜索框 -->
+    <div class="search-section">
+      <div class="search-row">
+        <select class="search-dimension" id="searchDimension">
+          <option value="all">全部</option>
+          <option value="cat">品类</option>
+          <option value="brand">品牌</option>
+          <option value="name">名称</option>
+        </select>
+        <input type="text" id="searchInput" class="search-input" placeholder="请输入商品名称 / 型号 / 规格，如：离心泵、钢板">
+        <button class="search-btn-zkh" id="searchBtn">
+          🔍 搜索
+        </button>
+        <button class="cat-tree-btn" id="catTreeBtn">📂 类目树</button>
+      </div>
+      <div class="search-hint">&#x1F4A1; 提示：输入"螺栓"/"六角螺栓"查看多渠道有结果场景，输入"离心泵"查看四大渠道均无结果并引导线下寻源</div>
+
+      <!-- 类目树面板 -->
+      <div class="cat-tree-panel" id="catTreePanel">
+        <div class="cat-tree-header">
+          <input type="text" class="cat-tree-search" id="catTreeSearch" placeholder="🔍 搜索类目...">
+          <button class="cat-tree-close" id="catTreeClose">✕</button>
+        </div>
+        <div class="cat-tree-body" id="catTreeBody">
+          <!-- 由 JS 动态渲染 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-section" id="loadingSection">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">正在从震坤行官网搜索...</div>
+      <div class="loading-sub">正在连接震坤行在线商城，获取商品数据</div>
+    </div>
+
+    <!-- 有结果 -->
+    <div class="results-section" id="resultsSection">
+      <!-- 渠道来源 Tab -->
+      <div id="sourceTabBar" style="display:none;margin-bottom:16px;border-bottom:1px solid #eee;padding-bottom:0;">
+        <button class="src-tab active" data-src="zkh" onclick="switchSourceTab('zkh',this)">震坤行</button>
+        <button class="src-tab" data-src="jd" onclick="switchSourceTab('jd',this)">京东工业</button>
+        <button class="src-tab" data-src="xiyu" onclick="switchSourceTab('xiyu',this)">西域</button>
+        <button class="src-tab" data-src="ali1688" onclick="switchSourceTab('ali1688',this)">1688</button>
+      </div>
+      <div class="success-banner" id="successBanner"></div>
+      <div class="product-grid" id="productGrid"></div>
+      <!-- 全渠道无结果引导 -->
+      <div id="allEmptyHint" style="display:none;background:#fff9f0;border:1px solid #ffd591;border-radius:8px;padding:24px;text-align:center;margin-top:24px;">
+        <div style="font-size:32px;margin-bottom:12px;">&#x1F50D;</div>
+        <div style="font-weight:600;font-size:16px;color:#333;margin-bottom:8px;">四大渠道均未找到相关商品</div>
+        <div style="color:#666;font-size:14px;margin-bottom:20px;">
+          可以提交线下需求单，由震坤行专属采购顾问人工寻源<br>
+          <span style="color:#fa8c16;">预计 48 小时内</span>收到供应商报价
+        </div>
+        <button onclick="goDemandForm()" style="background:#fa8c16;color:white;border:none;padding:12px 28px;border-radius:6px;font-size:15px;cursor:pointer;font-weight:500;">
+          &#x1F4CB; 提交需求单，启动线下寻源
+        </button>
+        <div style="margin-top:12px;font-size:12px;color:#999;">历史完单率 92% · 全国线下销售团队即时响应</div>
+      </div>
+    </div>
+
+    <!-- 无结果 -->
+    <div class="no-results-panel" id="noResultsPanel">
+      <div class="no-results-hint" id="noResultsHint"></div>
+
+      <div class="offline-card">
+        <div class="offline-header">
+          <div class="offline-icon">🌐</div>
+          <div class="offline-title">震坤行线下专业寻源</div>
+        </div>
+        <div class="offline-tag">预计48小时内反馈</div>
+        <div class="offline-desc">由震坤行专业采购团队为您寻找，覆盖全国供应商网络</div>
+
+        <!-- 寻源表单 -->
+        <div class="sourcing-form" id="sourcingForm">
+          <div class="form-group">
+            <label>商品描述</label>
+            <textarea id="formDesc" placeholder="请描述您需要寻找的商品"></textarea>
+          </div>
+          <div class="form-group">
+            <label>规格要求</label>
+            <input type="text" id="formSpec" placeholder="如：材质、尺寸、性能参数等">
+          </div>
+          <div class="form-group">
+            <label>预期数量</label>
+            <input type="text" id="formQty" placeholder="如：100个、50台">
+          </div>
+          <div class="form-group">
+            <label>联系方式</label>
+            <input type="text" id="formContact" value="张经理 138****5678">
+          </div>
+          <button class="btn-submit-source" id="submitSourceBtn">提交寻源需求</button>
+        </div>
+
+        <!-- 提交成功状态 -->
+        <div class="submit-success" id="submitSuccess">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="success-title">寻源需求已提交</div>
+          <div class="success-no" id="successNo">需求编号：XY-20260522-001</div>
+          <div class="success-note">预计 48 小时内反馈结果，请关注系统通知</div>
+          <a class="btn-back-mall" href="mall.html">返回商城</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== Tab 2: Excel 批量导入 ===== -->
+  <div class="tab-content" id="tab-batch">
+
+    <!-- 上传区域 -->
+    <div class="upload-area" id="uploadArea">
+      <div class="upload-icon">📄</div>
+      <div class="upload-title">将 Excel 文件拖拽到此处，或点击上传</div>
+      <div class="upload-hint">支持 .xlsx、.xls 格式，单次最多 500 条物料</div>
+    </div>
+
+    <div class="download-template" id="downloadTemplate" onclick="alert('模板下载功能演示：物料寻源导入模板.xlsx')">
+      📥 下载导入模板
+    </div>
+
+    <!-- 处理进度动画 -->
+    <div class="batch-progress-wrap" id="batchProgressWrap">
+      <div class="batch-progress-title">⚡ 正在批量寻源...</div>
+      <div class="batch-progress-bar-bg">
+        <div class="batch-progress-bar-fill" id="batchProgressFill"></div>
+      </div>
+      <div class="batch-progress-text" id="batchProgressText">已处理 0 / 15 项</div>
+    </div>
+
+    <!-- 批量结果 -->
+    <div class="batch-results" id="batchResults">
+
+      <!-- 统计卡片 -->
+      <div class="batch-stat-cards" id="batchStatCards">
+        <div class="stat-card stat-found" id="statFound" data-filter="found">
+          <div class="stat-num" id="statFoundNum">9</div>
+          <div class="stat-label">✅ 已找到</div>
+        </div>
+        <div class="stat-card stat-searching" id="statSearching" data-filter="searching">
+          <div class="stat-num" id="statSearchingNum">3</div>
+          <div class="stat-label">⏳ 寻源中</div>
+        </div>
+        <div class="stat-card stat-notfound" id="statNotfound" data-filter="notfound">
+          <div class="stat-num" id="statNotfoundNum">2</div>
+          <div class="stat-label">❌ 未找到</div>
+        </div>
+        <button class="stat-card-all-btn" id="statAllBtn">显示全部</button>
+      </div>
+
+      <!-- 表格 -->
+      <div class="batch-table-wrap">
+        <table class="batch-table">
+          <thead>
+            <tr>
+              <th class="col-check"><input type="checkbox" id="checkAll" title="全选"></th>
+              <th>序号</th>
+              <th>物料名称</th>
+              <th>规格型号</th>
+              <th>数量</th>
+              <th>单价</th>
+              <th>供应商</th>
+              <th>寻源状态</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="batchTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 底部操作栏 -->
+      <div class="batch-action-bar" id="batchActionBar">
+        <div class="batch-action-left">
+          已选 <strong id="selectedCount">9</strong> 项
+        </div>
+        <div class="batch-action-right">
+          <button class="btn-action-export" id="exportBtn">📊 导出结果</button>
+          <button class="btn-action-source" id="submitNotfoundBtn">🔍 对未找到项提交寻源</button>
+          <button class="btn-action-batch-list" id="batchListBtn">⬆ 批量申请上架</button>
+          <button class="btn-action-add" id="addAllBtn">🛒 加入采购单（<span id="addBtnCount">9</span>项已选）</button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="js/external-search.js"></script>
+
+<!-- 演示提示条 -->
+<div class="demo-bar">
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+    <span class="demo-bar-title">演示提示</span>
+    <span class="demo-hint">1. 搜"螺栓"→多渠道结果+Tab切换</span>
+    <span class="demo-hint">2. 搜"离心泵"→全部无结果→引导需求提报</span>
+    <span class="demo-hint">3. 切换"Excel批量导入"→已找到商品可申请上架</span>
+  </div>
+  <div class="demo-bar-right">
+    <button class="demo-collapse-btn" onclick="toggleDemoBar()">收起 ▼</button>
+  </div>
+</div>
+<button class="demo-expand-btn" onclick="toggleDemoBar()">📋 演示提示</button>
+
+<script>
+function toggleDemoBar() {
+  const bar = document.querySelector('.demo-bar');
+  const btn = document.querySelector('.demo-expand-btn');
+  bar.classList.toggle('collapsed');
+  btn.style.display = bar.classList.contains('collapsed') ? 'block' : 'none';
+}
+</script>
+</body>
+</html>

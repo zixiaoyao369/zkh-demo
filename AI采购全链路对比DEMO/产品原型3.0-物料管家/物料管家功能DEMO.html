@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物料管家 · 物料梳理能力演示</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0d1117;overflow:hidden;height:100vh;color:#333}
+.header{height:52px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff;display:flex;align-items:center;justify-content:center;position:relative;border-bottom:1px solid rgba(59,130,246,.2)}
+.header h1{font-size:16px;font-weight:600;letter-spacing:2px}
+.header-right{position:absolute;right:16px;display:flex;align-items:center;gap:8px}
+.scene-badge{background:rgba(59,130,246,.15);padding:4px 12px;border-radius:12px;font-size:11px;border:1px solid rgba(59,130,246,.3);color:#93c5fd}
+/* Scene Nav Dots */
+.scene-nav{display:flex;align-items:center;gap:6px;margin-right:12px}
+.scene-nav .nav-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:transparent;cursor:pointer;transition:all .3s;position:relative}
+.scene-nav .nav-dot:hover{border-color:#93c5fd;transform:scale(1.3)}
+.scene-nav .nav-dot.active{background:#3b82f6;border-color:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.6)}
+.scene-nav .nav-dot .nav-tip{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;font-size:10px;padding:4px 8px;border-radius:4px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;border:1px solid rgba(59,130,246,.3);z-index:100}
+.scene-nav .nav-dot:hover .nav-tip{opacity:1}
+.main{height:calc(100vh - 52px);position:relative;overflow:hidden}
+.scene-full{position:absolute;inset:0;bottom:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0d1117;padding:40px;opacity:0;pointer-events:none;transition:opacity .5s}
+.scene-full.active{opacity:1;pointer-events:auto}
+.scene-split{position:absolute;inset:0;bottom:44px;display:flex;opacity:0;pointer-events:none;transition:opacity .5s}
+.scene-split.active{opacity:1;pointer-events:auto}
+.half{display:flex;flex:1;position:relative;overflow:hidden}
+.half-left{border-right:1px solid rgba(59,130,246,.15)}
+.half-left.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.half-right.dimmed{opacity:.3;filter:grayscale(.8) blur(1px);transition:all .5s}
+.col-mall{flex:3;display:flex;flex-direction:column;background:#fff;position:relative;overflow:hidden}
+.col-sys{flex:1;display:flex;flex-direction:column;background:linear-gradient(180deg,#0a1628,#111d35);position:relative;overflow:hidden}
+.panel-hdr{height:34px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;letter-spacing:1px}
+.panel-hdr.before{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff}
+.panel-hdr.after{background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff}
+.panel-body{flex:1;overflow-y:auto;position:relative;padding:0}
+.panel-body::-webkit-scrollbar{width:4px}
+.panel-body::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
+.mall-nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.mall-logo{font-weight:700;font-size:13px;color:#1f2937;display:flex;align-items:center;gap:6px}
+.mall-logo::before{content:'';width:20px;height:20px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:4px}
+.mall-search{flex:1;max-width:340px;display:flex;height:34px}
+.mall-search input{flex:1;border:2px solid #e5e7eb;border-right:none;padding:0 12px;font-size:12px;border-radius:6px 0 0 6px;outline:none;background:#f9fafb}
+.mall-search input.active{border-color:#3b82f6;background:#fff}
+.mall-search button{background:#3b82f6;color:#fff;border:none;padding:0 16px;border-radius:0 6px 6px 0;font-size:12px;font-weight:600;cursor:pointer}
+.mall-user{width:28px;height:28px;background:#e5e7eb;border-radius:50%;margin-left:auto}
+.mall-sidebar{position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#3b82f6,#8b5cf6);opacity:.3}
+.result-area{padding:12px 16px}
+.result-badge{display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;font-weight:600;margin-bottom:8px}
+.result-badge.warn{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.result-badge.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.result-badge.err{background:#fecaca;color:#991b1b;border:1px solid #fca5a5}
+.data-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.data-tbl th{background:#f8fafc;border:1px solid #e5e7eb;padding:6px 8px;text-align:left;font-weight:600;color:#64748b}
+.data-tbl td{border:1px solid #e5e7eb;padding:5px 8px;color:#374151}
+.data-tbl tr:hover td{background:#f0f9ff}
+.data-tbl .hl td{background:#dcfce7!important;border-color:#86efac}
+.product-img{width:36px;height:36px;object-fit:contain;border-radius:4px;border:1px solid #e5e7eb;background:#f9fafb;padding:2px}
+.sys-inner{display:flex;flex-direction:column;align-items:center;padding:16px 8px;height:100%;justify-content:center;gap:8px}
+.sys-label{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:2px;text-transform:uppercase}
+.sys-node{width:88%;padding:10px 6px;border-radius:8px;text-align:center;position:relative;transition:all .4s}
+.sys-node .n-icon{font-size:14px;display:block;margin-bottom:2px}
+.sys-node .n-name{font-size:10px;font-weight:700;display:block}
+.sys-node .n-desc{font-size:8px;display:block;margin-top:2px;opacity:.6}
+.sys-node.n-blue{background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.4);color:#93c5fd}
+.sys-node.n-gray{background:rgba(148,163,184,.08);border:2px solid rgba(148,163,184,.3);color:#94a3b8}
+.sys-node.n-glow{background:rgba(59,130,246,.15);border:2px solid rgba(96,165,250,.6);color:#dbeafe;box-shadow:0 0 12px rgba(59,130,246,.3)}
+.sys-node.n-active{box-shadow:0 0 16px rgba(59,130,246,.5);border-color:#60a5fa;animation:nodeGlow 1.5s ease-in-out infinite}
+.sys-node.n-fail{border-color:#ef4444;box-shadow:0 0 10px rgba(239,68,68,.3)}
+.sys-connector{width:2px;height:20px;background:rgba(255,255,255,.1);position:relative}
+.sys-sub-row{display:flex;gap:4px;width:88%}
+.sys-sub-node{flex:1;padding:5px 3px;border-radius:5px;text-align:center;font-size:9px;font-weight:700;transition:all .4s}
+.sys-sub-node.sn-gray{background:rgba(148,163,184,.08);border:1.5px solid rgba(148,163,184,.25);color:#94a3b8}
+.sys-sub-node.sn-orange{background:rgba(249,115,22,.08);border:1.5px solid rgba(249,115,22,.3);color:#fdba74}
+.sys-sub-node.sn-purple{background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.3);color:#c4b5fd}
+.sys-sub-node.sn-active{box-shadow:0 0 8px currentColor}
+/* Enhanced Particle System */
+.particle{position:absolute;border-radius:50%;pointer-events:none;z-index:50}
+.particle-trail{position:absolute;border-radius:50%;pointer-events:none;z-index:49;opacity:.4}
+.node-pulse{animation:nodePulse .4s ease-out}
+/* Action buttons overlay */
+.action-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;background:rgba(0,0,0,.15);backdrop-filter:blur(1px);opacity:0;pointer-events:none;transition:opacity .4s}
+.action-overlay.visible{opacity:1;pointer-events:auto}
+.action-btn{padding:12px 28px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:all .2s;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,.3)}
+.action-btn.blue{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff}
+.action-btn.green{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff}
+/* Transition overlay */
+.transition-overlay{position:absolute;inset:0;bottom:44px;display:flex;align-items:center;justify-content:center;background:rgba(13,17,23,.92);z-index:80;opacity:0;pointer-events:none;transition:opacity .4s}
+.transition-overlay.visible{opacity:1;pointer-events:auto}
+.transition-text{color:#93c5fd;font-size:16px;font-weight:600;letter-spacing:1px;animation:fadeInUp .5s ease-out}
+.bottom-bar{position:absolute;bottom:0;left:0;right:0;height:44px;background:linear-gradient(135deg,#0f172a,#1e293b);display:flex;align-items:center;padding:0 20px;gap:12px;border-top:1px solid rgba(59,130,246,.15);z-index:70}
+.step-text{flex:1;font-size:11px;color:rgba(255,255,255,.6);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.progress-dots{display:flex;gap:6px;align-items:center}
+.progress-dots .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.progress-dots .dot.active{background:#3b82f6;box-shadow:0 0 6px rgba(59,130,246,.5);transform:scale(1.2)}
+.progress-dots .dot.done{background:rgba(255,255,255,.5)}
+.kb-hint{font-size:10px;color:rgba(255,255,255,.3);margin-left:8px}
+.cycle-container{position:relative;width:400px;height:400px;margin:20px auto}
+.cycle-node{position:absolute;padding:12px 16px;border-radius:10px;font-size:12px;font-weight:600;border:2px solid;opacity:0;transform:scale(.8);transition:all .5s cubic-bezier(.4,0,.2,1);white-space:nowrap}
+.cycle-node.show{opacity:1;transform:scale(1)}
+.cycle-arrow{position:absolute;color:rgba(239,68,68,.6);font-size:18px;opacity:0;transition:opacity .4s}
+.cycle-arrow.show{opacity:1}
+.cycle-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.stat-callout{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:12px;font-weight:700;margin:4px;opacity:0;transform:translateY(10px);transition:all .5s}
+.stat-callout.show{opacity:1;transform:translateY(0)}
+.arch-half{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px}
+.arch-half.left-arch{background:#0d1117;border-right:1px solid rgba(239,68,68,.15)}
+.arch-half.right-arch{background:#0d1117}
+.arch-title{font-size:16px;font-weight:700;margin-bottom:24px;letter-spacing:1px}
+.arch-box{padding:14px 20px;border-radius:10px;text-align:center;margin:6px 0;font-size:12px;font-weight:600;opacity:0;transform:translateY(15px);transition:all .5s}
+.arch-box.show{opacity:1;transform:translateY(0)}
+.arch-line{width:2px;height:24px;margin:0 auto;opacity:0;transition:opacity .5s}
+.arch-line.show{opacity:1}
+.arch-row{display:flex;gap:12px;margin-top:8px}
+.metric-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:900px;width:100%}
+.metric-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:32px 20px;text-align:center;opacity:0;transform:translateY(20px);transition:all .6s}
+.metric-card.show{opacity:1;transform:translateY(0)}
+.metric-card:hover{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.03)}
+.metric-icon{font-size:28px;margin-bottom:8px}
+.metric-num{font-size:36px;font-weight:800;margin:8px 0;font-family:'Segoe UI',monospace;color:#f0f9ff}
+.metric-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px}
+.metric-change{font-size:10px;color:rgba(255,255,255,.35);margin-top:8px;padding:3px 10px;background:rgba(255,255,255,.05);border-radius:8px;display:inline-block}
+.slogan{font-size:20px;font-weight:700;color:#93c5fd;letter-spacing:3px;margin-top:40px;text-align:center;opacity:0;transition:opacity 1s}
+.slogan.show{opacity:1}
+.typing-cursor::after{content:'|';animation:blink .7s step-end infinite;color:#3b82f6;font-weight:700}
+.ai-panel{background:#f0f9ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin:10px 16px;opacity:0;transform:translateY(10px);transition:all .4s}
+.ai-panel.show{opacity:1;transform:translateY(0)}
+.ai-title{font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.pain-overlay{position:absolute;inset:0;background:rgba(220,38,38,.05);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity .5s;pointer-events:none;z-index:10}
+.pain-overlay.show{opacity:1}
+.empty-state{text-align:center;padding:30px 20px}
+.empty-num{font-size:48px;font-weight:800;color:#dc2626}
+.approval-chain{display:flex;align-items:center;gap:4px;margin:8px 0;flex-wrap:wrap;justify-content:center}
+.approval-node{padding:4px 8px;background:#fef3c7;border:1px solid #fde68a;border-radius:4px;font-size:10px;color:#92400e;opacity:0;transition:all .4s}
+.approval-node.show{opacity:1}
+.approval-arrow{color:#d1d5db;font-size:10px;opacity:0;transition:opacity .4s}
+.approval-arrow.show{opacity:1}
+.sim-bar{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden;margin:6px 0}
+.sim-fill{height:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:3px;width:0;transition:width 1.5s ease-out}
+/* 3b scroll table */
+.scroll-tbl-wrap{max-height:180px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;margin:8px 0}
+.dup-highlight td{background:#fef2f2!important;border-color:#fca5a5!important}
+@keyframes blink{50%{opacity:0}}
+@keyframes nodeGlow{0%,100%{box-shadow:0 0 12px rgba(59,130,246,.3)}50%{box-shadow:0 0 20px rgba(59,130,246,.6)}}
+@keyframes nodePulse{0%{box-shadow:0 0 0 0 currentColor}100%{box-shadow:0 0 20px 4px transparent}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes particleMove{0%{opacity:1}100%{opacity:1}}
+/* Cursor animation */
+#simCursor{position:fixed;z-index:99999;pointer-events:none;opacity:0;transition:opacity .3s}
+#simCursor.visible{opacity:1}
+.cursor-ring{position:absolute;top:-18px;left:-18px;width:44px;height:44px;border-radius:50%;border:2px solid #4fc3f7;box-shadow:0 0 15px #4fc3f7,0 0 30px #4fc3f7;animation:ringPulse 1.5s ease-in-out infinite;pointer-events:none}
+@keyframes ringPulse{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.1)}}
+@keyframes cursorClick{0%{transform:scale(1)}30%{transform:scale(.6)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>物料管家 · 物料梳理能力演示</h1>
+  <div class="header-right">
+    <div class="scene-nav" id="sceneNav"></div>
+    <span class="scene-badge" id="sceneBadge">场景 1/5</span>
+  </div>
+</div>
+<div class="main" id="mainArea"></div>
+<div class="transition-overlay" id="transOverlay"><span class="transition-text" id="transText"></span></div>
+<div class="bottom-bar">
+  <span class="step-text" id="stepText">准备开始...</span>
+  <div class="progress-dots" id="dots"></div>
+  <span class="kb-hint">← → Space</span>
+</div>
+<script>
+const IMG='./images/';
+let scene=0, phase='idle', animTimers=[], paused=false, inScene3b=false;
+function clearAnim(){animTimers.forEach(t=>{clearTimeout(t);clearInterval(t)});animTimers=[];}
+function delay(ms){return new Promise(r=>{const t=setTimeout(r,ms);animTimers.push(t);})}
+
+const SCENES=[
+  {id:'s1',title:'痛点引入 — 恶性循环',type:'full'},
+  {id:'s2',title:'模糊搜索 vs AI属性补全',type:'split'},
+  {id:'s3',title:'搜不到 vs 相似度匹配',type:'split'},
+  {id:'s4',title:'技术架构总览',type:'full'},
+  {id:'s5',title:'价值总结',type:'full'}
+];
+
+function $(id){return document.getElementById(id)}
+function setHTML(id,html){const el=$(id);if(el)el.innerHTML=html;}
+function showEl(el){if(typeof el==='string')el=$(el);if(el)el.classList.add('show');}
+function hideEl(el){if(typeof el==='string')el=$(el);if(el)el.classList.remove('show');}
+
+// ===== CURSOR ANIMATION SYSTEM =====
+let cursorEl=null,cursorRing=null,lastPos={x:60,y:60};
+function initCursor(){
+  cursorEl=document.createElement('div');cursorEl.id='simCursor';
+  cursorEl.innerHTML='<svg width="22" height="28" viewBox="0 0 22 28"><path d="M1,1 L1,20 L6,15 L10.5,25 L13.5,23.5 L9,13.5 L16,13.5Z" fill="white" stroke="rgba(0,0,0,.4)" stroke-width="0.8"/></svg><div class="cursor-ring"></div>';
+  document.body.appendChild(cursorEl);
+  cursorRing=cursorEl.querySelector('.cursor-ring');
+}
+function hideCursor(){if(cursorEl)cursorEl.classList.remove('visible');}
+async function animateCursor(target,cb){
+  if(!cursorEl)initCursor();
+  const el=typeof target==='string'?document.querySelector(target):target;
+  if(!el){if(cb)cb();return;}
+  const r=el.getBoundingClientRect();
+  const tx=r.left+r.width/2,ty=r.top+r.height/2;
+  cursorEl.style.transition='none';
+  cursorEl.style.left=lastPos.x+'px';cursorEl.style.top=lastPos.y+'px';
+  cursorEl.classList.add('visible');
+  await delay(30);
+  cursorEl.style.transition='left 500ms cubic-bezier(.4,0,.2,1),top 500ms cubic-bezier(.4,0,.2,1)';
+  cursorEl.style.left=tx+'px';cursorEl.style.top=ty+'px';
+  await delay(800);
+  if(cursorRing){cursorRing.style.animation='cursorClick 250ms ease-out';setTimeout(()=>{if(cursorRing)cursorRing.style.animation='ringPulse 1.5s ease-in-out infinite';},300);}
+  await delay(250);
+  lastPos={x:tx,y:ty};
+  if(cb)cb();
+}
+
+function mallNav(keyword,filled,hasAI){
+  const v=filled?` value="${keyword}"`:'';const cls=filled?'active':'';
+  const ai=hasAI?'<span style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);color:#fff;padding:3px 8px;border-radius:10px;font-size:9px;font-weight:700;margin-left:8px">AI</span>':'';
+  return `<div class="mall-nav"><span class="mall-logo">采购商城</span><div class="mall-search"><input class="${cls}" placeholder="请输入物料名称..."${v} readonly><button>搜索</button></div>${ai}<div class="mall-user"></div></div>`;
+}
+function sysBarLeft(state,desc){
+  const mdmCls=state==='fail'?'n-gray n-fail':state==='active'?'n-gray n-active':'n-gray';
+  const d=desc||'仅关键字匹配';
+  return `<div class="sys-inner"><span class="sys-label">系统链路</span>
+    <div class="sys-node n-blue" id="lMall"><span class="n-icon">🏪</span><span class="n-name">采购商城</span></div>
+    <div class="sys-connector" id="lcLine"></div>
+    <div class="sys-node ${mdmCls}" id="lMDM"><span class="n-icon">🗄️</span><span class="n-name">MDM</span><span class="n-desc">${d}</span></div></div>`;
+}
+function sysBarRight(state,apiDesc){
+  const apiCls=state==='active'||state==='ok'?'n-glow n-active':'n-glow';
+  const subActive=state==='ok'?' sn-active':'';const d=apiDesc||'智能中枢';
+  return `<div class="sys-inner"><span class="sys-label">系统链路</span>
+    <div class="sys-node n-blue" id="rMall"><span class="n-icon">🏪</span><span class="n-name">采购商城</span></div>
+    <div class="sys-connector" id="rcLine1"></div>
+    <div class="sys-node ${apiCls}" id="rAPI"><span class="n-icon">🧠</span><span class="n-name">物料管家API</span><span class="n-desc">${d}</span></div>
+    <div class="sys-connector" id="rcLine2"></div>
+    <div class="sys-sub-row">
+      <div class="sys-sub-node sn-gray${subActive}" id="rMDM">MDM</div>
+      <div class="sys-sub-node sn-orange${subActive}" id="rES">ES</div>
+      <div class="sys-sub-node sn-purple${subActive}" id="rAI">AI</div>
+    </div></div>`;
+}
+
+// ===== ENHANCED PARTICLE SYSTEM =====
+function fireParticles(container,startEl,endEl,color,onArrive){
+  if(!container||!startEl||!endEl)return;
+  const cr=container.getBoundingClientRect();
+  const sr=startEl.getBoundingClientRect();
+  const er=endEl.getBoundingClientRect();
+  const x1=sr.left+sr.width/2-cr.left, y1=sr.top+sr.height/2-cr.top;
+  const x2=er.left+er.width/2-cr.left, y2=er.top+er.height/2-cr.top;
+  const dur=800;
+  // Main particle + 2 trails
+  for(let i=0;i<3;i++){
+    const p=document.createElement('div');
+    const size=i===0?7:4;const op=i===0?1:0.4-i*0.1;
+    p.style.cssText=`position:absolute;left:${x1}px;top:${y1}px;width:${size}px;height:${size}px;border-radius:50%;background:${color};box-shadow:0 0 8px ${color};z-index:${50-i};opacity:${op};pointer-events:none;transition:left ${dur+i*120}ms cubic-bezier(.4,0,.2,1),top ${dur+i*120}ms cubic-bezier(.4,0,.2,1);`;
+    container.appendChild(p);
+    requestAnimationFrame(()=>{p.style.left=x2+'px';p.style.top=y2+'px';});
+    setTimeout(()=>p.remove(),dur+i*120+100);
+  }
+  // Node pulse on arrival
+  setTimeout(()=>{
+    endEl.classList.add('node-pulse');
+    setTimeout(()=>endEl.classList.remove('node-pulse'),400);
+    if(onArrive)onArrive();
+  },dur);
+}
+
+// ===== SCENE 1 =====
+function buildScene1(){
+  return `<div class="scene-full active" id="s1">
+    <div style="text-align:center;margin-bottom:20px"><h2 style="color:#f87171;font-size:20px;font-weight:700">当前痛点：恶性循环</h2><p style="color:rgba(255,255,255,.4);font-size:12px;margin-top:6px">采购商城物料搜索现状</p></div>
+    <div style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:20px 30px;margin-bottom:20px;max-width:500px;width:100%">
+      <div class="mall-nav" style="border-radius:8px;margin-bottom:12px"><span class="mall-logo">采购商城</span><div class="mall-search"><input class="active" id="s1Input" value="" readonly placeholder="请输入物料名称..."><button>搜索</button></div></div>
+      <div id="s1Result" style="text-align:center;padding:20px;color:rgba(255,255,255,.3);font-size:12px">等待搜索...</div>
+    </div>
+    <div class="cycle-container" id="cycleBox">
+      <div class="cycle-node" id="cn1" style="top:0;left:50%;margin-left:-55px;background:rgba(239,68,68,.08);border-color:#f87171;color:#fca5a5">🔍 搜索找不到</div>
+      <div class="cycle-node" id="cn2" style="top:70px;right:20px;background:rgba(251,146,60,.08);border-color:#fb923c;color:#fdba74">💭 以为商城没有</div>
+      <div class="cycle-node" id="cn3" style="top:170px;right:0;background:rgba(244,114,182,.08);border-color:#f472b6;color:#f9a8d4">📝 提报线下需求</div>
+      <div class="cycle-node" id="cn4" style="bottom:100px;right:30px;background:rgba(192,132,252,.08);border-color:#c084fc;color:#d8b4fe">🔄 重复寻源上架</div>
+      <div class="cycle-node" id="cn5" style="bottom:30px;left:50%;margin-left:-60px;background:rgba(129,140,248,.08);border-color:#818cf8;color:#a5b4fc">📦 物料越来越多</div>
+      <div class="cycle-node" id="cn6" style="top:170px;left:0;background:rgba(239,68,68,.08);border-color:#f87171;color:#fca5a5">😰 搜索更加困难</div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px">
+      <div class="stat-callout" id="stat1" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#fca5a5">重复物料占比 35%↑</div>
+      <div class="stat-callout" id="stat2" style="background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.2);color:#fdba74">年均无效寻源 200+ 次</div>
+    </div>
+    <div class="action-overlay" id="s1Action"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene1(){
+  phase='playing';const input=$('s1Input');const kw='耐高温密封圈';
+  for(let i=0;i<kw.length;i++){await delay(150);if(input)input.value=kw.slice(0,i+1);}
+  await delay(500);
+  setHTML('s1Result',`<div style="color:#ef4444;font-size:14px;font-weight:700">0 条结果</div><div style="color:rgba(255,255,255,.3);font-size:11px;margin-top:4px">未找到匹配物料</div>`);
+  await delay(1000);
+  const nodes=['cn1','cn2','cn3','cn4','cn5','cn6'];
+  for(const id of nodes){showEl(id);await delay(600);}
+  await delay(1500);showEl('stat1');await delay(400);showEl('stat2');await delay(2000);
+  phase='scene-done';const overlay=$('s1Action');if(overlay)overlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 2 =====
+function buildScene2(){
+  return `<div class="scene-split active" id="s2">
+    <div class="half half-left" id="s2Left"><div class="col-mall"><div class="panel-hdr before">❌ 优化前</div><div class="panel-body" id="s2LBody"></div></div><div class="col-sys" id="s2LSys"></div></div>
+    <div class="half half-right dimmed" id="s2Right"><div class="col-sys" id="s2RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 优化后</div><div class="panel-body" id="s2RBody"></div></div></div>
+    <div class="action-overlay" id="s2ActionMid"><button class="action-btn blue" onclick="triggerRight()">点击查看优化方案 →</button></div>
+    <div class="action-overlay" id="s2ActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene2Left(){
+  phase='playing-left';
+  setHTML('s2LSys',sysBarLeft('idle'));
+  setHTML('s2LBody',mallNav('',false,false)+`<div class="result-area" id="s2LRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">等待搜索...</div></div>`);
+  setHTML('s2RSys',sysBarRight('idle'));
+  setHTML('s2RBody',mallNav('',false,true)+`<div class="result-area"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI引擎待命...</div></div>`);
+  await delay(500);
+  const input=document.querySelector('#s2LBody .mall-search input');
+  if(input){input.classList.add('active');const kw='螺栓';for(let i=0;i<kw.length;i++){await delay(300);input.value=kw.slice(0,i+1);}}
+  await delay(500);
+  await animateCursor('#s2LBody .mall-search button',()=>{});
+  // Particle: mall→MDM
+  const container=$('s2Left');const mallEl=document.querySelector('#s2LBody .mall-search button');const mdmEl=$('lMDM');
+  fireParticles(container,mallEl,mdmEl,'rgba(180,180,180,.9)');
+  setHTML('s2LSys',sysBarLeft('active'));await delay(1500);
+  setHTML('s2LSys',sysBarLeft('fail'));
+  // Return particle (red)
+  const mdmEl2=$('lMDM');const resArea=$('s2LRes');
+  if(mdmEl2&&resArea)fireParticles(container,mdmEl2,resArea,'#ef4444');
+  await delay(500);
+  const rows=[['M1001001','六角头螺栓 M6×20','M6×20','碳钢','¥0.35'],['M1001002','六角头螺栓 M8×30','M8×30','碳钢','¥0.52'],['M1001003','六角头螺栓 M10×50','M10×50','8.8级碳钢','¥1.20'],['M1001004','内六角螺栓 M6×25','M6×25','碳钢','¥0.48'],['M1001005','六角头螺栓 M12×60','M12×60','不锈钢','¥2.80'],['M1001006','内六角螺栓 M8×35','M8×35','不锈钢','¥1.65'],['M1001007','双头螺柱 M10×50','M10×50','碳钢','¥1.80'],['M1001008','六角头螺栓 M16×80','M16×80','镀锌','¥3.50']];
+  const trs=rows.map((r,i)=>`<tr><td><img src="${IMG}${i%2===0?'bolt':'inner_hex'}.png" class="product-img"></td><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td></tr>`).join('');
+  setHTML('s2LRes',`<span class="result-badge warn">返回 53 条结果 — 只能逐条翻查</span><table class="data-tbl"><thead><tr><th></th><th>编码</th><th>描述</th><th>规格</th><th>材质</th><th>价格</th></tr></thead><tbody>${trs}</tbody></table><div style="text-align:center;font-size:10px;color:#9ca3af;padding:6px">还有45条未显示...</div><div class="pain-overlay" id="s2Pain"><div style="font-size:36px">❓</div><div style="font-size:14px;font-weight:700;color:#dc2626;margin-top:8px">无法确定需要哪一个</div></div>`);
+  await delay(2000);
+  const pain=$('s2Pain');if(pain)pain.classList.add('show');await delay(2000);
+  phase='left-done';const leftHalf=$('s2Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+}
+async function playScene2Right(){
+  phase='playing-right';
+  const overlay=$('s2ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s2Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s2RSys',sysBarRight('idle'));
+  setHTML('s2RBody',mallNav('',false,true)+`<div class="result-area" id="s2RRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI引擎待命...</div></div>`);
+  await delay(300);
+  const input=document.querySelector('#s2RBody .mall-search input');
+  if(input){input.classList.add('active');const kw='螺栓';for(let i=0;i<kw.length;i++){await delay(300);input.value=kw.slice(0,i+1);}}
+  await delay(500);
+  await animateCursor('#s2RBody .mall-search button',()=>{});
+  // Particle: mall→API (blue)
+  const container=$('s2Right');const mallBtn=document.querySelector('#s2RBody .mall-search button');const apiEl=$('rAPI');
+  fireParticles(container,mallBtn,apiEl,'#3b82f6');
+  setHTML('s2RSys',sysBarRight('active'));await delay(1000);
+  setHTML('s2RSys',sysBarRight('ok'));await delay(500);
+  // Return particle (green)
+  const apiEl2=$('rAPI');const resArea=$('s2RRes');
+  if(apiEl2&&resArea)fireParticles(container,apiEl2,resArea,'#22c55e');
+  await delay(500);
+  setHTML('s2RRes',`<div class="ai-panel" id="s2AIPanel"><div class="ai-title">🧠 AI属性补全</div><div id="s2Attrs" style="font-size:11px;line-height:2.2;color:#374151"></div></div><div id="s2FinalRes"></div>`);
+  await delay(300);const panel=$('s2AIPanel');if(panel)panel.classList.add('show');
+  const attrs=[{label:'材质',val:'304不锈钢'},{label:'规格',val:'M10'},{label:'牙型',val:'全牙'}];const attrsEl=$('s2Attrs');
+  for(const a of attrs){let html=(attrsEl?attrsEl.innerHTML:'');html+=`<div><span style="color:#6b7280;margin-right:8px">${a.label}:</span><span style="background:#dbeafe;padding:2px 8px;border-radius:4px;color:#1d4ed8;font-weight:600" id="av_${a.label}"></span></div>`;if(attrsEl)attrsEl.innerHTML=html;const valEl=$('av_'+a.label);for(let i=0;i<a.val.length;i++){await delay(70);if(valEl)valEl.textContent=a.val.slice(0,i+1);}await delay(300);}
+  await delay(500);
+  setHTML('s2FinalRes',`<div style="padding:0 16px"><span class="result-badge ok">精准匹配 3 条结果</span><table class="data-tbl"><thead><tr><th></th><th>编码</th><th>描述</th><th>规格</th><th>材质</th><th>价格</th></tr></thead><tbody><tr class="hl"><td><img src="${IMG}bolt.png" class="product-img" style="border-color:#22c55e"></td><td>M1001003</td><td>六角头螺栓 M10×50</td><td>M10×50</td><td>304不锈钢 全牙</td><td>¥1.20</td></tr><tr><td><img src="${IMG}inner_hex.png" class="product-img"></td><td>M1001008</td><td>内六角螺栓 M10×45</td><td>M10×45</td><td>304不锈钢</td><td>¥1.65</td></tr><tr><td><img src="${IMG}bolt.png" class="product-img"></td><td>M1001003A</td><td>六角头螺栓 M10×50 镀锌</td><td>M10×50</td><td>304不锈钢</td><td>¥1.40</td></tr></tbody></table><div style="text-align:center;margin-top:10px;padding:8px;background:#dcfce7;border-radius:6px;font-size:11px;color:#166534;font-weight:600">✅ 首条推荐命中 · 查找时间：8分钟 → 15秒</div></div>`);
+  await delay(2000);phase='scene-done';const endOverlay=$('s2ActionEnd');if(endOverlay)endOverlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 3a =====
+function buildScene3(){
+  return `<div class="scene-split active" id="s3">
+    <div class="half half-left" id="s3Left"><div class="col-mall"><div class="panel-hdr before">❌ 优化前</div><div class="panel-body" id="s3LBody"></div></div><div class="col-sys" id="s3LSys"></div></div>
+    <div class="half half-right dimmed" id="s3Right"><div class="col-sys" id="s3RSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 优化后</div><div class="panel-body" id="s3RBody"></div></div></div>
+    <div class="action-overlay" id="s3ActionMid"><button class="action-btn blue" onclick="triggerRight()">点击查看优化方案 →</button></div>
+    <div class="action-overlay" id="s3ActionEnd"></div>
+  </div>`;
+}
+async function playScene3Left(){
+  phase='playing-left';
+  setHTML('s3LSys',sysBarLeft('idle'));
+  setHTML('s3LBody',mallNav('',false,false)+`<div class="result-area" id="s3LRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">等待搜索...</div></div>`);
+  setHTML('s3RSys',sysBarRight('idle'));
+  setHTML('s3RBody',mallNav('',false,true)+`<div class="result-area"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI引擎待命...</div></div>`);
+  await delay(500);
+  const input=document.querySelector('#s3LBody .mall-search input');const kw='耐高温硅胶密封圈 DN50';
+  if(input){input.classList.add('active');for(let i=0;i<kw.length;i++){await delay(120);input.value=kw.slice(0,i+1);}}
+  await delay(500);
+  await animateCursor('#s3LBody .mall-search button',()=>{});
+  const container=$('s3Left');const mallBtn=document.querySelector('#s3LBody .mall-search button');const mdmEl=$('lMDM');
+  fireParticles(container,mallBtn,mdmEl,'rgba(180,180,180,.9)');
+  setHTML('s3LSys',sysBarLeft('active'));await delay(1500);
+  setHTML('s3LSys',sysBarLeft('fail'));
+  fireParticles(container,$('lMDM'),$('s3LRes'),'#ef4444');
+  await delay(500);
+  setHTML('s3LRes',`<div class="empty-state"><div class="empty-num">0</div><div style="font-size:13px;color:#6b7280;margin:6px 0">条结果</div><div style="color:#dc2626;font-size:12px;margin-bottom:12px">未找到匹配物料</div><img src="${IMG}oring.png" style="width:48px;opacity:.3;margin:8px 0"><br><button id="s3DemandBtn" style="background:#dc2626;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:11px;cursor:pointer;margin-top:8px;animation:pulse 2s infinite">📝 提报新增需求</button></div>`);
+  await delay(800);
+  await animateCursor('#s3DemandBtn',()=>{});
+  await delay(1200);
+  setHTML('s3LRes',$('s3LRes').innerHTML+`<div class="pain-overlay show" style="opacity:1"><div style="background:rgba(254,243,199,.95);border:1px solid #fde68a;border-radius:8px;padding:12px 16px;max-width:260px;text-align:center"><div style="font-size:20px">⚠️</div><div style="font-size:12px;font-weight:700;color:#92400e;margin-top:4px">该物料已有相似品，但用户不知道</div></div></div>`);
+  await delay(2000);
+  setHTML('s3LRes',`<div style="padding:12px 16px"><div style="font-size:12px;color:#6b7280;margin-bottom:8px">模拟提报需求后的审批流程：</div><div class="approval-chain" id="s3Approvals"><span class="approval-node" id="ap1">提报</span><span class="approval-arrow" id="aa1">→</span><span class="approval-node" id="ap2">审核</span><span class="approval-arrow" id="aa2">→</span><span class="approval-node" id="ap3">寻源</span><span class="approval-arrow" id="aa3">→</span><span class="approval-node" id="ap4">上架</span></div><div style="margin-top:12px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#991b1b;text-align:center;opacity:0" id="s3Dup"><b>与库存品重复率 92%</b><br>预计浪费 ¥2.8万 + 耗时15-30天</div></div>`);
+  const apIds=['ap1','aa1','ap2','aa2','ap3','aa3','ap4'];
+  for(const id of apIds){await delay(400);showEl(id);}
+  await delay(500);const dup=$('s3Dup');if(dup)dup.style.opacity='1';await delay(1500);
+  phase='left-done';const leftHalf=$('s3Left');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s3ActionMid');if(overlay)overlay.classList.add('visible');updateUI();
+}
+async function playScene3Right(){
+  phase='playing-right';
+  const overlay=$('s3ActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s3Right');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s3RSys',sysBarRight('idle'));
+  setHTML('s3RBody',mallNav('',false,true)+`<div class="result-area" id="s3RRes"><div style="text-align:center;padding:40px;color:#9ca3af;font-size:12px">AI引擎待命...</div></div>`);
+  await delay(300);
+  const input=document.querySelector('#s3RBody .mall-search input');const kw='耐高温硅胶密封圈 DN50';
+  if(input){input.classList.add('active');for(let i=0;i<kw.length;i++){await delay(80);input.value=kw.slice(0,i+1);}}
+  await delay(500);
+  await animateCursor('#s3RBody .mall-search button',()=>{});
+  const container=$('s3Right');const mallBtn=document.querySelector('#s3RBody .mall-search button');const apiEl=$('rAPI');
+  fireParticles(container,mallBtn,apiEl,'#3b82f6');
+  setHTML('s3RSys',sysBarRight('active'));await delay(1500);
+  setHTML('s3RSys',sysBarRight('ok'));
+  fireParticles(container,$('rAPI'),$('s3RRes'),'#22c55e');
+  await delay(500);
+  setHTML('s3RRes',`<div class="ai-panel show" style="opacity:1;transform:none"><div class="ai-title">🔗 正在匹配相似物料...</div><div class="sim-bar"><div class="sim-fill" id="s3SimFill"></div></div><div style="text-align:right;font-size:10px;color:#6b7280" id="s3Pct">0%</div></div><div id="s3Match"></div>`);
+  await delay(300);
+  const fill=$('s3SimFill'),pct=$('s3Pct');if(fill)fill.style.width='92%';
+  let p=0;const iv=setInterval(()=>{p+=4;if(p>92)p=92;if(pct)pct.textContent=p+'%';if(p>=92)clearInterval(iv);},50);animTimers.push(iv);
+  await delay(2000);
+  setHTML('s3Match',`<div style="padding:0 16px"><div style="background:#fff;border:2px solid #22c55e;border-radius:10px;padding:14px;margin-top:8px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:13px;font-weight:700;color:#1f2937">O型密封圈 DN50 硅橡胶</span><span style="font-size:20px;font-weight:800;color:#16a34a">92%</span></div><div class="sim-bar"><div class="sim-fill" style="width:92%"></div></div><div style="font-size:10px;color:#6b7280;line-height:1.8;margin-top:6px"><div>编码：MAT-2024-0892 | 库存：150件</div><div>供应商：东方密封 | 上次采购：2024-01-15</div></div><img src="${IMG}oring.png" style="width:44px;margin-top:8px;border-radius:6px;border:2px solid #22c55e;padding:2px"><div style="margin-top:10px"><button style="background:#16a34a;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">✓ 直接复用</button></div></div><div style="text-align:center;margin-top:10px;padding:8px;background:#dcfce7;border-radius:6px;font-size:11px;color:#166534;font-weight:600">✅ 避免重复上架，节省寻源成本 ¥2.8万</div></div>`);
+  await delay(2000);
+  // Auto transition to 3b
+  phase='transitioning';
+  const trans=$('transOverlay');const transText=$('transText');
+  if(transText)transText.textContent='接下来：历史物料批量梳理';
+  if(trans)trans.classList.add('visible');
+  await delay(1500);
+  if(trans)trans.classList.remove('visible');
+  await delay(300);
+  loadScene3b();
+}
+
+// ===== SCENE 3b =====
+function buildScene3b(){
+  return `<div class="scene-split active" id="s3b">
+    <div class="half half-left" id="s3bLeft"><div class="col-mall"><div class="panel-hdr before">❌ 现状问题</div><div class="panel-body" id="s3bLBody"></div></div><div class="col-sys" id="s3bLSys"></div></div>
+    <div class="half half-right dimmed" id="s3bRight"><div class="col-sys" id="s3bRSys"></div><div class="col-mall"><div class="panel-hdr after">✅ 物料管家梳理</div><div class="panel-body" id="s3bRBody"></div></div></div>
+    <div class="action-overlay" id="s3bActionMid"><button class="action-btn blue" onclick="triggerRight()">查看优化方案 →</button></div>
+    <div class="action-overlay" id="s3bActionEnd"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+function loadScene3b(){
+  inScene3b=true;clearAnim();phase='idle';hideCursor();
+  $('mainArea').innerHTML=buildScene3b();
+  $('stepText').textContent='[历史物料梳理 — 批量去重]';
+  playScene3bLeft();
+}
+async function playScene3bLeft(){
+  phase='playing-left';
+  setHTML('s3bLSys',sysBarLeft('idle','无去重能力'));
+  // Build table with 1000 items (show ~15 rows scrollable)
+  let tblRows='';const names=['六角螺栓M10×50','内六角螺栓M8×30','法兰螺母M12','弹簧垫圈Φ10','平垫圈Φ12','膨胀螺栓M8×60','自攻螺钉ST4.2','六角螺栓M10×50','密封垫片DN25','六角螺栓M10×50','不锈钢螺母M6','尼龙锁紧螺母M8','沉头螺钉M5×20','外六角螺栓M16','梅花螺钉M4×12'];
+  const codes=['MAT-001','MAT-002','MAT-003','MAT-004','MAT-005','MAT-006','MAT-007','MAT-108','MAT-009','MAT-209','MAT-011','MAT-012','MAT-013','MAT-014','MAT-015'];
+  for(let i=0;i<names.length;i++){
+    const isDup=(i===0||i===7||i===9)?'dup-highlight':'';
+    tblRows+=`<tr class="${isDup}"><td style="font-size:10px;color:#6b7280">${codes[i]}</td><td style="font-size:10px">${names[i]}</td><td style="font-size:10px;color:#9ca3af">${i===0||i===7||i===9?'<span style="color:#dc2626;font-weight:700">⚠️重复</span>':'正常'}</td></tr>`;
+  }
+  setHTML('s3bLBody',`<div style="padding:12px 16px"><div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">📦 商城物料池（1000条）</div><div class="scroll-tbl-wrap" id="s3bScroll"><table class="data-tbl"><thead><tr><th>编码</th><th>名称</th><th>状态</th></tr></thead><tbody>${tblRows}</tbody></table></div><div id="s3bPainNote" style="opacity:0;transition:opacity .5s;margin-top:10px;padding:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:6px;font-size:11px;color:#991b1b;text-align:center"><b>重复物料占比约30%</b>，人工排查需2-3周</div><div id="s3bPainGrow" style="opacity:0;transition:opacity .5s;margin-top:6px;padding:8px;background:#fef3c7;border:1px solid #fde68a;border-radius:6px;font-size:11px;color:#92400e;text-align:center">⚠️ 持续增长中，每月新增重复15-20条</div></div>`);
+  await delay(500);
+  // Auto scroll the table
+  const scrollEl=$('s3bScroll');
+  if(scrollEl){let scrollPos=0;const scrollIv=setInterval(()=>{scrollPos+=1;scrollEl.scrollTop=scrollPos;if(scrollPos>80)clearInterval(scrollIv);},30);animTimers.push(scrollIv);}
+  await delay(2500);
+  // Highlight duplicates note
+  const note=$('s3bPainNote');if(note)note.style.opacity='1';
+  await delay(2000);
+  // Growing pain
+  const grow=$('s3bPainGrow');if(grow)grow.style.opacity='1';
+  await delay(2000);
+  // Dim left + show button
+  phase='left-done';
+  const leftHalf=$('s3bLeft');if(leftHalf)leftHalf.classList.add('dimmed');
+  const overlay=$('s3bActionMid');if(overlay)overlay.classList.add('visible');
+  updateUI();
+}
+async function playScene3bRight(){
+  phase='playing-right';
+  const overlay=$('s3bActionMid');if(overlay)overlay.classList.remove('visible');
+  const rightHalf=$('s3bRight');if(rightHalf)rightHalf.classList.remove('dimmed');
+  setHTML('s3bRSys',sysBarRight('idle','批量梳理引擎'));
+  setHTML('s3bRBody',`<div style="padding:12px 16px"><div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:10px">🧹 物料梳理面板</div><div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:16px;text-align:center"><div style="font-size:11px;color:#6b7280;margin-bottom:10px">选择物料池进行智能扫描</div><button id="s3bScanBtn" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;padding:10px 24px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer" onclick="return false">🔍 开始扫描</button></div><div id="s3bProgress" style="margin-top:12px;opacity:0;transition:opacity .4s"><div style="font-size:11px;color:#6b7280;margin-bottom:4px" id="s3bProgText">分析中 0/1000</div><div style="height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden"><div id="s3bProgBar" style="height:100%;background:linear-gradient(90deg,#3b82f6,#22c55e);border-radius:3px;width:0;transition:width 3s ease-out"></div></div></div><div id="s3bResult" style="margin-top:12px;opacity:0;transition:opacity .5s"></div></div>`);
+  await delay(800);
+  // Cursor animation: click scan button
+  await animateCursor('#s3bScanBtn',()=>{});
+  // Simulate click scan
+  const container=$('s3bRight');const scanBtn=$('s3bScanBtn');const apiEl=$('rAPI');
+  // Particle: scan→API (blue)
+  fireParticles(container,scanBtn,apiEl,'#3b82f6');
+  setHTML('s3bRSys',sysBarRight('active','批量梳理引擎'));
+  await delay(800);
+  // API dispatches to MDM+AI
+  setHTML('s3bRSys',sysBarRight('ok','批量梳理引擎'));
+  await delay(500);
+  // Progress bar
+  const prog=$('s3bProgress');if(prog)prog.style.opacity='1';
+  const bar=$('s3bProgBar');if(bar)bar.style.width='100%';
+  const progText=$('s3bProgText');
+  let count=0;const countIv=setInterval(()=>{count+=50;if(count>1000)count=1000;if(progText)progText.textContent=`分析中 ${count}/1000`;if(count>=1000)clearInterval(countIv);},150);animTimers.push(countIv);
+  await delay(3500);
+  // Return particle (green)
+  const apiEl2=$('rAPI');const resArea=$('s3bResult');
+  if(apiEl2&&resArea)fireParticles(container,apiEl2,resArea,'#22c55e');
+  await delay(800);
+  // Show results
+  const result=$('s3bResult');if(result)result.style.opacity='1';
+  setHTML('s3bResult',`<div style="background:#dcfce7;border:1px solid #86efac;border-radius:8px;padding:12px;margin-bottom:10px"><div style="font-size:14px;font-weight:700;color:#166534;margin-bottom:8px">📊 发现 312 组重复物料</div><div style="font-size:11px;color:#374151;line-height:2"><div>• 六角螺栓M10×50 × 3条 — 相似度 <b style="color:#16a34a">95%</b></div><div>• 内六角螺栓M8×30 × 2条 — 相似度 <b style="color:#16a34a">92%</b></div><div>• 弹簧垫圈Φ10 × 2条 — 相似度 <b style="color:#d97706">88%</b></div></div></div><div style="display:flex;gap:8px;margin-bottom:10px"><button id="s3bMergeBtn" style="background:#16a34a;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">✓ 建议合并</button><button style="background:#3b82f6;color:#fff;border:none;padding:8px 14px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">📝 补充属性</button></div><div style="padding:10px;background:#f0f9ff;border:1px solid #bfdbfe;border-radius:6px;font-size:11px;color:#1d4ed8;text-align:center;font-weight:600">预计精简 30%，年节省 ¥45万</div>`);
+  await delay(800);
+  await animateCursor('#s3bMergeBtn',()=>{});
+  await delay(1200);
+  phase='scene-done';inScene3b=false;
+  const endOverlay=$('s3bActionEnd');if(endOverlay)endOverlay.classList.add('visible');
+  updateUI();
+}
+
+// ===== SCENE 4 =====
+function buildScene4(){
+  return `<div class="scene-full active" id="s4" style="flex-direction:row;padding:0">
+    <div class="arch-half left-arch"><div class="arch-title" style="color:#f87171">传统架构</div><div class="arch-box" id="a4L1" style="background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.3);color:#93c5fd">🏪 采购商城<div style="font-size:9px;opacity:.6;margin-top:2px">用户搜索入口</div></div><div class="arch-line" id="a4Ln1" style="background:rgba(148,163,184,.3)"></div><div class="arch-box" id="a4L2" style="background:rgba(148,163,184,.08);border:2px solid rgba(148,163,184,.3);color:#94a3b8">🗄️ MDM主数据<div style="font-size:9px;opacity:.6;margin-top:2px">仅支持精确匹配，无智能补全</div></div><div style="margin-top:20px;padding:10px 16px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:11px;color:#fca5a5;text-align:center;max-width:220px;opacity:0" id="a4LNote">单一链路 · 搜索准确率仅30%</div></div>
+    <div class="arch-half right-arch"><div class="arch-title" style="color:#4ade80">物料管家架构</div><div class="arch-box" id="a4R1" style="background:rgba(59,130,246,.1);border:2px solid rgba(59,130,246,.3);color:#93c5fd">🏪 采购商城<div style="font-size:9px;opacity:.6;margin-top:2px">用户搜索入口</div></div><div class="arch-line" id="a4Ln2" style="background:rgba(96,165,250,.4)"></div><div class="arch-box" id="a4R2" style="background:rgba(59,130,246,.12);border:2px solid rgba(96,165,250,.5);color:#dbeafe">🧠 物料管家API<div style="font-size:9px;opacity:.6;margin-top:2px">智能中枢 · 多源聚合</div></div><div class="arch-line" id="a4Ln3" style="background:rgba(96,165,250,.3)"></div><div class="arch-row" id="a4Row"><div class="arch-box" id="a4R3" style="background:rgba(148,163,184,.08);border:1.5px solid rgba(148,163,184,.3);color:#94a3b8;font-size:11px">🗄️ MDM<div style="font-size:8px;opacity:.6;margin-top:2px">主数据查询</div></div><div class="arch-box" id="a4R4" style="background:rgba(249,115,22,.08);border:1.5px solid rgba(249,115,22,.3);color:#fdba74;font-size:11px">🔍 ES引擎<div style="font-size:8px;opacity:.6;margin-top:2px">全文模糊搜索</div></div><div class="arch-box" id="a4R5" style="background:rgba(168,85,247,.08);border:1.5px solid rgba(168,85,247,.3);color:#c4b5fd;font-size:11px">🤖 AI模型<div style="font-size:8px;opacity:.6;margin-top:2px">属性补全+相似匹配</div></div></div><div style="margin-top:20px;padding:10px 16px;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:8px;font-size:11px;color:#86efac;text-align:center;max-width:260px;opacity:0" id="a4RNote">多源聚合 · 搜索准确率 92% ↑207%</div></div>
+    <div class="action-overlay" id="s4Action"><button class="action-btn green" onclick="nextScene()">下一场景 →</button></div>
+  </div>`;
+}
+async function playScene4(){
+  phase='playing';showEl('a4L1');await delay(400);
+  const ln1=$('a4Ln1');if(ln1)ln1.classList.add('show');await delay(300);
+  showEl('a4L2');await delay(400);const lNote=$('a4LNote');if(lNote)lNote.style.opacity='1';await delay(1500);
+  showEl('a4R1');await delay(400);const ln2=$('a4Ln2');if(ln2)ln2.classList.add('show');await delay(300);
+  showEl('a4R2');await delay(400);const ln3=$('a4Ln3');if(ln3)ln3.classList.add('show');await delay(300);
+  showEl('a4R3');await delay(200);showEl('a4R4');await delay(200);showEl('a4R5');await delay(500);
+  const rNote=$('a4RNote');if(rNote)rNote.style.opacity='1';await delay(2000);
+  phase='scene-done';const overlay=$('s4Action');if(overlay)overlay.classList.add('visible');updateUI();
+}
+
+// ===== SCENE 5 =====
+function buildScene5(){
+  return `<div class="scene-full active" id="s5">
+    <h2 style="color:#f0f9ff;font-size:22px;font-weight:700;margin-bottom:6px">📊 价值总结</h2>
+    <p style="color:rgba(255,255,255,.4);font-size:12px;margin-bottom:30px">物料管家核心业务指标提升</p>
+    <div class="metric-grid">
+      <div class="metric-card" id="mc1"><div class="metric-icon">🎯</div><div class="metric-label">物料去重率提升</div><div class="metric-num" id="mv1">0%</div><div class="metric-change">↑ 显著提升</div></div>
+      <div class="metric-card" id="mc2"><div class="metric-icon">🔍</div><div class="metric-label">搜索准确率</div><div class="metric-num" id="mv2">0%</div><div class="metric-change">30% → 92%</div></div>
+      <div class="metric-card" id="mc3"><div class="metric-icon">💰</div><div class="metric-label">年采购成本节省</div><div class="metric-num" id="mv3">¥0万</div><div class="metric-change">直接降本</div></div>
+      <div class="metric-card" id="mc4"><div class="metric-icon">⚡</div><div class="metric-label">平均查找时间</div><div class="metric-num" id="mv4">0秒</div><div class="metric-change">8分钟 → 15秒</div></div>
+    </div>
+    <div class="slogan" id="sloganText">物料管家 — 让每一次搜索都有答案</div>
+  </div>`;
+}
+async function playScene5(){
+  phase='playing';await delay(400);
+  const cards=['mc1','mc2','mc3','mc4'];for(const id of cards){showEl(id);await delay(200);}await delay(300);
+  const metrics=[{id:'mv1',target:65,prefix:'',suffix:'%'},{id:'mv2',target:92,prefix:'',suffix:'%'},{id:'mv3',target:320,prefix:'¥',suffix:'万'},{id:'mv4',target:15,prefix:'',suffix:'秒'}];
+  metrics.forEach(m=>{let cur=0;const step=Math.max(1,Math.ceil(m.target/40));const iv=setInterval(()=>{cur=Math.min(cur+step,m.target);const el=$(m.id);if(el)el.textContent=m.prefix+cur+m.suffix;if(cur>=m.target)clearInterval(iv);},40);animTimers.push(iv);});
+  await delay(2000);showEl('sloganText');phase='scene-done';updateUI();
+}
+
+// ===== CONTROLLER =====
+function loadScene(idx){
+  clearAnim();paused=false;phase='idle';inScene3b=false;scene=idx;hideCursor();
+  const main=$('mainArea');
+  switch(idx){
+    case 0:main.innerHTML=buildScene1();playScene1();break;
+    case 1:main.innerHTML=buildScene2();playScene2Left();break;
+    case 2:main.innerHTML=buildScene3();playScene3Left();break;
+    case 3:main.innerHTML=buildScene4();playScene4();break;
+    case 4:main.innerHTML=buildScene5();playScene5();break;
+  }
+  updateUI();
+}
+function triggerRight(){
+  if(phase!=='left-done')return;
+  if(scene===1)playScene2Right();
+  else if(scene===2&&!inScene3b)playScene3Right();
+  else if(scene===2&&inScene3b)playScene3bRight();
+}
+function nextScene(){if(scene<SCENES.length-1)loadScene(scene+1);}
+function prevScene(){if(scene>0)loadScene(scene-1);}
+
+function updateUI(){
+  $('sceneBadge').textContent=`场景 ${scene+1}/5`;
+  $('stepText').textContent=inScene3b?'[历史物料梳理 — 批量去重]':`[${SCENES[scene].title}]`;
+  let dotsHtml='';for(let i=0;i<5;i++){const cls=i<scene?'done':i===scene?'active':'';dotsHtml+=`<span class="dot ${cls}"></span>`;}
+  $('dots').innerHTML=dotsHtml;
+  // Update scene nav
+  let navHtml='';for(let i=0;i<SCENES.length;i++){
+    const cls=i===scene?'active':'';
+    navHtml+=`<span class="nav-dot ${cls}" onclick="navToScene(${i})"><span class="nav-tip">${SCENES[i].title}</span></span>`;
+  }
+  $('sceneNav').innerHTML=navHtml;
+}
+function navToScene(idx){if(idx>=0&&idx<SCENES.length){clearAnim();loadScene(idx);}}
+
+document.addEventListener('keydown',e=>{
+  if(e.code==='ArrowRight'){e.preventDefault();if(phase==='left-done')triggerRight();else if(phase==='scene-done')nextScene();}
+  if(e.code==='ArrowLeft'){e.preventDefault();prevScene();}
+  if(e.code==='Space'){e.preventDefault();}
+});
+window.addEventListener('DOMContentLoaded',()=>loadScene(0));
+</script>
+</body>
+</html>

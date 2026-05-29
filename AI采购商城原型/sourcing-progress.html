@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>寻源进度 - 巨石集团采购平台</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 14px; background: #f4f4f4; color: #333; }
+
+    /* Header */
+    .header { background: #c0392b; position: sticky; top: 0; z-index: 200; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 56px; max-width: 1300px; margin: 0 auto; }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-icon { width: 36px; height: 36px; background: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #c0392b; font-size: 17px; flex-shrink: 0; }
+    .logo-text { color: white; font-size: 16px; font-weight: 700; }
+    .logo-sub { color: rgba(255,255,255,0.75); font-size: 11px; margin-top: 1px; }
+    .header-nav { display: flex; gap: 4px; }
+    .header-nav a, .header-nav span { color: rgba(255,255,255,0.85); text-decoration: none; padding: 6px 12px; font-size: 14px; border-radius: 4px; transition: background 0.15s; }
+    .header-nav a:hover { background: rgba(255,255,255,0.15); color: white; }
+
+    /* Breadcrumb */
+    .breadcrumb { padding: 12px 24px; font-size: 13px; color: #999; background: #fafafa; border-bottom: 1px solid #eee; }
+    .breadcrumb a { color: #666; text-decoration: none; }
+    .breadcrumb a:hover { color: #1890ff; text-decoration: underline; }
+    .breadcrumb .sep { margin: 0 8px; color: #ccc; }
+    .breadcrumb .current { color: #333; font-weight: 600; }
+
+    /* Info Card (top) */
+    .info-card { background: white; border-bottom: 1px solid #eee; padding: 20px 24px; }
+    .info-card-inner { max-width: 1300px; margin: 0 auto; }
+    .info-row { display: flex; align-items: center; flex-wrap: wrap; gap: 24px; margin-bottom: 14px; }
+    .info-item { display: flex; align-items: center; gap: 6px; }
+    .info-label { font-size: 12px; color: #999; }
+    .info-value { font-size: 14px; color: #333; font-weight: 500; }
+    .info-value.order-id { font-family: monospace; color: #1677ff; font-weight: 600; letter-spacing: 0.5px; }
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 10px; font-size: 12px; font-weight: 600;
+    }
+    .status-badge.sourcing { background: #fff3e0; color: #fa8c16; border: 1px solid #ffd591; }
+
+    /* 48h countdown bar */
+    .countdown-bar { background: #f8f9fa; border: 1px solid #e8e8e8; border-radius: 6px; padding: 14px 16px; }
+    .countdown-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .countdown-label { font-size: 13px; color: #666; }
+    .countdown-time { font-size: 14px; font-weight: 700; color: #fa8c16; }
+    .progress-track { height: 8px; background: #e8e8e8; border-radius: 4px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 4px; transition: width 1s linear, background 0.5s; }
+
+    /* Main Layout */
+    .main-content { max-width: 1300px; margin: 0 auto; padding: 24px 24px 100px; display: flex; gap: 24px; align-items: flex-start; }
+
+    /* Left: Timeline */
+    .timeline-col { width: 300px; flex-shrink: 0; }
+    .timeline-card { background: white; border-radius: 6px; border: 1px solid #e8e8e8; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+    .section-title { font-size: 14px; font-weight: 700; color: #333; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ''; display: inline-block; width: 3px; height: 14px; background: #c0392b; border-radius: 2px; }
+
+    /* Timeline Items */
+    .timeline { position: relative; }
+    .tl-item { position: relative; padding-left: 32px; padding-bottom: 20px; }
+    .tl-item:last-child { padding-bottom: 0; }
+    /* Connector line */
+    .tl-item:not(:last-child)::before {
+      content: '';
+      position: absolute; left: 9px; top: 22px; bottom: 0;
+      width: 2px;
+    }
+    .tl-item.done:not(:last-child)::before { background: #52c41a; opacity: 0.5; }
+    .tl-item.pending:not(:last-child)::before { background: #e0e0e0; border-left: 2px dashed #d0d0d0; width: 0; }
+    .tl-item.loading:not(:last-child)::before { background: #fa8c16; opacity: 0.3; }
+
+    .tl-dot {
+      position: absolute; left: 0; top: 2px;
+      width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+    .tl-item.done .tl-dot { background: #52c41a; color: white; box-shadow: 0 2px 6px rgba(82,196,26,0.4); }
+    .tl-item.pending .tl-dot { background: white; border: 2px dashed #ccc; }
+    .tl-item.loading .tl-dot { background: #fa8c16; color: white; box-shadow: 0 2px 6px rgba(250,140,22,0.4); }
+
+    .tl-time { font-size: 11px; color: #999; margin-bottom: 3px; }
+    .tl-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+    .tl-item.done .tl-title { color: #333; }
+    .tl-item.pending .tl-title { color: #bbb; }
+    .tl-item.loading .tl-title { color: #fa8c16; }
+    .tl-desc { font-size: 12px; line-height: 1.6; }
+    .tl-item.done .tl-desc { color: #888; }
+    .tl-item.pending .tl-desc { color: #ccc; }
+    .tl-item.loading .tl-desc { color: #fa8c16; }
+
+    /* Pulse animation for loading */
+    @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+    .tl-item.loading .tl-dot { animation: pulse 1.2s ease-in-out infinite; }
+
+    /* Right: Quote section */
+    .quotes-col { flex: 1; min-width: 0; }
+    .quotes-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .quote-count-badge { background: #1677ff; color: white; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-left: 8px; }
+
+    /* Skeleton / Waiting state */
+    .waiting-state { background: white; border-radius: 6px; border: 1px solid #e8e8e8; padding: 40px; text-align: center; }
+    .skeleton-lines { margin: 20px 0; }
+    .skeleton-line { height: 14px; background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 3px; margin-bottom: 10px; }
+    @keyframes shimmer { 0%{background-position:200% 0;} 100%{background-position:-200% 0;} }
+    .skeleton-line.l80 { width: 80%; margin: 0 auto 10px; }
+    .skeleton-line.l60 { width: 60%; margin: 0 auto 10px; }
+    .skeleton-line.l90 { width: 90%; margin: 0 auto 10px; }
+    .waiting-icon { font-size: 40px; margin-bottom: 12px; }
+    .waiting-text { font-size: 14px; color: #666; font-weight: 500; }
+    .waiting-sub { font-size: 12px; color: #bbb; margin-top: 6px; }
+
+    /* Quote Cards */
+    @keyframes slideIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+
+    .quote-card {
+      background: white; border-radius: 6px; border: 1px solid #e8e8e8;
+      padding: 0; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      overflow: hidden; animation: slideIn 0.4s ease forwards;
+      position: relative;
+    }
+    .quote-card.border-green { border-left: 4px solid #52c41a; }
+    .quote-card.border-blue { border-left: 4px solid #1677ff; }
+
+    .quote-card-tag {
+      position: absolute; top: 12px; right: 12px;
+      font-size: 11px; font-weight: 700; padding: 2px 8px;
+      border-radius: 10px;
+    }
+    .tag-lowest { background: #fa8c16; color: white; }
+    .tag-fast { background: #52c41a; color: white; }
+
+    .quote-card-body { padding: 16px 18px; }
+    .quote-supplier-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .quote-supplier-name { font-size: 14px; font-weight: 700; color: #333; }
+    .quote-stars { color: #fadb14; font-size: 12px; }
+    .quote-score { font-size: 12px; color: #888; }
+
+    .quote-spec-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+    .quote-spec-tag { font-size: 11px; color: #666; background: #f5f5f5; padding: 2px 8px; border-radius: 3px; }
+
+    .quote-price-row { display: flex; align-items: baseline; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
+    .quote-price { font-size: 22px; font-weight: 800; color: #c0392b; }
+    .quote-price-unit { font-size: 12px; color: #999; }
+    .quote-moq { font-size: 13px; color: #666; }
+    .quote-lead { font-size: 13px; color: #52c41a; font-weight: 500; }
+
+    .quote-meta { font-size: 12px; color: #bbb; margin-bottom: 12px; }
+
+    .quote-actions { display: flex; gap: 10px; border-top: 1px solid #f5f5f5; padding: 12px 18px; background: #fafafa; }
+    .btn-detail {
+      padding: 7px 16px; background: white; border: 1px solid #d9d9d9;
+      color: #666; border-radius: 4px; font-size: 13px; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn-detail:hover { border-color: #1677ff; color: #1677ff; }
+    .btn-select {
+      padding: 7px 20px; background: #c0392b; color: white; border: none;
+      border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; font-family: inherit; display: flex; align-items: center; gap: 4px;
+    }
+    .btn-select:hover { background: #a93226; }
+
+    .btn-select-list {
+      background: #52c41a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-top: 12px;
+      transition: background 0.2s;
+      font-family: inherit;
+    }
+    .btn-select-list:hover {
+      background: #389e0d;
+    }
+
+    /* Quotes container */
+    #quotesContainer { min-height: 200px; }
+
+    /* Bottom bar */
+    .bottom-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      padding: 14px 24px; display: flex;
+      justify-content: flex-end; align-items: center;
+      gap: 12px; z-index: 100;
+      box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+    }
+    .btn-danger-outline {
+      padding: 9px 18px; background: white; border: 1px solid #d9d9d9;
+      color: #999; border-radius: 6px; font-size: 14px; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn-danger-outline:hover { border-color: #c0392b; color: #c0392b; }
+    .btn-blue-outline {
+      padding: 9px 18px; background: white; border: 1px solid #1677ff;
+      color: #1677ff; border-radius: 6px; font-size: 14px; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn-blue-outline:hover { background: #e8f0ff; }
+    .btn-red-solid {
+      padding: 9px 20px; background: #c0392b; color: white; border: none;
+      border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn-red-solid:hover { background: #a93226; }
+    .placeholder-spacer { height: 70px; }
+
+    /* More section */
+    .still-searching { background: white; border-radius: 6px; border: 1px solid #e8e8e8; padding: 20px; text-align: center; }
+    .still-searching .pulse-dot {
+      display: inline-block; width: 8px; height: 8px; background: #fa8c16;
+      border-radius: 50%; margin-right: 6px;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    /* Supplier Detail Modal */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.45); z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      animation: fadeIn 0.2s ease;
+    }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    .modal-card {
+      background: white; border-radius: 12px; width: 480px; max-width: 90vw;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.2); animation: modalSlide 0.25s ease;
+      max-height: 85vh; overflow-y: auto;
+    }
+    @keyframes modalSlide { from{opacity:0;transform:translateY(-20px);} to{opacity:1;transform:translateY(0);} }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 22px; border-bottom: 1px solid #f0f0f0;
+    }
+    .modal-title { font-size: 16px; font-weight: 700; color: #333; }
+    .modal-close {
+      width: 28px; height: 28px; border: none; background: #f5f5f5;
+      border-radius: 50%; font-size: 16px; cursor: pointer; color: #999;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: #e8e8e8; color: #333; }
+    .modal-body { padding: 20px 22px; }
+    .detail-row { display: flex; padding: 8px 0; border-bottom: 1px solid #fafafa; }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { width: 90px; flex-shrink: 0; font-size: 13px; color: #999; }
+    .detail-value { font-size: 13px; color: #333; font-weight: 500; }
+    .detail-stars { color: #fadb14; font-size: 13px; }
+    .detail-score { color: #fa8c16; font-weight: 700; font-size: 14px; margin-left: 4px; }
+    .certs-section {
+      margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;
+    }
+    .certs-title { font-size: 13px; color: #999; margin-bottom: 8px; }
+    .cert-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cert-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 12px; color: #52c41a; background: #f6ffed;
+      border: 1px solid #b7eb8f; padding: 3px 10px; border-radius: 3px;
+    }
+
+    /* Confirm Card (inline expand) */
+    .confirm-card {
+      background: #f0f7ff; border: 1px solid #bae0ff; border-radius: 6px;
+      padding: 16px 18px; margin-top: 10px; animation: slideIn 0.3s ease;
+    }
+    .confirm-card-title { font-size: 14px; font-weight: 600; color: #1677ff; margin-bottom: 6px; }
+    .confirm-card-detail { font-size: 13px; color: #666; margin-bottom: 14px; }
+    .confirm-card-detail span { color: #c0392b; font-weight: 700; }
+    .confirm-card-actions { display: flex; gap: 10px; }
+    .btn-add-cart {
+      padding: 7px 20px; background: #1677ff; color: white; border: none;
+      border-radius: 4px; font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn-add-cart:hover { background: #0958d9; }
+    .btn-continue {
+      padding: 7px 20px; background: white; border: 1px solid #d9d9d9;
+      color: #666; border-radius: 4px; font-size: 13px; cursor: pointer;
+      transition: all 0.15s; font-family: inherit;
+    }
+    .btn-continue:hover { border-color: #1677ff; color: #1677ff; }
+
+    /* Toast notification */
+    .toast-notification {
+      position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+      background: #333; color: white; padding: 14px 28px; border-radius: 8px;
+      font-size: 14px; z-index: 9999; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+      animation: toastIn 0.3s ease;
+    }
+    @keyframes toastIn { from{opacity:0;transform:translateX(-50%) translateY(-10px);} to{opacity:1;transform:translateX(-50%) translateY(0);} }
+    .toast-notification a { color: white; }
+
+    /* 演示提示条 */
+    .demo-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(30,30,30,0.92);
+      color: #fff;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 99999;
+      font-size: 13px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+      transition: transform 0.3s;
+    }
+    .demo-bar.collapsed {
+      transform: translateY(100%);
+    }
+    .demo-bar-title {
+      background: #1890ff;
+      color: white;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-weight: 600;
+      margin-right: 16px;
+      white-space: nowrap;
+    }
+    .demo-hint {
+      background: rgba(255,255,255,0.12);
+      padding: 3px 10px;
+      border-radius: 12px;
+      margin: 0 6px;
+      color: #8ecfff;
+      white-space: nowrap;
+    }
+    .demo-bar-right {
+      display: flex;
+      gap: 8px;
+    }
+    .demo-collapse-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #ccc;
+      padding: 4px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .demo-expand-btn {
+      position: fixed;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(30,30,30,0.85);
+      color: #fff;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 12px;
+      z-index: 99998;
+      display: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-area">
+      <div class="logo-icon">巨</div>
+      <div>
+        <div class="logo-text">巨石集团采购平台</div>
+        <div class="logo-sub">企业级工业品一站式采购</div>
+      </div>
+    </div>
+    <nav class="header-nav">
+      <a href="mall.html">首页</a>
+      <span>采购中心</span>
+    </nav>
+  </div>
+</header>
+
+<!-- Breadcrumb -->
+<nav class="breadcrumb">
+  <a href="mall.html">首页</a>
+  <span class="sep">›</span>
+  <a href="demand-form.html">需求提报</a>
+  <span class="sep">›</span>
+  <span class="current">寻源进度</span>
+</nav>
+
+<!-- Top Info Card -->
+<div class="info-card">
+  <div class="info-card-inner">
+    <div class="info-row">
+      <div class="info-item">
+        <span class="info-label">需求单：</span>
+        <span class="info-value order-id" id="displayOrderId">QTS-20260522-0041</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">物料：</span>
+        <span class="info-value" id="displayKeyword">M12六角螺栓</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">规格：</span>
+        <span class="info-value">请见备注</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">提交时间：</span>
+        <span class="info-value" id="displayTime">—</span>
+      </div>
+      <div class="info-item">
+        <span class="status-badge sourcing">⏳ 寻源中</span>
+      </div>
+    </div>
+    <!-- 48h countdown progress bar -->
+    <div class="countdown-bar">
+      <div class="countdown-header">
+        <span class="countdown-label">⏱ 48小时寻源倒计时</span>
+        <span class="countdown-time" id="countdownText">距截止还剩 47小时32分</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill" style="width:5%;background:#52c41a;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="main-content">
+
+  <!-- Left: Timeline -->
+  <div class="timeline-col">
+    <div class="timeline-card">
+      <div class="section-title">寻源进展</div>
+      <div class="timeline" id="timeline">
+
+        <div class="tl-item done" id="tl1">
+          <div class="tl-dot">✓</div>
+          <div class="tl-time">08:32</div>
+          <div class="tl-title">需求单已提交</div>
+          <div class="tl-desc">编号 <span id="tlOrderId">QTS-20260522-0041</span>，已进入寻源队列</div>
+        </div>
+
+        <div class="tl-item done" id="tl2">
+          <div class="tl-dot">✓</div>
+          <div class="tl-time">09:15</div>
+          <div class="tl-title">已分配接单团队</div>
+          <div class="tl-desc">华东区销售团队，3 人已接单</div>
+        </div>
+
+        <div class="tl-item done" id="tl3">
+          <div class="tl-dot">✓</div>
+          <div class="tl-time">11:42</div>
+          <div class="tl-title">销售顾问跟进中</div>
+          <div class="tl-desc">顾问张明已联系 5 家供应商，预计下午反馈</div>
+        </div>
+
+        <div class="tl-item loading" id="tl4">
+          <div class="tl-dot">●</div>
+          <div class="tl-time">14:20</div>
+          <div class="tl-title" id="tl4Title">报价陆续到达中...</div>
+          <div class="tl-desc" id="tl4Desc">正在等待供应商报价</div>
+        </div>
+
+        <div class="tl-item pending" id="tl5">
+          <div class="tl-dot"></div>
+          <div class="tl-time">预计 18:00 前</div>
+          <div class="tl-title">汇总全部报价</div>
+          <div class="tl-desc">汇总所有报价并通知您确认</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Quotes -->
+  <div class="quotes-col">
+    <div class="quotes-header">
+      <div class="section-title" style="margin-bottom:0;">
+        报价汇总
+        <span class="quote-count-badge" id="quoteCountBadge" style="display:none;">0</span>
+      </div>
+    </div>
+
+    <!-- Waiting / skeleton -->
+    <div class="waiting-state" id="waitingState">
+      <div class="waiting-icon">⏳</div>
+      <div class="waiting-text">等待报价中，销售顾问正在联系供应商...</div>
+      <div class="waiting-sub">通常 2-4 小时内陆续收到报价</div>
+      <div class="skeleton-lines" style="margin-top:24px;">
+        <div class="skeleton-line l90"></div>
+        <div class="skeleton-line l80"></div>
+        <div class="skeleton-line l60"></div>
+      </div>
+    </div>
+
+    <!-- Quotes will be inserted here -->
+    <div id="quotesContainer"></div>
+
+    <!-- Still searching -->
+    <div class="still-searching" id="stillSearching" style="display:none;">
+      <span class="pulse-dot"></span>
+      <span style="font-size:13px;color:#888;">寻源仍在进行中，预计还有更多报价到达...</span>
+    </div>
+
+  </div>
+
+</div><!-- /main-content -->
+
+<div class="placeholder-spacer"></div>
+
+<!-- Bottom Bar -->
+<div class="bottom-bar">
+  <button class="btn-danger-outline" onclick="cancelOrder()">取消需求单</button>
+  <button class="btn-blue-outline" onclick="contactAdvisor()">📞 联系专属采购顾问</button>
+  <button class="btn-red-solid" onclick="location.href='mall.html'">🏠 返回商城首页</button>
+</div>
+
+<script>
+  // ---- URL Params ----
+  var params = new URLSearchParams(location.search);
+  var keyword = params.get('keyword') || 'M12六角螺栓';
+  var orderId = params.get('orderId') || 'QTS-20260522-0041';
+
+  document.getElementById('displayOrderId').textContent = orderId;
+  document.getElementById('displayKeyword').textContent = keyword;
+  document.getElementById('tlOrderId').textContent = orderId;
+
+  // ---- Submit time ----
+  var now = new Date();
+  function fmt2(n) { return String(n).padStart(2, '0'); }
+  document.getElementById('displayTime').textContent =
+    now.getFullYear() + '-' + fmt2(now.getMonth()+1) + '-' + fmt2(now.getDate()) +
+    ' ' + fmt2(now.getHours()) + ':' + fmt2(now.getMinutes());
+
+  // ---- 48h Countdown (演示：从已过去约2小时开始) ----
+  var elapsed = 2 * 3600 + 15 * 60; // 已过去 2h15min（秒数）
+  var total = 48 * 3600;
+
+  function updateCountdown() {
+    elapsed++;
+    var remaining = total - elapsed;
+    if (remaining < 0) remaining = 0;
+    var rh = Math.floor(remaining / 3600);
+    var rm = Math.floor((remaining % 3600) / 60);
+    document.getElementById('countdownText').textContent =
+      '距截止还剩 ' + rh + '小时' + fmt2(rm) + '分';
+    var pct = Math.min((elapsed / total) * 100, 100);
+    var fill = document.getElementById('progressFill');
+    fill.style.width = pct.toFixed(1) + '%';
+    // Color: <24h elapsed = green, 24-36h = orange, >36h = red
+    if (elapsed < 24 * 3600) fill.style.background = '#52c41a';
+    else if (elapsed < 36 * 3600) fill.style.background = '#fa8c16';
+    else fill.style.background = '#c0392b';
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+
+  // ---- Quote data ----
+  var quotes = [
+    {
+      id: 1,
+      borderClass: 'border-green',
+      tag: null,
+      supplier: '华迅紧固件有限公司',
+      stars: '★★★★★',
+      score: '4.8',
+      specs: ['品牌：国产', '规格：M12×60', '等级：10.9级', '表面：镀锌'],
+      price: '¥1.85',
+      unit: '/个',
+      moq: '起订量：50个',
+      lead: '交期：2-3个工作日',
+      valid: '有效期至：72小时后',
+      // 供应商详情
+      capital: '500万元',
+      years: 8,
+      mainBiz: '紧固件、标准件',
+      region: '全国',
+      historyOrders: 12,
+      onTimeRate: '96.5%',
+      qualityRate: '99.2%',
+      certs: ['ISO9001', 'ISO14001', '营业执照', '安全生产许可证']
+    },
+    {
+      id: 2,
+      borderClass: 'border-blue',
+      tag: { text: '最低价', cls: 'tag-lowest' },
+      supplier: '鑫展旺五金配件厂',
+      stars: '★★★★☆',
+      score: '4.6',
+      specs: ['品牌：国产', '规格：M12×60', '等级：10.9级', '表面：镀锌'],
+      price: '¥1.62',
+      unit: '/个',
+      moq: '起订量：200个',
+      lead: '交期：3-5个工作日',
+      valid: '有效期至：72小时后',
+      // 供应商详情
+      capital: '200万元',
+      years: 5,
+      mainBiz: '五金配件、紧固件',
+      region: '华东/华南',
+      historyOrders: 6,
+      onTimeRate: '92.1%',
+      qualityRate: '98.5%',
+      certs: ['ISO9001', '营业执照']
+    },
+    {
+      id: 3,
+      borderClass: 'border-blue',
+      tag: { text: '品牌货', cls: 'tag-fast' },
+      supplier: '上海瑞腾工业配件',
+      stars: '★★★★★',
+      score: '4.7',
+      specs: ['品牌：晋亿实业', '规格：M12×60', '等级：10.9级', '表面：热镀锌'],
+      price: '¥1.78',
+      unit: '/个',
+      moq: '起订量：100个',
+      lead: '交期：2日达',
+      valid: '有效期至：72小时后',
+      // 供应商详情
+      capital: '800万元',
+      years: 12,
+      mainBiz: '工业紧固件、机械配件',
+      region: '全国',
+      historyOrders: 23,
+      onTimeRate: '98.2%',
+      qualityRate: '99.5%',
+      certs: ['ISO9001', 'ISO14001', 'IATF16949', '营业执照', '安全生产许可证']
+    }
+  ];
+
+  function buildQuoteCard(q) {
+    var tagHtml = q.tag ? '<div class="quote-card-tag ' + q.tag.cls + '">' + q.tag.text + '</div>' : '';
+    var specTags = q.specs.map(function(s){ return '<span class="quote-spec-tag">' + s + '</span>'; }).join('');
+    return '<div class="quote-card ' + q.borderClass + '" id="qcard' + q.id + '">' +
+      tagHtml +
+      '<div class="quote-card-body">' +
+        '<div class="quote-supplier-row">' +
+          '<span class="quote-supplier-name">' + q.supplier + '</span>' +
+          '<span class="quote-stars">' + q.stars + '</span>' +
+          '<span class="quote-score">' + q.score + '分</span>' +
+        '</div>' +
+        '<div class="quote-spec-row">' + specTags + '</div>' +
+        '<div class="quote-price-row">' +
+          '<span class="quote-price">' + q.price + '</span>' +
+          '<span class="quote-price-unit">' + q.unit + '</span>' +
+          '<span class="quote-moq">' + q.moq + '</span>' +
+          '<span class="quote-lead">' + q.lead + '</span>' +
+        '</div>' +
+        '<div class="quote-meta">' + q.valid + '</div>' +
+      '</div>' +
+      '<div class="quote-actions">' +
+        '<button class="btn-detail" onclick="viewDetail(' + q.id + ')">查看供应商详情</button>' +
+        '<button class="btn-select" onclick="selectQuote(' + q.id + ')">选定此报价 →</button>' +
+        '<button class="btn-select-list" onclick="selectAndList(' + q.id + ')">选择此报价并上架</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  var quoteCount = 0;
+
+  function showQuote(idx) {
+    var q = quotes[idx];
+    if (!q) return;
+    quoteCount++;
+
+    // Hide waiting state on first quote
+    if (quoteCount === 1) {
+      document.getElementById('waitingState').style.display = 'none';
+      document.getElementById('quoteCountBadge').style.display = 'inline';
+      document.getElementById('stillSearching').style.display = 'block';
+      // Update timeline tl4
+      document.getElementById('tl4Title').textContent = '第1份报价到达';
+      document.getElementById('tl4Desc').textContent = '收到第1份报价：华迅紧固件 ¥1.85/个';
+      document.getElementById('tl4').classList.remove('loading');
+      document.getElementById('tl4').classList.add('done');
+      document.getElementById('tl4').querySelector('.tl-dot').textContent = '✓';
+    }
+
+    document.getElementById('quoteCountBadge').textContent = quoteCount;
+
+    var container = document.getElementById('quotesContainer');
+    var div = document.createElement('div');
+    div.innerHTML = buildQuoteCard(q);
+    container.appendChild(div.firstChild);
+
+    // On last quote, update still-searching
+    if (quoteCount === quotes.length) {
+      document.getElementById('stillSearching').innerHTML =
+        '<span style="font-size:13px;color:#52c41a;font-weight:600;">✅ 已收到全部 ' + quoteCount + ' 份报价，请选择最优方案</span>';
+    }
+  }
+
+  // Staggered reveal: 2.5s, 5s, 8s
+  setTimeout(function(){ showQuote(0); }, 2500);
+  setTimeout(function(){ showQuote(1); }, 5000);
+  setTimeout(function(){ showQuote(2); }, 8000);
+
+  // ---- 辅助函数 ----
+  function getQuoteById(id) {
+    for (var i = 0; i < quotes.length; i++) {
+      if (quotes[i].id === id) return quotes[i];
+    }
+    return null;
+  }
+
+  function inferCat(name) {
+    if (/泵|阀|管/.test(name)) return '泵阀管件';
+    if (/螺栓|螺钉|螺母/.test(name)) return '紧固件';
+    if (/电|变频|开关|断路/.test(name)) return '电气电工';
+    if (/轴承|齿轮/.test(name)) return '传动件';
+    if (/油缸|液压/.test(name)) return '液压气动';
+    return '工业品';
+  }
+
+  function inferImg(name) {
+    if (/泵/.test(name)) return 'images/valve.png';
+    if (/螺栓/.test(name)) return 'images/bolt.png';
+    if (/轴承/.test(name)) return 'images/bearing.jpg';
+    if (/变频/.test(name)) return 'images/breaker.png';
+    return 'images/wrench.png';
+  }
+
+  function extractSpec(specs) {
+    if (!specs || !specs.length) return '';
+    for (var i = 0; i < specs.length; i++) {
+      if (specs[i].indexOf('规格：') === 0 || specs[i].indexOf('规格:') === 0) {
+        return specs[i].replace(/^规格[：:]/, '');
+      }
+    }
+    return specs.join(', ');
+  }
+
+  // ---- Toast 通知 ----
+  function showToast(html) {
+    var existing = document.querySelector('.toast-notification');
+    if (existing) existing.remove();
+    var toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.innerHTML = html;
+    document.body.appendChild(toast);
+    setTimeout(function() {
+      toast.style.opacity = '0';
+      toast.style.transition = 'opacity 0.3s';
+      setTimeout(function() { toast.remove(); }, 300);
+    }, 3500);
+  }
+
+  // ---- 按钮1：查看供应商详情模态框 ----
+  function viewDetail(id) {
+    var q = getQuoteById(id);
+    if (!q) return;
+    // 关闭已有模态框
+    var existing = document.querySelector('.modal-overlay');
+    if (existing) existing.remove();
+
+    var certHtml = (q.certs || []).map(function(c) {
+      return '<span class="cert-tag">✓ ' + c + '</span>';
+    }).join('');
+
+    // 生成星级
+    var rating = parseFloat(q.score);
+    var fullStars = Math.floor(rating);
+    var starStr = '';
+    for (var i = 0; i < fullStars; i++) starStr += '★';
+    if (rating - fullStars >= 0.5) starStr += '☆';
+
+    var overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML =
+      '<div class="modal-card">' +
+        '<div class="modal-header">' +
+          '<span class="modal-title">供应商详情</span>' +
+          '<button class="modal-close" onclick="this.closest(\'.modal-overlay\').remove()">✕</button>' +
+        '</div>' +
+        '<div class="modal-body">' +
+          '<div class="detail-row"><span class="detail-label">公司名称</span><span class="detail-value" style="font-weight:700;">' + q.supplier + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">评分</span><span class="detail-value"><span class="detail-stars">' + starStr + '</span><span class="detail-score">' + q.score + '分</span></span></div>' +
+          '<div class="detail-row"><span class="detail-label">注册资本</span><span class="detail-value">' + (q.capital || '—') + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">成立年限</span><span class="detail-value">' + (q.years ? q.years + '年' : '—') + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">主营品类</span><span class="detail-value">' + (q.mainBiz || '—') + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">服务区域</span><span class="detail-value">' + (q.region || '—') + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">历史合作</span><span class="detail-value">' + (q.historyOrders ? q.historyOrders + '次' : '—') + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">交付准时率</span><span class="detail-value">' + (q.onTimeRate || '—') + '</span></div>' +
+          '<div class="detail-row"><span class="detail-label">质量合格率</span><span class="detail-value">' + (q.qualityRate || '—') + '</span></div>' +
+          (certHtml ? '<div class="certs-section"><div class="certs-title">资质证书</div><div class="cert-tags">' + certHtml + '</div></div>' : '') +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(overlay);
+  }
+
+  // ---- 按钮2：选定此报价 → 确认卡片 ----
+  function selectQuote(id) {
+    var q = getQuoteById(id);
+    if (!q) return;
+    // 移除已有的确认卡片
+    var existing = document.querySelector('.confirm-card');
+    if (existing) existing.remove();
+
+    var card = document.getElementById('qcard' + id);
+    if (!card) return;
+
+    var confirmDiv = document.createElement('div');
+    confirmDiv.className = 'confirm-card';
+    confirmDiv.innerHTML =
+      '<div class="confirm-card-title">✅ 已选定「' + q.supplier + '」的报价</div>' +
+      '<div class="confirm-card-detail">单价 <span>' + q.price + q.unit + '</span>，交期 ' + q.lead.replace('交期：', '') + '</div>' +
+      '<div class="confirm-card-actions">' +
+        '<button class="btn-add-cart" onclick="addToCartFromQuote(' + id + ')">加入采购单</button>' +
+        '<button class="btn-continue" onclick="this.closest(\'.confirm-card\').remove()">继续比价</button>' +
+      '</div>';
+    card.appendChild(confirmDiv);
+  }
+
+  // ---- 加入采购单 ----
+  function addToCartFromQuote(id) {
+    var q = getQuoteById(id);
+    if (!q) return;
+    var itemKeyword = keyword;
+    var cartItems = JSON.parse(localStorage.getItem('cartItems') || '[]');
+    var item = {
+      name: itemKeyword,
+      spec: extractSpec(q.specs) + ' ' + q.specs.filter(function(s){ return s.indexOf('等级') === 0 || s.indexOf('等级：') === 0; }).join(' ').replace(/等级[：:]/, ''),
+      brand: q.specs[0] ? q.specs[0].replace('品牌：', '').replace('品牌:', '') : '国产',
+      price: parseFloat(q.price.replace('¥', '')),
+      img: inferImg(itemKeyword),
+      supplier: q.supplier,
+      qty: parseInt(q.moq.replace(/[^0-9]/g, '')) || 1
+    };
+    // 去重
+    var idx = -1;
+    for (var i = 0; i < cartItems.length; i++) {
+      if (cartItems[i].name === item.name && cartItems[i].supplier === item.supplier) {
+        idx = i; break;
+      }
+    }
+    if (idx >= 0) cartItems[idx] = item;
+    else cartItems.push(item);
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+
+    // 移除确认卡片
+    var cc = document.querySelector('.confirm-card');
+    if (cc) cc.remove();
+
+    // 显示成功提示
+    showToast('✅ 已加入采购单！可前往<a href="mall.html" style="color:white;text-decoration:underline;">商城首页</a>查看');
+  }
+
+  // ---- 按钮3：选择此报价并上架 → 跳转商品审核页 ----
+  function selectAndList(id) {
+    var q = getQuoteById(id);
+    if (!q) return;
+    var brand = '国产';
+    for (var i = 0; i < q.specs.length; i++) {
+      if (q.specs[i].indexOf('品牌：') === 0 || q.specs[i].indexOf('品牌:') === 0) {
+        brand = q.specs[i].replace(/^品牌[：:]/, '');
+        break;
+      }
+    }
+    var params = new URLSearchParams({
+      name: keyword,
+      spec: extractSpec(q.specs),
+      price: q.price.replace('¥', ''),
+      source: 'qts',
+      sourceName: q.supplier,
+      brand: brand
+    });
+    window.location.href = 'product-review.html?' + params.toString();
+  }
+
+  function cancelOrder() {
+    if (confirm('确认要取消需求单 ' + orderId + ' 吗？\n\n取消后，寻源任务将终止，已收到的报价也将失效。')) {
+      alert('需求单取消申请已提交，工作人员将在 30 分钟内处理。');
+    }
+  }
+
+  function contactAdvisor() {
+    alert('📞 专属采购顾问\n\n顾问：张明\n电话：138-8888-XXXX\n微信：zkmzm888\n\n工作时间：工作日 08:00-20:00\n（演示模式，实际联系方式待配置）');
+  }
+
+  // ===== 演示提示条 =====
+  function toggleDemoBar() {
+    const bar = document.querySelector('.demo-bar');
+    const btn = document.querySelector('.demo-expand-btn');
+    bar.classList.toggle('collapsed');
+    btn.style.display = bar.classList.contains('collapsed') ? 'block' : 'none';
+  }
+</script>
+
+<!-- 演示提示条 -->
+<div class="demo-bar">
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
+    <span class="demo-bar-title">演示提示</span>
+    <span class="demo-hint">1. 观察48h倒计时+左侧时间线动态更新</span>
+    <span class="demo-hint">2. 等待报价卡片依次滑入（2.5s/5s/8s）</span>
+    <span class="demo-hint">3. 点"查看供应商详情"→弹出资质信息</span>
+    <span class="demo-hint">4. 点"选定此报价"→加入采购单</span>
+    <span class="demo-hint">5. 点"选择此报价并上架"→跳转AI审核</span>
+  </div>
+  <div class="demo-bar-right">
+    <button class="demo-collapse-btn" onclick="toggleDemoBar()">收起 ▼</button>
+  </div>
+</div>
+<button class="demo-expand-btn" onclick="toggleDemoBar()">📋 演示提示</button>
+
+</body>
+</html>

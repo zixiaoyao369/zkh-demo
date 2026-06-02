@@ -89,9 +89,11 @@ body::before{
   position:relative;
   overflow:hidden;
   transition:all .4s cubic-bezier(.4,0,.2,1);
-  cursor:default;
+  cursor:pointer;
   display:flex;
-  flex-direction:column
+  flex-direction:column;
+  text-decoration:none;
+  color:inherit
 }
 .card::before{
   content:'';
@@ -219,44 +221,44 @@ body::before{
 <div class="grid">
 
   <!-- 物料管家 -->
-  <div class="card card--material">
+  <a class="card card--material" href="../产品原型3.0-物料管家/物料管家功能DEMO.html">
     <div class="card-icon">📦</div>
     <h2 class="card-title">物料管家</h2>
     <p class="card-desc">通过AI属性补全与模糊搜索增强，实现物料标准化管理，提升搜索精准度与物料主数据治理效率。</p>
-    <a class="card-btn" href="../产品原型3.0-物料管家/物料管家功能DEMO.html">
+    <span class="card-btn">
       进入演示 <span class="arrow">→</span>
-    </a>
-  </div>
+    </span>
+  </a>
 
   <!-- 寻源定品 -->
-  <div class="card card--sourcing">
+  <a class="card card--sourcing" href="../产品原型3.0-寻源定品/寻源定品功能DEMO.html">
     <div class="card-icon">🔍</div>
     <h2 class="card-title">寻源定品</h2>
     <p class="card-desc">当内部商城无法满足需求时，智能调用多供应商API进行对外寻源匹配，快速锁定优质供应资源。</p>
-    <a class="card-btn" href="../产品原型3.0-寻源定品/寻源定品功能DEMO.html">
+    <span class="card-btn">
       进入演示 <span class="arrow">→</span>
-    </a>
-  </div>
+    </span>
+  </a>
 
   <!-- 一品多商 -->
-  <div class="card card--compare">
+  <a class="card card--compare" href="../产品原型3.0-一品多商/一品多商功能DEMO.html">
     <div class="card-icon">⚖️</div>
     <h2 class="card-title">一品多商</h2>
     <p class="card-desc">同一物料自动匹配多个供应商，AI辅助比价分析，帮助采购做出更优的供应商选择决策。</p>
-    <a class="card-btn" href="../产品原型3.0-一品多商/一品多商功能DEMO.html">
+    <span class="card-btn">
       进入演示 <span class="arrow">→</span>
-    </a>
-  </div>
+    </span>
+  </a>
 
   <!-- 商品审核 -->
-  <div class="card card--review">
+  <a class="card card--review" href="../产品原型3.0-商品审核/商品审核功能DEMO.html">
     <div class="card-icon">✅</div>
     <h2 class="card-title">商品审核</h2>
     <p class="card-desc">AI自动校验商品信息完整性与合规性，大幅缩短审核周期，提升上架效率与数据质量。</p>
-    <a class="card-btn" href="../产品原型3.0-商品审核/商品审核功能DEMO.html">
+    <span class="card-btn">
       进入演示 <span class="arrow">→</span>
-    </a>
-  </div>
+    </span>
+  </a>
 
 </div>
 

@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>产品原型3.0 - AI赋能采购全链路</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   RESET & ROOT
+   ═══════════════════════════════════════════════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a1628;
+  --bg-card:rgba(15,29,50,0.8);
+  --bg-card-solid:#0f1d32;
+  --primary:#2196F3;
+  --primary-light:#64B5F6;
+  --accent:#FF6A00;
+  --accent-light:#FF9500;
+  --text:#e2e8f0;
+  --text-secondary:#94a3b8;
+  --text-muted:#64748b;
+  --glass-blur:blur(24px) saturate(180%);
+  --border:rgba(33,150,243,0.15);
+  --border-hover:rgba(33,150,243,0.4);
+  --radius:16px;
+  --radius-sm:10px;
+  --transition:0.4s cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth;font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter','PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,sans-serif;
+  overflow-x:hidden;
+  line-height:1.6;
+  position:relative;
+  min-height:100vh;
+}
+
+/* ═══════════════════════════════════════════════
+   ANIMATED BACKGROUND
+   ═══════════════════════════════════════════════ */
+.bg-effects{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+}
+.bg-blob{
+  position:absolute;border-radius:50%;filter:blur(100px);opacity:0.4;
+}
+.bg-blob-1{
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(33,150,243,0.15) 0%,transparent 70%);
+  top:-10%;left:-5%;
+  animation:blobDrift1 30s ease-in-out infinite;
+}
+.bg-blob-2{
+  width:500px;height:500px;
+  background:radial-gradient(circle,rgba(255,106,0,0.1) 0%,transparent 70%);
+  top:40%;right:-8%;
+  animation:blobDrift2 25s ease-in-out infinite;
+}
+.bg-blob-3{
+  width:450px;height:450px;
+  background:radial-gradient(circle,rgba(33,150,243,0.1) 0%,transparent 70%);
+  bottom:-5%;left:30%;
+  animation:blobDrift3 28s ease-in-out infinite;
+}
+.bg-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(33,150,243,0.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(33,150,243,0.03) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+@keyframes blobDrift1{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(80px,60px) scale(1.1)}
+  66%{transform:translate(30px,120px) scale(0.95)}
+}
+@keyframes blobDrift2{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(-60px,80px) scale(1.05)}
+  66%{transform:translate(-100px,30px) scale(1.1)}
+}
+@keyframes blobDrift3{
+  0%,100%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(100px,-40px) scale(1.08)}
+  66%{transform:translate(-50px,-80px) scale(0.92)}
+}
+
+/* ═══════════════════════════════════════════════
+   LOADING OVERLAY
+   ═══════════════════════════════════════════════ */
+#loader{
+  position:fixed;inset:0;
+  background:var(--bg);
+  z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.4rem;
+  transition:opacity 0.8s ease;
+}
+#loader::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(33,150,243,0.06) 0%,transparent 60%);
+  pointer-events:none;
+}
+.loader-brand{
+  font-family:'Inter',monospace;font-size:1.6rem;letter-spacing:0.5em;font-weight:300;
+  padding-left:0.5em;
+  background:linear-gradient(135deg,var(--primary) 0%,var(--accent) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  position:relative;z-index:1;
+}
+.loader-spinner{
+  width:36px;height:36px;border:2px solid rgba(33,150,243,0.15);
+  border-top-color:var(--primary);border-radius:50%;
+  animation:loader-spin 0.9s linear infinite;position:relative;z-index:1;
+}
+.loader-label{
+  font-family:'Inter',monospace;font-size:0.6rem;letter-spacing:0.4em;
+  color:var(--text-muted);text-transform:uppercase;position:relative;z-index:1;
+}
+@keyframes loader-spin{to{transform:rotate(360deg)}}
+#loader.is-hidden{opacity:0;pointer-events:none}
+
+/* ═══════════════════════════════════════════════
+   HERO SECTION
+   ═══════════════════════════════════════════════ */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:0 2rem;overflow:hidden;z-index:1;
+}
+.hero-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+}
+.hero-badge{
+  font-size:clamp(0.7rem,1.1vw,0.9rem);
+  font-weight:500;letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--accent-light);
+  margin-bottom:2rem;opacity:0;
+  padding:0.4em 1.2em;
+  border:1px solid rgba(255,106,0,0.25);
+  border-radius:20px;
+  background:rgba(255,106,0,0.06);
+}
+.hero-title{
+  font-size:clamp(2.2rem,4.5vw,3.8rem);
+  font-weight:800;letter-spacing:-0.02em;line-height:1.2;
+  max-width:900px;opacity:0;
+  background:linear-gradient(135deg,#e2e8f0 0%,#ffffff 40%,var(--accent-light) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.hero-subtitle{
+  font-size:clamp(0.9rem,1.4vw,1.15rem);
+  font-weight:400;color:var(--text-secondary);
+  margin-top:1.5rem;letter-spacing:0.12em;opacity:0;
+  max-width:680px;line-height:1.8;
+}
+.scroll-hint{
+  position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:0.5rem;
+  opacity:0;z-index:2;
+}
+.scroll-hint span{
+  font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;
+  color:var(--text-muted);
+}
+.scroll-line{
+  width:1px;height:40px;
+  background:linear-gradient(to bottom,var(--primary),transparent);
+  animation:scrollPulse 2s ease-in-out infinite;
+}
+@keyframes scrollPulse{
+  0%,100%{opacity:0.3;transform:scaleY(0.5)}
+  50%{opacity:1;transform:scaleY(1)}
+}
+.scroll-hint.is-hidden{opacity:0 !important;transform:translate(-50%,14px);pointer-events:none;transition:all 0.6s ease}
+
+/* ═══════════════════════════════════════════════
+   DATA HIGHLIGHTS
+   ═══════════════════════════════════════════════ */
+.data-section{
+  position:relative;z-index:1;
+  padding:clamp(2rem,4vw,3.5rem) clamp(1rem,4vw,3rem);
+}
+.data-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:clamp(0.8rem,1.5vw,1.5rem);
+  max-width:1100px;margin:0 auto;
+}
+.data-card{
+  background:var(--bg-card);
+  backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:clamp(1.2rem,2vw,1.8rem) clamp(1rem,1.5vw,1.5rem);
+  text-align:center;
+  transition:all var(--transition);
+  opacity:0;
+}
+.data-card:hover{
+  border-color:var(--border-hover);
+  box-shadow:0 0 30px rgba(33,150,243,0.08),0 8px 32px rgba(0,0,0,0.2);
+  transform:translateY(-3px);
+}
+.data-num{
+  font-family:'Inter',monospace;
+  font-size:clamp(1.8rem,3vw,2.8rem);
+  font-weight:700;
+  background:linear-gradient(135deg,var(--accent),var(--accent-light));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1.2;
+}
+.data-label{
+  font-size:clamp(0.75rem,1vw,0.88rem);
+  color:var(--text-secondary);
+  margin-top:0.5rem;letter-spacing:0.05em;
+}
+
+/* ═══════════════════════════════════════════════
+   FLOW DIAGRAM SECTION
+   ═══════════════════════════════════════════════ */
+.flow-section{
+  position:relative;z-index:1;
+  padding:clamp(3rem,6vw,6rem) clamp(1rem,3vw,2rem);
+}
+.flow-section-label{
+  text-align:center;margin-bottom:clamp(2.5rem,4vw,4rem);
+}
+.flow-section-label .tag{
+  font-size:0.7rem;letter-spacing:0.5em;text-transform:uppercase;
+  color:var(--accent-light);
+  display:inline-block;
+  padding:0.3em 1em;
+  border:1px solid rgba(255,106,0,0.2);
+  border-radius:20px;
+  background:rgba(255,106,0,0.05);
+  margin-bottom:1.2rem;
+  opacity:0;
+}
+.flow-section-label h2{
+  font-size:clamp(1.5rem,2.5vw,2rem);
+  font-weight:700;color:var(--text);
+  letter-spacing:0.05em;
+  opacity:0;
+}
+.flow-section-label p{
+  font-size:clamp(0.85rem,1.1vw,0.95rem);
+  color:var(--text-secondary);
+  margin-top:0.8rem;
+  opacity:0;
+}
+
+/* Flow Container */
+.flow-container{
+  max-width:1300px;margin:0 auto;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(33,150,243,0.3) transparent;
+}
+.flow-container::-webkit-scrollbar{height:4px}
+.flow-container::-webkit-scrollbar-track{background:transparent}
+.flow-container::-webkit-scrollbar-thumb{background:rgba(33,150,243,0.3);border-radius:2px}
+
+.flow-track{
+  display:flex;
+  align-items:flex-start;
+  gap:0;
+  min-width:max-content;
+  padding:0 1rem 2rem;
+  position:relative;
+}
+
+/* Flow Node */
+.flow-node{
+  flex:0 0 auto;
+  width:clamp(130px,12vw,160px);
+  display:flex;flex-direction:column;align-items:center;
+  position:relative;
+  opacity:0;
+}
+.flow-node-body{
+  background:var(--bg-card);
+  backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:clamp(1rem,1.5vw,1.3rem) clamp(0.8rem,1vw,1.1rem);
+  text-align:center;
+  width:100%;
+  position:relative;
+  transition:all var(--transition);
+}
+.flow-node:hover .flow-node-body{
+  border-color:var(--border-hover);
+  box-shadow:0 0 24px rgba(33,150,243,0.1),0 4px 20px rgba(0,0,0,0.15);
+  transform:translateY(-3px);
+}
+.flow-node-num{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--primary),#1976D2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.75rem;font-weight:700;color:#fff;
+  margin:0 auto 0.7rem;
+  box-shadow:0 0 12px rgba(33,150,243,0.3);
+}
+.flow-node-name{
+  font-size:clamp(0.78rem,1vw,0.88rem);
+  font-weight:600;color:var(--text);
+  line-height:1.4;
+  margin-bottom:0.3rem;
+}
+.flow-node-desc{
+  font-size:clamp(0.65rem,0.8vw,0.72rem);
+  color:var(--text-muted);
+  line-height:1.5;
+}
+
+/* AI Badge on Node */
+.ai-badge{
+  display:inline-flex;align-items:center;gap:0.3em;
+  font-size:0.6rem;font-weight:600;
+  letter-spacing:0.08em;
+  color:var(--accent-light);
+  padding:0.2em 0.7em;
+  border-radius:20px;
+  background:rgba(255,106,0,0.1);
+  border:1px solid rgba(255,106,0,0.25);
+  margin-top:0.6rem;
+  white-space:nowrap;
+}
+
+/* Flow Connector Line */
+.flow-connector{
+  flex:0 0 auto;
+  width:clamp(30px,4vw,60px);
+  display:flex;align-items:center;
+  padding-top:clamp(1.3rem,2vw,2rem);
+  opacity:0;
+}
+.flow-connector svg{width:100%;height:12px;overflow:visible}
+.flow-connector-line{
+  stroke:rgba(33,150,243,0.4);
+  stroke-width:1.5;
+  fill:none;
+  stroke-dasharray:200;
+  stroke-dashoffset:200;
+}
+.flow-connector-arrow{
+  fill:rgba(33,150,243,0.5);
+}
+
+/* Product Card Branch */
+.product-branch{
+  display:flex;flex-direction:column;align-items:center;
+  margin-top:1rem;
+  opacity:0;
+}
+.branch-connector{
+  width:1px;height:24px;
+  border-left:2px dashed rgba(33,150,243,0.35);
+  position:relative;
+}
+.branch-connector::after{
+  content:'';position:absolute;bottom:-4px;left:-4px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--primary);
+  box-shadow:0 0 8px rgba(33,150,243,0.4);
+}
+
+/* Product Card */
+.product-card{
+  background:var(--bg-card);
+  backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:clamp(1.2rem,1.8vw,1.6rem) clamp(1rem,1.4vw,1.3rem);
+  width:clamp(140px,13vw,170px);
+  text-decoration:none;color:var(--text);
+  position:relative;overflow:hidden;
+  transition:all var(--transition);
+  display:flex;flex-direction:column;
+}
+.product-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--card-accent-from),var(--card-accent-to));
+  opacity:0.7;transition:opacity var(--transition);
+}
+.product-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.3),0 0 20px rgba(33,150,243,0.08);
+  border-color:var(--border-hover);
+}
+.product-card:hover::before{opacity:1}
+.product-card:hover .product-arrow{transform:translateX(3px);color:var(--accent-light)}
+
+/* Product Card Theme Colors */
+.product-card--material{
+  --card-accent-from:#3b82f6;--card-accent-to:#60a5fa;
+  --card-icon-bg:rgba(59,130,246,0.12);--card-icon-color:#60a5fa;
+  --card-glow:rgba(59,130,246,0.3);
+}
+.product-card--sourcing{
+  --card-accent-from:#8b5cf6;--card-accent-to:#a78bfa;
+  --card-icon-bg:rgba(139,92,246,0.12);--card-icon-color:#a78bfa;
+  --card-glow:rgba(139,92,246,0.3);
+}
+.product-card--compare{
+  --card-accent-from:#FF6A00;--card-accent-to:#FF9500;
+  --card-icon-bg:rgba(255,106,0,0.12);--card-icon-color:#FF9500;
+  --card-glow:rgba(255,106,0,0.3);
+}
+.product-card--review{
+  --card-accent-from:#22c55e;--card-accent-to:#4ade80;
+  --card-icon-bg:rgba(34,197,94,0.12);--card-icon-color:#4ade80;
+  --card-glow:rgba(34,197,94,0.3);
+}
+
+.product-icon{
+  width:36px;height:36px;border-radius:var(--radius-sm);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:0.8rem;
+  background:var(--card-icon-bg);
+  color:var(--card-icon-color);
+}
+.product-name{
+  font-size:clamp(0.85rem,1.1vw,1rem);
+  font-weight:700;color:#f1f5f9;
+  letter-spacing:0.5px;margin-bottom:0.4rem;
+}
+.product-desc{
+  font-size:clamp(0.68rem,0.85vw,0.76rem);
+  color:var(--text-secondary);line-height:1.6;
+  margin-bottom:0.8rem;flex:1;
+}
+.product-cta{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:0.72rem;font-weight:600;
+  color:var(--card-accent-to);
+  letter-spacing:0.5px;
+}
+.product-arrow{
+  font-size:14px;
+  transition:transform 0.3s ease,color 0.3s ease;
+}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════ */
+.footer{
+  text-align:center;padding:3rem 2rem 2rem;
+  position:relative;z-index:1;
+}
+.footer-line{
+  width:60px;height:1px;
+  background:linear-gradient(to right,transparent,var(--primary),transparent);
+  margin:0 auto 1.5rem;
+}
+.footer p{
+  font-size:0.75rem;color:var(--text-muted);
+  letter-spacing:0.1em;opacity:0.6;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE - Tablet (768px ~ 1023px)
+   ═══════════════════════════════════════════════ */
+@media(max-width:1023px){
+  .data-grid{grid-template-columns:repeat(2,1fr)}
+  .flow-track{padding:0 0.5rem 2rem}
+  .flow-node{width:clamp(110px,14vw,140px)}
+  .product-card{width:clamp(120px,14vw,150px)}
+  .flow-connector{width:clamp(20px,3vw,40px)}
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE - Mobile (< 768px)
+   ═══════════════════════════════════════════════ */
+@media(max-width:767px){
+  .data-grid{grid-template-columns:repeat(2,1fr);gap:0.6rem}
+  .data-card{padding:1rem 0.8rem}
+
+  /* Vertical Flow */
+  .flow-track{
+    flex-direction:column;align-items:center;
+    min-width:unset;padding:0 0 1rem;
+  }
+  .flow-node{
+    width:100%;max-width:320px;
+    flex-direction:row;align-items:stretch;
+  }
+  .flow-node-body{
+    display:flex;align-items:center;gap:0.8rem;
+    text-align:left;padding:1rem 1.2rem;
+  }
+  .flow-node-num{margin:0;flex-shrink:0}
+  .flow-node-info{flex:1}
+  .flow-node-name{margin-bottom:0.2rem}
+
+  /* Vertical connectors */
+  .flow-connector{
+    width:auto;height:28px;
+    padding:0;
+    justify-content:center;
+  }
+  .flow-connector svg{width:12px;height:28px}
+  .flow-connector-line{
+    stroke-dasharray:100;stroke-dashoffset:100;
+  }
+
+  /* Product branch - side layout */
+  .product-branch{
+    flex-direction:row;align-items:center;
+    margin-top:0;margin-left:1rem;
+    gap:0.5rem;
+  }
+  .branch-connector{
+    width:16px;height:1px;
+    border-left:none;border-top:2px dashed rgba(33,150,243,0.35);
+  }
+  .branch-connector::after{
+    left:auto;right:-4px;top:-4px;
+  }
+  .product-card{
+    width:auto;max-width:200px;flex:1;
+  }
+  /* Special: stack product below on mobile */
+  .flow-node-wrapper{
+    display:flex;flex-direction:column;align-items:center;width:100%;max-width:360px;
+  }
+  .flow-node-wrapper .flow-node{max-width:100%}
+  .flow-node-wrapper .product-branch{
+    flex-direction:column;margin-left:0;margin-top:0.8rem;
+  }
+  .flow-node-wrapper .branch-connector{
+    width:1px;height:16px;
+    border-left:2px dashed rgba(33,150,243,0.35);border-top:none;
+  }
+  .flow-node-wrapper .branch-connector::after{
+    left:-4px;right:auto;bottom:-4px;top:auto;
+  }
+  .flow-node-wrapper .product-card{width:100%;max-width:280px}
+
+  .bg-blob{opacity:0.2}
+  .hero{min-height:85vh}
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE - Small Mobile (< 375px)
+   ═══════════════════════════════════════════════ */
+@media(max-width:374px){
+  .data-grid{grid-template-columns:1fr 1fr;gap:0.5rem}
+  .product-card{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div id="loader" role="status" aria-label="Loading">
+  <div class="loader-brand">ZKH</div>
+  <div class="loader-spinner"></div>
+  <div class="loader-label">Initializing Experience</div>
+</div>
+
+<!-- Animated Background -->
+<div class="bg-effects">
+  <div class="bg-grid"></div>
+  <div class="bg-blob bg-blob-1"></div>
+  <div class="bg-blob bg-blob-2"></div>
+  <div class="bg-blob bg-blob-3"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-content">
+    <p class="hero-badge">Zhenkunhang · AI Procurement Suite</p>
+    <h1 class="hero-title">把智能，嵌进采购的每一段链路</h1>
+    <p class="hero-subtitle">覆盖需求·寻源·比价·审核全链路，AI赋能企业采购降本增效</p>
+  </div>
+  <div class="scroll-hint">
+    <span>向下探索</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     DATA HIGHLIGHTS
+     ═══════════════════════════════════════════════ -->
+<section class="data-section">
+  <div class="data-grid">
+    <div class="data-card">
+      <div class="data-num" data-target="50" data-suffix="%">0%</div>
+      <div class="data-label">效率提升</div>
+    </div>
+    <div class="data-card">
+      <div class="data-num" data-target="30" data-suffix="%">0%</div>
+      <div class="data-label">成本降低</div>
+    </div>
+    <div class="data-card">
+      <div class="data-num" data-target="2" data-prefix="<" data-suffix="min">0min</div>
+      <div class="data-label">审核时效</div>
+    </div>
+    <div class="data-card">
+      <div class="data-num" data-target="500" data-suffix="+">0+</div>
+      <div class="data-label">覆盖企业</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FLOW DIAGRAM
+     ═══════════════════════════════════════════════ -->
+<section class="flow-section">
+  <div class="flow-section-label">
+    <span class="tag">Procurement Process</span>
+    <h2>MRO 采购全链路</h2>
+    <p>AI 深度嵌入关键节点，驱动采购全流程智能化升级</p>
+  </div>
+
+  <div class="flow-container">
+    <div class="flow-track">
+
+      <!-- Node 1: 需求提报 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="1">
+          <div class="flow-node-body">
+            <div class="flow-node-num">1</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">需求提报</div>
+              <div class="flow-node-desc">采购需求发起与审批</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 1→2 -->
+      <div class="flow-connector">
+        <svg viewBox="0 0 60 12">
+          <line class="flow-connector-line" x1="0" y1="6" x2="52" y2="6"/>
+          <polygon class="flow-connector-arrow" points="52,2 60,6 52,10"/>
+        </svg>
+      </div>
+
+      <!-- Node 2: 物料匹配与标准化 → 物料管家 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="2">
+          <div class="flow-node-body">
+            <div class="flow-node-num">2</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">物料匹配与标准化</div>
+              <div class="flow-node-desc">物料属性补全与模糊搜索</div>
+              <span class="ai-badge">✦ AI赋能</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-branch">
+          <div class="branch-connector"></div>
+          <a class="product-card product-card--material" href="../产品原型3.0-物料管家/物料管家功能DEMO.html">
+            <div class="product-icon">📦</div>
+            <div class="product-name">物料管家</div>
+            <div class="product-desc">AI属性补全与模糊搜索增强，物料标准化管理</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Connector 2→3 -->
+      <div class="flow-connector">
+        <svg viewBox="0 0 60 12">
+          <line class="flow-connector-line" x1="0" y1="6" x2="52" y2="6"/>
+          <polygon class="flow-connector-arrow" points="52,2 60,6 52,10"/>
+        </svg>
+      </div>
+
+      <!-- Node 3: 寻源比价 → 寻源定品 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="3">
+          <div class="flow-node-body">
+            <div class="flow-node-num">3</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">寻源比价</div>
+              <div class="flow-node-desc">多供应商API对外寻源</div>
+              <span class="ai-badge">✦ AI赋能</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-branch">
+          <div class="branch-connector"></div>
+          <a class="product-card product-card--sourcing" href="../产品原型3.0-寻源定品/寻源定品功能DEMO.html">
+            <div class="product-icon">🔍</div>
+            <div class="product-name">寻源定品</div>
+            <div class="product-desc">智能调用多供应商API进行对外寻源匹配</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Connector 3→4 -->
+      <div class="flow-connector">
+        <svg viewBox="0 0 60 12">
+          <line class="flow-connector-line" x1="0" y1="6" x2="52" y2="6"/>
+          <polygon class="flow-connector-arrow" points="52,2 60,6 52,10"/>
+        </svg>
+      </div>
+
+      <!-- Node 4: 供应商确定 → 一品多商 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="4">
+          <div class="flow-node-body">
+            <div class="flow-node-num">4</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">供应商确定</div>
+              <div class="flow-node-desc">多商比价与供应商选择</div>
+              <span class="ai-badge">✦ AI赋能</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-branch">
+          <div class="branch-connector"></div>
+          <a class="product-card product-card--compare" href="../产品原型3.0-一品多商/一品多商功能DEMO.html">
+            <div class="product-icon">⚖️</div>
+            <div class="product-name">一品多商</div>
+            <div class="product-desc">同一物料自动匹配多个供应商，AI辅助比价</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Connector 4→5 -->
+      <div class="flow-connector">
+        <svg viewBox="0 0 60 12">
+          <line class="flow-connector-line" x1="0" y1="6" x2="52" y2="6"/>
+          <polygon class="flow-connector-arrow" points="52,2 60,6 52,10"/>
+        </svg>
+      </div>
+
+      <!-- Node 5: 下单采购 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="5">
+          <div class="flow-node-body">
+            <div class="flow-node-num">5</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">下单采购</div>
+              <div class="flow-node-desc">订单生成与执行跟踪</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connector 5→6 -->
+      <div class="flow-connector">
+        <svg viewBox="0 0 60 12">
+          <line class="flow-connector-line" x1="0" y1="6" x2="52" y2="6"/>
+          <polygon class="flow-connector-arrow" points="52,2 60,6 52,10"/>
+        </svg>
+      </div>
+
+      <!-- Node 6: 商品入库审核 → 商品审核 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="6">
+          <div class="flow-node-body">
+            <div class="flow-node-num">6</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">商品入库审核</div>
+              <div class="flow-node-desc">信息完整性与合规校验</div>
+              <span class="ai-badge">✦ AI赋能</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-branch">
+          <div class="branch-connector"></div>
+          <a class="product-card product-card--review" href="../产品原型3.0-商品审核/商品审核功能DEMO.html">
+            <div class="product-icon">✅</div>
+            <div class="product-name">商品审核</div>
+            <div class="product-desc">AI自动校验商品信息完整性与合规性</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Connector 6→7 -->
+      <div class="flow-connector">
+        <svg viewBox="0 0 60 12">
+          <line class="flow-connector-line" x1="0" y1="6" x2="52" y2="6"/>
+          <polygon class="flow-connector-arrow" points="52,2 60,6 52,10"/>
+        </svg>
+      </div>
+
+      <!-- Node 7: 履约交付 -->
+      <div class="flow-node-wrapper">
+        <div class="flow-node" data-node="7">
+          <div class="flow-node-body">
+            <div class="flow-node-num">7</div>
+            <div class="flow-node-info">
+              <div class="flow-node-name">履约交付</div>
+              <div class="flow-node-desc">物流跟踪与验收确认</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /flow-track -->
+  </div><!-- /flow-container -->
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="footer-line"></div>
+  <p>© 2025 震坤行 · AI采购产品矩阵</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════ -->
+<script>
+(function(){
+  'use strict';
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Hero Entrance ── */
+  gsap.set(['.hero-badge','.hero-title','.hero-subtitle'],{y:30});
+  const heroTL = gsap.timeline({delay:0.5});
+  heroTL
+    .to('.hero-badge',{opacity:1,y:0,duration:1,ease:'power3.out'})
+    .to('.hero-title',{opacity:1,y:0,duration:1.2,ease:'power3.out'},'-=0.6')
+    .to('.hero-subtitle',{opacity:1,y:0,duration:1,ease:'power3.out'},'-=0.6')
+    .to('.scroll-hint',{opacity:1,duration:1,ease:'power2.out'},'-=0.3');
+
+  /* ── Scroll Hint Fade-Out ── */
+  const scrollHint = document.querySelector('.scroll-hint');
+  if(scrollHint){
+    let hintHidden = false;
+    const onScrollFade = () => {
+      if(!hintHidden && window.scrollY > 50){
+        scrollHint.classList.add('is-hidden');
+        hintHidden = true;
+        window.removeEventListener('scroll',onScrollFade);
+      }
+    };
+    window.addEventListener('scroll',onScrollFade,{passive:true});
+  }
+
+  /* ── Data Highlights ── */
+  const dataCards = document.querySelectorAll('.data-card');
+  dataCards.forEach((card,i) => {
+    gsap.to(card,{
+      opacity:1,y:0,duration:0.7,delay:i*0.12,ease:'power2.out',
+      scrollTrigger:{trigger:'.data-section',start:'top 85%',toggleActions:'play none none reverse'}
+    });
+    gsap.set(card,{y:25});
+  });
+
+  /* ── Counter Animation ── */
+  const counterEls = document.querySelectorAll('.data-num');
+  const counterData = [];
+  counterEls.forEach(el => {
+    const target = parseInt(el.dataset.target,10);
+    const suffix = el.dataset.suffix || '';
+    const prefix = el.dataset.prefix || '';
+    counterData.push({el,target,suffix,prefix});
+    el.textContent = prefix + '0' + suffix;
+  });
+
+  function animateCounter(data,duration){
+    const {el,target,suffix,prefix} = data;
+    const startTime = performance.now();
+    function update(now){
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed/duration,1);
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2,-10*progress);
+      if(progress < 1){
+        el.textContent = prefix + Math.floor(eased*target) + suffix;
+        requestAnimationFrame(update);
+      } else {
+        el.textContent = prefix + target + suffix;
+      }
+    }
+    requestAnimationFrame(update);
+  }
+
+  if(counterData.length > 0 && 'IntersectionObserver' in window){
+    const counterObs = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          counterData.forEach(d => animateCounter(d,2000));
+          counterObs.disconnect();
+        }
+      });
+    },{threshold:0.3});
+    const dataSection = document.querySelector('.data-section');
+    if(dataSection) counterObs.observe(dataSection);
+  } else {
+    counterData.forEach(d => { d.el.textContent = d.prefix + d.target + d.suffix; });
+  }
+
+  /* ── Flow Section Label ── */
+  gsap.set('.flow-section-label .tag',{y:15});
+  gsap.set('.flow-section-label h2',{y:20});
+  gsap.set('.flow-section-label p',{y:20});
+
+  gsap.to('.flow-section-label .tag',{
+    opacity:1,y:0,duration:0.8,ease:'power2.out',
+    scrollTrigger:{trigger:'.flow-section',start:'top 80%',toggleActions:'play none none reverse'}
+  });
+  gsap.to('.flow-section-label h2',{
+    opacity:1,y:0,duration:0.8,delay:0.1,ease:'power2.out',
+    scrollTrigger:{trigger:'.flow-section',start:'top 80%',toggleActions:'play none none reverse'}
+  });
+  gsap.to('.flow-section-label p',{
+    opacity:1,y:0,duration:0.8,delay:0.2,ease:'power2.out',
+    scrollTrigger:{trigger:'.flow-section',start:'top 80%',toggleActions:'play none none reverse'}
+  });
+
+  /* ── Flow Nodes Stagger ── */
+  const flowNodes = document.querySelectorAll('.flow-node');
+  flowNodes.forEach((node,i) => {
+    gsap.set(node,{y:30});
+    gsap.to(node,{
+      opacity:1,y:0,duration:0.6,delay:i*0.12,ease:'power2.out',
+      scrollTrigger:{trigger:'.flow-track',start:'top 85%',toggleActions:'play none none reverse'}
+    });
+  });
+
+  /* ── Flow Connectors Draw Animation ── */
+  const connectors = document.querySelectorAll('.flow-connector');
+  connectors.forEach((conn,i) => {
+    const line = conn.querySelector('.flow-connector-line');
+    gsap.to(conn,{
+      opacity:1,duration:0.4,delay:i*0.12+0.15,ease:'power2.out',
+      scrollTrigger:{trigger:'.flow-track',start:'top 85%',toggleActions:'play none none reverse'}
+    });
+    if(line){
+      gsap.to(line,{
+        strokeDashoffset:0,duration:0.6,delay:i*0.12+0.2,ease:'power2.inOut',
+        scrollTrigger:{trigger:'.flow-track',start:'top 85%',toggleActions:'play none none reverse'}
+      });
+    }
+  });
+
+  /* ── Product Branches Pop-Up ── */
+  const branches = document.querySelectorAll('.product-branch');
+  branches.forEach((branch,i) => {
+    gsap.set(branch,{y:15,scale:0.95});
+    gsap.to(branch,{
+      opacity:1,y:0,scale:1,duration:0.6,delay:0.4+i*0.2,ease:'back.out(1.5)',
+      scrollTrigger:{trigger:'.flow-track',start:'top 80%',toggleActions:'play none none reverse'}
+    });
+  });
+
+  /* ── Loading Overlay ── */
+  const loaderEl = document.getElementById('loader');
+  if(loaderEl){
+    let loaderHidden = false;
+    const hideLoader = () => {
+      if(loaderHidden) return;
+      loaderHidden = true;
+      loaderEl.classList.add('is-hidden');
+      setTimeout(() => { loaderEl.style.display = 'none'; },820);
+    };
+    window.addEventListener('load',() => setTimeout(hideLoader,600),{once:true});
+    setTimeout(hideLoader,3000);
+  }
+
+  /* ── Refresh ScrollTrigger on full load ── */
+  window.addEventListener('load',() => {
+    ScrollTrigger.refresh();
+  });
+
+})();
+</script>
+</body>
+</html>

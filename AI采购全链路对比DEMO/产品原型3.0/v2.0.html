@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MRO 采购全链路 · 流水线式体验</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   RESET & VARIABLES
+   ═══════════════════════════════════════════════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a1628;--bg-light:#0f1d32;
+  --orange:#FF6A00;--orange-light:#FF9500;--blue:#2196F3;
+  --text-primary:#e2e8f0;--text-body:#94a3b8;--text-muted:#64748b;
+  --text-dim:#475569;
+  --card-bg:rgba(15,29,50,0.8);--border-blue:rgba(33,150,243,0.15);
+  --radius:12px;--transition:0.4s cubic-bezier(.4,0,.2,1);
+}
+html{font-size:16px;-webkit-font-smoothing:antialiased}
+body{
+  background:var(--bg);color:var(--text-primary);
+  font-family:'Inter','PingFang SC','Microsoft YaHei',sans-serif;
+  overflow-x:hidden;line-height:1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   BACKGROUND AMBIENCE
+   ═══════════════════════════════════════════════ */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 20%, rgba(33,150,243,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(139,92,246,0.05) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 30% at 50% 50%, rgba(255,106,0,0.03) 0%, transparent 60%);
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLL CONTAINER & PINNED VIEWPORT
+   ═══════════════════════════════════════════════ */
+.scroll-container{position:relative;z-index:1;height:350vh}
+.pinned-viewport{
+  position:relative;height:100vh;width:100%;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ═══════════════════════════════════════════════
+   TITLE SECTION
+   ═══════════════════════════════════════════════ */
+.title-section{
+  text-align:center;padding:3.5vh 2rem 1.5vh;
+  flex-shrink:0;position:relative;z-index:2;
+}
+.title-badge{
+  display:inline-block;
+  font-size:0.7rem;font-weight:600;
+  letter-spacing:0.35em;text-transform:uppercase;
+  color:var(--blue);
+  padding:0.35em 1.2em;
+  border:1px solid rgba(33,150,243,0.25);border-radius:20px;
+  background:rgba(33,150,243,0.06);
+  margin-bottom:1rem;
+}
+.title-main{
+  font-size:clamp(1.8rem,4vw,3.2rem);
+  font-weight:800;letter-spacing:-0.02em;line-height:1.15;
+  background:linear-gradient(135deg,#e2e8f0 0%,#ffffff 40%,var(--orange-light) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:0.6rem;
+}
+.title-sub{
+  font-size:clamp(0.85rem,1.3vw,1.05rem);
+  color:var(--text-body);max-width:520px;margin:0 auto;line-height:1.8;
+}
+
+/* ═══════════════════════════════════════════════
+   PIPELINE AREA (track + nodes)
+   ═══════════════════════════════════════════════ */
+.pipeline-area{
+  flex-shrink:0;position:relative;
+  padding:0 clamp(2rem,5vw,5rem);
+  height:140px;
+}
+
+/* ═══════════════════════════════════════════════
+   TRACK (THE RAIL)
+   ═══════════════════════════════════════════════ */
+.track-wrapper{
+  position:relative;width:100%;max-width:1100px;
+  margin:0 auto;height:140px;
+}
+.track{
+  position:absolute;top:38px;left:0;right:0;
+  height:14px;border-radius:7px;
+  background:linear-gradient(180deg,
+    rgba(33,150,243,0.12) 0%,
+    rgba(15,29,50,0.9) 30%,
+    rgba(10,22,40,0.95) 70%,
+    rgba(33,150,243,0.06) 100%
+  );
+  box-shadow:
+    0 -2px 6px rgba(33,150,243,0.08),
+    0 2px 8px rgba(0,0,0,0.5),
+    0 0 20px rgba(33,150,243,0.04),
+    inset 0 1px 0 rgba(255,255,255,0.04);
+  border:1px solid rgba(33,150,243,0.1);
+}
+.track::before{
+  content:'';position:absolute;
+  top:2px;left:8px;right:8px;height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,rgba(33,150,243,0.15) 10%,
+    rgba(33,150,243,0.2) 50%,
+    rgba(33,150,243,0.15) 90%,transparent 100%);
+}
+.track::after{
+  content:'';position:absolute;
+  bottom:2px;left:8px;right:8px;height:1px;
+  background:linear-gradient(90deg,
+    transparent 0%,rgba(0,0,0,0.3) 10%,
+    rgba(0,0,0,0.4) 50%,
+    rgba(0,0,0,0.3) 90%,transparent 100%);
+}
+
+/* ═══════════════════════════════════════════════
+   TRACK FLOWING PARTICLES
+   ═══════════════════════════════════════════════ */
+.track-particle{
+  position:absolute;top:38px;width:4px;height:4px;
+  border-radius:50%;background:rgba(33,150,243,0.6);
+  box-shadow:0 0 6px rgba(33,150,243,0.4);
+  transform:translateY(5px);
+  animation:trackFlow linear infinite;pointer-events:none;
+}
+@keyframes trackFlow{
+  0%{left:-2%;opacity:0}
+  5%{opacity:0.8}90%{opacity:0.8}
+  100%{left:102%;opacity:0}
+}
+
+/* ═══════════════════════════════════════════════
+   PIPE CONNECTORS (between nodes)
+   ═══════════════════════════════════════════════ */
+.pipe-connector{
+  position:absolute;top:40px;height:6px;
+  background:repeating-linear-gradient(90deg,
+    rgba(33,150,243,0.15) 0px,rgba(33,150,243,0.15) 4px,
+    transparent 4px,transparent 8px
+  );
+  overflow:hidden;border-radius:3px;
+}
+.pipe-connector::after{
+  content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(33,150,243,0.3),transparent);
+  animation:pipeFlow 3s ease-in-out infinite;
+}
+@keyframes pipeFlow{0%{left:-40%}100%{left:140%}}
+
+/* ═══════════════════════════════════════════════
+   LIGHT BALL (train head)
+   ═══════════════════════════════════════════════ */
+.light-ball{
+  position:absolute;top:45px;
+  width:28px;height:28px;border-radius:50%;
+  transform:translate(-50%,-50%);
+  z-index:10;pointer-events:none;
+}
+.light-ball-core{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle,#ffffff 0%,rgba(33,150,243,0.9) 40%,rgba(33,150,243,0.4) 70%,transparent 100%);
+  box-shadow:
+    0 0 15px 4px rgba(255,255,255,0.6),
+    0 0 30px 8px rgba(33,150,243,0.5),
+    0 0 60px 16px rgba(33,150,243,0.2);
+}
+.light-ball-trail{
+  position:absolute;top:50%;right:50%;
+  width:80px;height:6px;transform:translateY(-50%);
+  background:linear-gradient(90deg,transparent,rgba(33,150,243,0.4),rgba(33,150,243,0.15));
+  border-radius:3px;pointer-events:none;filter:blur(1px);
+}
+
+/* ═══════════════════════════════════════════════
+   NODES ON TRACK
+   ═══════════════════════════════════════════════ */
+.node{
+  position:absolute;top:45px;
+  transform:translate(-50%,-50%);
+  z-index:5;display:flex;flex-direction:column;align-items:center;
+  cursor:default;
+}
+.node-dot{
+  width:44px;height:44px;border-radius:50%;
+  background:var(--bg-light);
+  border:2px solid rgba(33,150,243,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.8rem;font-weight:700;color:var(--text-dim);
+  transition:all 0.5s cubic-bezier(.4,0,.2,1);position:relative;
+}
+.node-dot::after{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:2px solid transparent;transition:all 0.5s ease;
+}
+.node.active .node-dot{
+  border-color:rgba(33,150,243,0.7);
+  background:linear-gradient(135deg,rgba(33,150,243,0.15),rgba(15,29,50,0.9));
+  color:var(--blue);
+  box-shadow:0 0 12px rgba(33,150,243,0.3),0 0 24px rgba(33,150,243,0.15),inset 0 0 8px rgba(33,150,243,0.1);
+  transform:scale(1.05);
+}
+.node.active .node-dot::after{
+  border-color:rgba(33,150,243,0.3);
+  animation:nodePulse 2s ease-in-out infinite;
+}
+@keyframes nodePulse{
+  0%,100%{transform:scale(1);opacity:0.5}
+  50%{transform:scale(1.15);opacity:0}
+}
+.node-label{
+  margin-top:10px;font-size:0.75rem;font-weight:600;
+  color:var(--text-muted);white-space:nowrap;
+  transition:color 0.5s ease;text-align:center;
+}
+.node.active .node-label{color:var(--text-primary)}
+.node-desc{
+  font-size:0.65rem;color:var(--text-dim);
+  white-space:nowrap;transition:color 0.5s ease;text-align:center;
+}
+.node.active .node-desc{color:var(--text-body)}
+
+/* ═══════════════════════════════════════════════
+   DASHED LINES SVG CANVAS
+   ═══════════════════════════════════════════════ */
+.dash-svg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;z-index:2;
+}
+.dash-svg line{
+  stroke-dasharray:4 4;
+  stroke-width:1.5;
+  opacity:0;transition:opacity 0.6s ease;
+}
+.dash-svg line.visible{opacity:0.5}
+
+/* ═══════════════════════════════════════════════
+   PRODUCT CARDS AREA
+   ═══════════════════════════════════════════════ */
+.cards-area{
+  flex:1;position:relative;
+  padding:0 clamp(2rem,5vw,5rem) 1rem;
+  z-index:3;
+}
+.cards-inner{
+  position:relative;max-width:1100px;margin:0 auto;
+  min-height:200px;
+  padding-top:0.8rem;
+}
+.product-card-wrap{
+  position:absolute;width:calc(15% - 12px);
+  min-width:100px;
+  opacity:0;pointer-events:none;
+}
+.product-card-wrap.visible{
+  pointer-events:auto;
+}
+.product-card{
+  display:block;width:100%;
+  background:var(--card-bg);
+  backdrop-filter:blur(20px) saturate(180%);
+  -webkit-backdrop-filter:blur(20px) saturate(180%);
+  border:1px solid var(--border-blue);border-radius:var(--radius);
+  padding:0.9rem 0.6rem;
+  text-decoration:none;color:var(--text-primary);
+  position:relative;overflow:hidden;
+  transition:all var(--transition);
+}
+.product-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  opacity:0.8;transition:opacity var(--transition);
+}
+.product-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(33,150,243,0.4);
+  box-shadow:0 12px 40px rgba(0,0,0,0.3),0 0 20px rgba(33,150,243,0.08);
+}
+.product-card:hover::before{opacity:1}
+.product-card--material::before{background:#3b82f6}
+.product-card--sourcing::before{background:#8b5cf6}
+.product-card--compare::before{background:#f59e0b}
+.product-card--review::before{background:#22c55e}
+
+.product-icon{
+  width:28px;height:28px;border-radius:7px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;margin-bottom:0.5rem;
+}
+.product-card--material .product-icon{background:rgba(59,130,246,0.12)}
+.product-card--sourcing .product-icon{background:rgba(139,92,246,0.12)}
+.product-card--compare .product-icon{background:rgba(245,158,11,0.12)}
+.product-card--review .product-icon{background:rgba(34,197,94,0.12)}
+
+.product-name{font-size:0.82rem;font-weight:700;margin-bottom:0.25rem;line-height:1.3}
+.product-desc{font-size:0.68rem;color:var(--text-body);line-height:1.55;margin-bottom:0.6rem}
+.product-cta{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:0.68rem;font-weight:600;color:var(--orange);letter-spacing:0.3px;
+}
+.product-arrow{font-size:12px;transition:transform 0.3s ease}
+.product-card:hover .product-arrow{transform:translateX(3px)}
+
+/* ═══════════════════════════════════════════════
+   FOOTER
+   ═══════════════════════════════════════════════ */
+.footer{
+  position:absolute;bottom:clamp(1rem,3vh,2rem);left:0;right:0;
+  display:flex;flex-direction:column;align-items:center;gap:0.8rem;z-index:10;
+}
+.footer-copy{font-size:0.7rem;color:var(--text-dim);letter-spacing:0.08em}
+.scroll-hint{
+  display:flex;flex-direction:column;align-items:center;gap:0.4rem;
+  opacity:0.7;transition:opacity 0.6s ease;
+}
+.scroll-hint.is-hidden{opacity:0;pointer-events:none}
+.scroll-hint span{font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-muted)}
+.scroll-chevron{
+  width:20px;height:12px;display:block;
+  stroke:var(--blue);fill:none;stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;
+  animation:scrollFloat 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 4px rgba(33,150,243,0.4));
+}
+@keyframes scrollFloat{
+  0%,100%{transform:translateY(0);opacity:0.6}
+  50%{transform:translateY(6px);opacity:1}
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE: Tablet (768 - 1200px)
+   ═══════════════════════════════════════════════ */
+@media(max-width:1200px){
+  .track-wrapper{max-width:92%}
+  .cards-inner{max-width:92%}
+  .product-card{width:100%;padding:0.8rem 0.6rem}
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE: Mobile (< 768px)
+   ═══════════════════════════════════════════════ */
+@media(max-width:767px){
+  .pipeline-area{display:none}
+  .cards-area{
+    flex:1;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;
+    gap:0.8rem;padding:1rem;
+  }
+  .cards-inner{position:relative;height:auto}
+  .product-card-wrap{
+    position:relative!important;
+    flex:none!important;
+    left:auto!important;top:auto!important;
+    transform:none!important;
+  }
+  .product-card{width:clamp(220px,85vw,320px)}
+  .dash-svg{display:none}
+  .mobile-pipeline{display:flex!important}
+}
+.mobile-pipeline{display:none}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     SCROLL CONTAINER (350vh)
+     ═══════════════════════════════════════════════ -->
+<div class="scroll-container" id="scroll-container">
+  <div class="pinned-viewport" id="pinned-viewport">
+
+    <!-- ── Title Section ── -->
+    <div class="title-section">
+      <div class="title-badge">Procurement Process</div>
+      <h1 class="title-main">MRO 采购全链路</h1>
+      <p class="title-sub">AI 深度嵌入关键节点，驱动采购全流程智能化升级</p>
+    </div>
+
+    <!-- ── Desktop: Horizontal Pipeline Area ── -->
+    <div class="pipeline-area" id="pipeline-area">
+      <div class="track-wrapper" id="track-wrapper">
+        <!-- Track / Rail -->
+        <div class="track" id="track"></div>
+
+        <!-- 6 CSS flowing particles -->
+        <div class="track-particle" style="animation-duration:4s;animation-delay:0s;opacity:0.6"></div>
+        <div class="track-particle" style="animation-duration:5s;animation-delay:0.8s;opacity:0.5;width:3px;height:3px"></div>
+        <div class="track-particle" style="animation-duration:6s;animation-delay:1.5s;opacity:0.7;width:5px;height:5px;background:rgba(33,150,243,0.4)"></div>
+        <div class="track-particle" style="animation-duration:4.5s;animation-delay:2.2s;opacity:0.5"></div>
+        <div class="track-particle" style="animation-duration:5.5s;animation-delay:3s;opacity:0.6;width:3px;height:3px"></div>
+        <div class="track-particle" style="animation-duration:7s;animation-delay:3.8s;opacity:0.4;width:4px;height:4px"></div>
+
+        <!-- Pipe Connectors -->
+        <div class="pipe-connector" id="pipe-1-2"></div>
+        <div class="pipe-connector" id="pipe-2-3"></div>
+        <div class="pipe-connector" id="pipe-3-4"></div>
+        <div class="pipe-connector" id="pipe-4-5"></div>
+        <div class="pipe-connector" id="pipe-5-6"></div>
+        <div class="pipe-connector" id="pipe-6-7"></div>
+
+        <!-- Light Ball -->
+        <div class="light-ball" id="light-ball" style="left:0%">
+          <div class="light-ball-core"></div>
+          <div class="light-ball-trail"></div>
+        </div>
+
+        <!-- 7 Process Nodes -->
+        <div class="node" id="node-1" style="left:3%">
+          <div class="node-dot">1</div>
+          <div class="node-label">需求提报</div>
+          <div class="node-desc">采购需求发起与审批</div>
+        </div>
+        <div class="node" id="node-2" style="left:18%">
+          <div class="node-dot">2</div>
+          <div class="node-label">物料匹配与标准化</div>
+          <div class="node-desc">物料属性补全与模糊搜索</div>
+        </div>
+        <div class="node" id="node-3" style="left:33%">
+          <div class="node-dot">3</div>
+          <div class="node-label">寻源比价</div>
+          <div class="node-desc">多供应商API对外寻源</div>
+        </div>
+        <div class="node" id="node-4" style="left:48%">
+          <div class="node-dot">4</div>
+          <div class="node-label">供应商确定</div>
+          <div class="node-desc">多商比价与供应商选择</div>
+        </div>
+        <div class="node" id="node-5" style="left:63%">
+          <div class="node-dot">5</div>
+          <div class="node-label">下单采购</div>
+          <div class="node-desc">订单生成与执行跟踪</div>
+        </div>
+        <div class="node" id="node-6" style="left:78%">
+          <div class="node-dot">6</div>
+          <div class="node-label">商品入库审核</div>
+          <div class="node-desc">信息完整性与合规校验</div>
+        </div>
+        <div class="node" id="node-7" style="left:93%">
+          <div class="node-dot">7</div>
+          <div class="node-label">履约交付</div>
+          <div class="node-desc">物流跟踪与验收确认</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Dashed Lines SVG Overlay ── -->
+    <svg class="dash-svg" id="dash-svg" xmlns="http://www.w3.org/2000/svg">
+      <line id="dash-material" stroke="#3b82f6" x1="0" y1="0" x2="0" y2="0"/>
+      <line id="dash-sourcing" stroke="#8b5cf6" x1="0" y1="0" x2="0" y2="0"/>
+      <line id="dash-compare" stroke="#f59e0b" x1="0" y1="0" x2="0" y2="0"/>
+      <line id="dash-review" stroke="#22c55e" x1="0" y1="0" x2="0" y2="0"/>
+    </svg>
+
+    <!-- ── Product Cards ── -->
+    <div class="cards-area" id="cards-area">
+      <div class="cards-inner" id="cards-inner">
+        <div class="product-card-wrap" id="card-wrap-material" style="left:18%">
+          <a class="product-card product-card--material" href="../产品原型3.0-物料管家/物料管家功能DEMO.html">
+            <div class="product-icon">📦</div>
+            <div class="product-name">物料管家</div>
+            <div class="product-desc">AI 属性补全与模糊搜索增强，物料标准化管理</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+        <div class="product-card-wrap" id="card-wrap-sourcing" style="left:33%">
+          <a class="product-card product-card--sourcing" href="../产品原型3.0-寻源定品/寻源定品功能DEMO.html">
+            <div class="product-icon">🔍</div>
+            <div class="product-name">寻源定品</div>
+            <div class="product-desc">智能调用多供应商 API 进行对外寻源匹配</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+        <div class="product-card-wrap" id="card-wrap-compare" style="left:48%">
+          <a class="product-card product-card--compare" href="../产品原型3.0-一品多商/一品多商功能DEMO.html">
+            <div class="product-icon">⚖️</div>
+            <div class="product-name">一品多商</div>
+            <div class="product-desc">同一物料自动匹配多供应商，AI 辅助比价</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+        <div class="product-card-wrap" id="card-wrap-review" style="left:78%">
+          <a class="product-card product-card--review" href="../产品原型3.0-商品审核/商品审核功能DEMO.html">
+            <div class="product-icon">✅</div>
+            <div class="product-name">商品审核</div>
+            <div class="product-desc">AI 自动校验商品信息完整性与合规性</div>
+            <span class="product-cta">进入演示 <span class="product-arrow">→</span></span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Mobile: Vertical Pipeline (hidden on desktop) ── -->
+    <div class="mobile-pipeline" id="mobile-pipeline" style="flex-direction:column;padding:1rem 1.5rem;gap:0.6rem;flex:1;overflow-y:auto">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="footer">
+      <div class="footer-copy">© 2025 震坤行 · AI采购产品矩阵</div>
+      <div class="scroll-hint" id="scroll-hint">
+        <span>↓ 滚动探索采购全链路</span>
+        <svg class="scroll-chevron" viewBox="0 0 24 14" aria-hidden="true">
+          <polyline points="3 3 12 11 21 3"></polyline>
+        </svg>
+      </div>
+    </div>
+
+  </div><!-- /pinned-viewport -->
+</div><!-- /scroll-container -->
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS
+     ═══════════════════════════════════════════════ -->
+<script>
+(function(){
+  'use strict';
+  gsap.registerPlugin(ScrollTrigger);
+
+  /* ── Config ── */
+  var NODE_POS = [3,18,33,48,63,78,93];
+  var NODE_COUNT = 7;
+  // Card → node index (0-based)
+  var CARD_MAP = [
+    {id:'card-wrap-material',nodeIdx:1,dashId:'dash-material',color:'#3b82f6'},
+    {id:'card-wrap-sourcing',nodeIdx:2,dashId:'dash-sourcing',color:'#8b5cf6'},
+    {id:'card-wrap-compare',nodeIdx:3,dashId:'dash-compare',color:'#f59e0b'},
+    {id:'card-wrap-review',nodeIdx:5,dashId:'dash-review',color:'#22c55e'}
+  ];
+  var isMobile = window.innerWidth < 768;
+
+  /* ── DOM ── */
+  var lightBall = document.getElementById('light-ball');
+  var scrollHint = document.getElementById('scroll-hint');
+  var dashSvg = document.getElementById('dash-svg');
+  var nodes = [];
+  for(var i=1;i<=NODE_COUNT;i++) nodes.push(document.getElementById('node-'+i));
+  var pipes = [];
+  for(var j=1;j<NODE_COUNT;j++) pipes.push(document.getElementById('pipe-'+j+'-'+(j+1)));
+
+  /* ── Setup pipe connectors ── */
+  function setupPipes(){
+    if(isMobile) return;
+    for(var i=0;i<pipes.length;i++){
+      var l = NODE_POS[i] + 2.2;
+      var w = NODE_POS[i+1] - NODE_POS[i] - 4.4;
+      pipes[i].style.left = l + '%';
+      pipes[i].style.width = Math.max(0, w) + '%';
+    }
+  }
+
+  /* ── Update dashed lines (node → card) ── */
+  function updateDashLines(){
+    if(isMobile) return;
+    var vp = document.getElementById('pinned-viewport');
+    var vpRect = vp.getBoundingClientRect();
+    CARD_MAP.forEach(function(cm){
+      var nodeEl = nodes[cm.nodeIdx];
+      var cardEl = document.getElementById(cm.id);
+      var dashLine = document.getElementById(cm.dashId);
+      if(!nodeEl || !cardEl || !dashLine) return;
+
+      var nodeRect = nodeEl.getBoundingClientRect();
+      var cardRect = cardEl.getBoundingClientRect();
+
+      // Line from bottom center of node to top center of card
+      var x1 = nodeRect.left + nodeRect.width/2 - vpRect.left;
+      var y1 = nodeRect.bottom - vpRect.top;
+      var x2 = cardRect.left + cardRect.width/2 - vpRect.left;
+      var y2 = cardRect.top - vpRect.top;
+
+      dashLine.setAttribute('x1', x1);
+      dashLine.setAttribute('y1', y1);
+      dashLine.setAttribute('x2', x2);
+      dashLine.setAttribute('y2', y2);
+    });
+  }
+
+  /* ── Position cards with GSAP (flex layout, entrance animation) ── */
+  function positionCards(){
+    if(isMobile) return;
+    CARD_MAP.forEach(function(cm){
+      var el = document.getElementById(cm.id);
+      gsap.set(el,{opacity:0,y:20,scale:0.9,xPercent:-50});
+    });
+  }
+
+  /* ── Node activation ── */
+  var activeNodes = {};
+  function activateNode(idx){
+    if(activeNodes[idx]) return;
+    activeNodes[idx] = true;
+    nodes[idx].classList.add('active');
+
+    // Activate matching card
+    CARD_MAP.forEach(function(cm){
+      if(cm.nodeIdx === idx){
+        var cardEl = document.getElementById(cm.id);
+        var dashLine = document.getElementById(cm.dashId);
+        // Spring entrance after 200ms
+        setTimeout(function(){
+          gsap.to(cardEl,{
+            opacity:1, y:0, scale:1, xPercent:-50,
+            duration:0.8, ease:'back.out(1.7)',
+            onStart:function(){
+              cardEl.classList.add('visible');
+              if(dashLine) dashLine.classList.add('visible');
+              updateDashLines();
+            }
+          });
+        },200);
+      }
+    });
+  }
+
+  function deactivateNode(idx){
+    if(!activeNodes[idx]) return;
+    activeNodes[idx] = false;
+    nodes[idx].classList.remove('active');
+
+    CARD_MAP.forEach(function(cm){
+      if(cm.nodeIdx === idx){
+        var cardEl = document.getElementById(cm.id);
+        var dashLine = document.getElementById(cm.dashId);
+        if(dashLine) dashLine.classList.remove('visible');
+        gsap.to(cardEl,{
+          opacity:0, y:20, scale:0.9, xPercent:-50,
+          duration:0.4, ease:'power2.in',
+          onComplete:function(){ cardEl.classList.remove('visible'); }
+        });
+      }
+    });
+  }
+
+  /* ── Node progress ── */
+  function getNodeProgress(p, idx){
+    var ballPos = p * 96;
+    var dist = ballPos - NODE_POS[idx];
+    if(dist >= 0) return Math.min(1, dist / 5);
+    return 0;
+  }
+
+  /* ═══════════════════════════════════════════════
+     GSAP SCROLLTRIGGER
+     ═══════════════════════════════════════════════ */
+  ScrollTrigger.create({
+    trigger:'#scroll-container',
+    start:'top top',
+    end:'bottom bottom',
+    pin:'#pinned-viewport',
+    onUpdate:function(self){
+      var p = self.progress;
+
+      // 1. Move light ball
+      lightBall.style.left = (p * 96) + '%';
+
+      // 2. Activate/deactivate nodes
+      for(var i=0;i<NODE_COUNT;i++){
+        if(getNodeProgress(p,i) > 0.3) activateNode(i);
+        else deactivateNode(i);
+      }
+
+      // 3. Scroll hint
+      if(p > 0.03) scrollHint.classList.add('is-hidden');
+      else scrollHint.classList.remove('is-hidden');
+
+      // 4. Update dash lines
+      updateDashLines();
+    }
+  });
+
+  /* ── Mobile pipeline ── */
+  function setupMobile(){
+    if(!isMobile) return;
+    var container = document.getElementById('mobile-pipeline');
+    var data = [
+      {num:1,name:'需求提报',desc:'采购需求发起与审批',color:null},
+      {num:2,name:'物料匹配与标准化',desc:'物料属性补全与模糊搜索',color:'#3b82f6',emoji:'📦',card:'物料管家',link:'../产品原型3.0-物料管家/物料管家功能DEMO.html'},
+      {num:3,name:'寻源比价',desc:'多供应商API对外寻源',color:'#8b5cf6',emoji:'🔍',card:'寻源定品',link:'../产品原型3.0-寻源定品/寻源定品功能DEMO.html'},
+      {num:4,name:'供应商确定',desc:'多商比价与供应商选择',color:'#f59e0b',emoji:'⚖️',card:'一品多商',link:'../产品原型3.0-一品多商/一品多商功能DEMO.html'},
+      {num:5,name:'下单采购',desc:'订单生成与执行跟踪',color:null},
+      {num:6,name:'商品入库审核',desc:'信息完整性与合规校验',color:'#22c55e',emoji:'✅',card:'商品审核',link:'../产品原型3.0-商品审核/商品审核功能DEMO.html'},
+      {num:7,name:'履约交付',desc:'物流跟踪与验收确认',color:null}
+    ];
+    data.forEach(function(d){
+      var div = document.createElement('div');
+      div.id = 'mnode-'+d.num;
+      div.style.cssText = 'display:flex;align-items:center;gap:0.8rem;padding:0.5rem 0;';
+      var dotStyle = d.color
+        ? 'background:'+d.color+'18;border-color:'+d.color+'55;color:'+d.color
+        : 'background:var(--bg-light);border-color:rgba(33,150,243,0.2);color:var(--text-dim)';
+      div.innerHTML = '<div style="width:36px;height:36px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:700;flex-shrink:0;'+dotStyle+'">'+d.num+'</div>'
+        +'<div style="flex:1"><div style="font-size:0.9rem;font-weight:600;color:var(--text-primary)">'+d.name+'</div>'
+        +'<div style="font-size:0.75rem;color:var(--text-body)">'+d.desc+'</div></div>';
+      if(d.emoji && d.card){
+        div.innerHTML += '<a href="'+d.link+'" style="display:inline-flex;align-items:center;gap:4px;font-size:0.78rem;font-weight:600;color:var(--orange);text-decoration:none;white-space:nowrap">'+d.emoji+' '+d.card+' →</a>';
+      }
+      container.appendChild(div);
+    });
+
+    // Mobile scroll activation
+    ScrollTrigger.create({
+      trigger:'#scroll-container',
+      start:'top top',
+      end:'bottom bottom',
+      onUpdate:function(self){
+        var p = self.progress;
+        data.forEach(function(d,i){
+          var el = document.getElementById('mnode-'+d.num);
+          var threshold = i / data.length + 0.05;
+          if(p >= threshold) el.style.opacity = '1';
+          else el.style.opacity = '0.4';
+        });
+        if(p > 0.03) scrollHint.classList.add('is-hidden');
+        else scrollHint.classList.remove('is-hidden');
+      }
+    });
+  }
+
+  /* ── Init ── */
+  function init(){
+    if(isMobile){
+      setupMobile();
+    } else {
+      setupPipes();
+      positionCards(); // positionCards already calls gsap.set with xPercent, opacity, y, scale
+    }
+  }
+
+  /* ── Resize ── */
+  var resizeTimer;
+  window.addEventListener('resize',function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(function(){
+      isMobile = window.innerWidth < 768;
+      if(!isMobile){
+        setupPipes();
+        positionCards();
+        setTimeout(updateDashLines,50);
+      }
+    },250);
+  });
+
+  /* ── DOM Ready ── */
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded',init);
+  } else {
+    init();
+  }
+
+  window.addEventListener('load',function(){
+    ScrollTrigger.refresh();
+    setTimeout(updateDashLines, 100);
+  });
+
+})();
+</script>
+</body>
+</html>

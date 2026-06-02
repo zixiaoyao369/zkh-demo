@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>震坤行 · AI 产品能力演示 V3.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f0f4ff;
+  --bg-end: #ffffff;
+  --primary: #4f7df7;
+  --accent: #7c5bf5;
+  --highlight: #2563eb;
+  --text: #1a1a2e;
+  --text-secondary: #4a4a6a;
+  --card-bg: rgba(255, 255, 255, 0.5);
+  --card-bg-hover: rgba(255, 255, 255, 0.65);
+  --card-border: rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(20px) saturate(180%);
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: linear-gradient(180deg, #f0f4ff 0%, #e8eeff 50%, #ffffff 100%);
+  color: var(--text);
+  font-family: 'Inter', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  overflow-x: hidden;
+  line-height: 1.6;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Floating Color Blobs === */
+.floating-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.6;
+}
+
+.blob-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #a8d8ea 0%, transparent 70%);
+  top: -10%; left: -5%;
+  animation: blobFloat1 25s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, #c3aed6 0%, transparent 70%);
+  top: 30%; right: -8%;
+  animation: blobFloat2 28s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #ffd6e0 0%, transparent 70%);
+  bottom: 10%; left: 20%;
+  animation: blobFloat3 22s ease-in-out infinite;
+}
+
+.blob-4 {
+  width: 480px; height: 480px;
+  background: radial-gradient(circle, #b8d4e3 0%, transparent 70%);
+  top: 50%; left: 50%;
+  animation: blobFloat4 30s ease-in-out infinite;
+}
+
+@keyframes blobFloat1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(80px, 60px) scale(1.1); }
+  50% { transform: translate(30px, 120px) scale(0.95); }
+  75% { transform: translate(-40px, 50px) scale(1.05); }
+}
+
+@keyframes blobFloat2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-60px, 80px) scale(1.05); }
+  50% { transform: translate(-100px, 30px) scale(1.1); }
+  75% { transform: translate(-30px, -60px) scale(0.95); }
+}
+
+@keyframes blobFloat3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(100px, -40px) scale(1.08); }
+  66% { transform: translate(-50px, -80px) scale(0.92); }
+}
+
+@keyframes blobFloat4 {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  25% { transform: translate(calc(-50% + 70px), calc(-50% - 50px)) scale(1.05); }
+  50% { transform: translate(calc(-50% - 60px), calc(-50% + 70px)) scale(0.95); }
+  75% { transform: translate(calc(-50% + 40px), calc(-50% + 30px)) scale(1.02); }
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0 2rem;
+  overflow: hidden;
+}
+
+/* Background Video */
+.hero-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%);
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.15;
+}
+
+/* Light Overlay (white semi-transparent) */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    180deg,
+    rgba(240, 244, 255, 0.75) 0%,
+    rgba(245, 248, 255, 0.78) 40%,
+    rgba(240, 244, 255, 0.75) 70%,
+    rgba(240, 244, 255, 0.82) 100%
+  );
+}
+
+/* Scanline Effect (very faint light) */
+.hero-scanline {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 2px,
+    rgba(255, 255, 255, 0.03) 4px
+  );
+}
+
+.hero-scanline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(79, 125, 247, 0.02) 50%,
+    transparent 100%
+  );
+  animation: scanMove 8s linear infinite;
+}
+
+@keyframes scanMove {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Three.js Canvas in Hero */
+#canvas-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Hero Content */
+.hero-content {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-badge {
+  font-size: clamp(0.75rem, 1.2vw, 1rem);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: #4f7df7;
+  margin-bottom: 2rem;
+  opacity: 0;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  max-width: 900px;
+  opacity: 0;
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d3561 50%, #4f7df7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+  font-weight: 400;
+  color: #4a4a6a;
+  margin-top: 1.5rem;
+  letter-spacing: 0.15em;
+  opacity: 0;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  z-index: 4;
+}
+
+.scroll-hint span {
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.scroll-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(to bottom, var(--primary), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(0.5); }
+  50% { opacity: 1; transform: scaleY(1); }
+}
+
+/* Data Highlights */
+.data-highlights {
+  position: relative;
+  z-index: 5;
+  padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 4vw, 3rem);
+  text-align: center;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid rgba(79, 125, 247, 0.08);
+}
+
+.data-highlights-inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.4rem 1.8rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: clamp(0.7rem, 1vw, 0.85rem);
+  color: #4a4a6a;
+  letter-spacing: 0.05em;
+}
+
+.data-highlights-inner .hl-num {
+  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.data-highlights-inner .hl-sep {
+  color: rgba(74, 74, 106, 0.2);
+  margin: 0 0.2rem;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* Cards Section */
+.cards-section {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 3rem);
+  gap: 3rem;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--primary);
+  opacity: 0;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: clamp(1rem, 2vw, 2rem);
+  max-width: 1200px;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  background: var(--card-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--card-border);
+  border-radius: 24px;
+  padding: clamp(1.5rem, 2.5vw, 2.5rem);
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.4s ease, box-shadow 0.4s ease, background 0.4s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+  opacity: 0;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(135deg, transparent 30%, var(--primary) 50%, var(--accent) 70%, transparent 90%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.card:hover::before { opacity: 1; }
+
+.card:hover {
+  background: var(--card-bg-hover);
+  transform: translateY(-8px) rotateX(2deg) rotateY(-2deg);
+  border-color: rgba(79, 125, 247, 0.25);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 0 40px rgba(79, 125, 247, 0.06);
+}
+
+.card-index {
+  font-size: 4rem;
+  font-weight: 700;
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  opacity: 0.04;
+  line-height: 1;
+  color: var(--text);
+}
+
+.card-tag {
+  font-size: 0.65rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 1rem;
+  display: inline-block;
+  padding: 0.3em 0.8em;
+  border: 1px solid rgba(79, 125, 247, 0.25);
+  border-radius: 20px;
+}
+
+.card-english {
+  font-size: clamp(1.1rem, 1.8vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: #1a1a2e;
+  opacity: 1;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.card-title {
+  font-size: 1.4rem;
+  font-weight: 400;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.card-desc {
+  font-size: clamp(0.85rem, 1.2vw, 1rem);
+  color: #4a4a6a;
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+}
+
+.card-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.card-features span {
+  font-size: clamp(0.65rem, 0.9vw, 0.78rem);
+  padding: 0.25em 0.7em;
+  border-radius: 6px;
+  background: rgba(79, 125, 247, 0.08);
+  color: #4f7df7;
+  border: 1px solid rgba(79, 125, 247, 0.15);
+}
+
+.card-arrow {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(79, 125, 247, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.card:hover .card-arrow {
+  border-color: var(--primary);
+  background: rgba(79, 125, 247, 0.08);
+}
+
+.card-arrow svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--text-secondary);
+  fill: none;
+  stroke-width: 2;
+  transition: transform 0.3s ease, stroke 0.3s ease;
+}
+
+.card:hover .card-arrow svg {
+  transform: translate(2px, -2px);
+  stroke: var(--primary);
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.5;
+  letter-spacing: 0.1em;
+}
+
+.footer-line {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--primary), transparent);
+  margin: 0 auto 1.5rem;
+}
+
+/* === Loading Overlay === */
+#loader {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f5f0ff 100%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4rem;
+  transition: opacity 0.8s ease;
+}
+#loader::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(79,125,247,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+.loader-brand {
+  font-family: 'Inter', 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 2.2rem;
+  letter-spacing: 0.5em;
+  font-weight: 300;
+  padding-left: 0.5em;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+  z-index: 1;
+}
+.loader-spinner {
+  width: 38px;
+  height: 38px;
+  border: 2px solid rgba(79, 125, 247, 0.12);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: loader-spin 0.9s linear infinite;
+  position: relative;
+  z-index: 1;
+}
+.loader-label {
+  font-family: 'Inter', 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+@keyframes loader-spin {
+  to { transform: rotate(360deg); }
+}
+#loader.is-hidden { opacity: 0; pointer-events: none; }
+
+/* === Scroll Indicator (Chevron + Float) === */
+.scroll-hint {
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.scroll-chevron {
+  width: 22px;
+  height: 14px;
+  display: block;
+  stroke: var(--primary);
+  fill: none;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: scroll-float 2s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(79, 125, 247, 0.3));
+}
+@keyframes scroll-float {
+  0%, 100% { transform: translateY(0); opacity: 0.65; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+.scroll-hint.is-hidden {
+  opacity: 0 !important;
+  transform: translate(-50%, 14px);
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (min-width: 1440px) {
+  .cards-grid { max-width: 1200px; }
+  .data-highlights-inner { max-width: 1100px; }
+}
+
+@media (max-width: 1439px) and (min-width: 1024px) {
+  .cards-grid { max-width: 960px; }
+}
+
+@media (max-width: 1023px) and (min-width: 768px) {
+  .cards-grid { grid-template-columns: repeat(2, 1fr); max-width: 720px; }
+  .data-highlights-inner { gap: 0.5rem 1.2rem; }
+}
+
+@media (max-width: 767px) {
+  .cards-grid { grid-template-columns: 1fr; max-width: 100%; }
+  .data-highlights-inner { gap: 0.5rem 1rem; justify-content: center; }
+  .data-highlights-inner .hl-sep { display: none; }
+  .data-highlights-inner > span:not(.hl-sep) { flex: 0 0 calc(50% - 0.5rem); text-align: center; }
+  .blob { opacity: 0.35; }
+}
+</style>
+</head>
+<body>
+
+<!-- Full-screen Loading Overlay -->
+<div id="loader" role="status" aria-label="Loading">
+  <div class="loader-brand">ZKH</div>
+  <div class="loader-spinner"></div>
+  <div class="loader-label">Initializing Experience</div>
+</div>
+
+<div class="content-wrapper">
+  <section class="hero">
+    <!-- Background Video -->
+    <video class="hero-video" autoplay muted loop playsinline>
+      <source src="https://static.zkh360.com/media/2025-12-30/ZKH%E9%9C%87%E5%9D%A4%E8%A1%8C_2-1767087709339.m4v" type="video/mp4">
+    </video>
+    <!-- Light Gradient Overlay -->
+    <div class="hero-overlay"></div>
+    <!-- Floating Color Blobs (above overlay, below particles) -->
+    <div class="floating-blobs">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+      <div class="blob blob-4"></div>
+    </div>
+    <!-- Scanline Effect -->
+    <div class="hero-scanline"></div>
+    <!-- Three.js Canvas (lightweight particles) -->
+    <div id="canvas-container"></div>
+    <!-- Hero Content -->
+    <div class="hero-content">
+      <p class="hero-badge">Zhenkunhang · AI Product Suite</p>
+      <h1 class="hero-title">把智能，嵌进采购的每一段链路</h1>
+      <p class="hero-subtitle">震坤行 · AI 产品能力演示 V3.0</p>
+    </div>
+    <div class="scroll-hint">
+      <span>向下探索</span>
+      <svg class="scroll-chevron" viewBox="0 0 24 14" aria-hidden="true">
+        <polyline points="3 3 12 11 21 3"></polyline>
+      </svg>
+    </div>
+  </section>
+
+  <!-- Data Highlights -->
+  <section class="data-highlights">
+    <div class="data-highlights-inner">
+      <span><span class="hl-num">32</span> 条优势产品线</span>
+      <span class="hl-sep">|</span>
+      <span><span class="hl-num">2700万+</span> SKU</span>
+      <span class="hl-sep">|</span>
+      <span><span class="hl-num">108</span> 个专业仓库</span>
+      <span class="hl-sep">|</span>
+      <span><span class="hl-num">200+</span> 自有车辆交付</span>
+      <span class="hl-sep">|</span>
+      <span><span class="hl-num">6000+</span> EVM智能小仓库</span>
+    </div>
+  </section>
+
+  <section class="cards-section">
+    <p class="section-label">Product Demos</p>
+    <div class="cards-grid">
+
+      <a href="./AI采购全链路对比DEMO/index.html" class="card" data-card="1">
+        <span class="card-index">01</span>
+        <span class="card-tag">Capability · 能力矩阵</span>
+        <p class="card-english">Full-Chain Capability Comparison</p>
+        <h2 class="card-title">AI采购全链路对比 DEMO</h2>
+        <p class="card-desc">以"传统流程 vs AI 重塑"双视角，串联物料管家、寻源定品、一品多商、商品审核四大能力模块</p>
+        <div class="card-features">
+          <span>物料管家</span><span>寻源定品</span><span>一品多商</span><span>商品审核</span>
+        </div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></div>
+      </a>
+
+      <a href="./AI采购商城原型/mall.html" class="card" data-card="2">
+        <span class="card-index">02</span>
+        <span class="card-tag">Prototype · 交互原型</span>
+        <p class="card-english">Smart Mall Interactive Prototype</p>
+        <h2 class="card-title">AI采购商城原型</h2>
+        <p class="card-desc">覆盖搜索、外部寻源、需求提报、供应商详情、进度跟踪的端到端可点击原型</p>
+        <div class="card-features">
+          <span>智能搜索</span><span>外部寻源</span><span>需求提报</span><span>供应商详情</span><span>进度跟踪</span>
+        </div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></div>
+      </a>
+
+      <a href="./AI采购全链路对客方案/index.html" class="card" data-card="3">
+        <span class="card-index">03</span>
+        <span class="card-tag">Solution · 方案文档</span>
+        <p class="card-english">Client-Facing Solution Dossier</p>
+        <h2 class="card-title">AI采购全链路对客方案</h2>
+        <p class="card-desc">面向客户的 AI 采购能力产品方案汇集，涵盖一品多商智能匹配、商品资质智能审核等完整方案文档</p>
+        <div class="card-features">
+          <span>一品多商</span><span>商品审核</span><span>方案文档</span><span>对客交付</span>
+        </div>
+        <div class="card-arrow"><svg viewBox="0 0 24 24"><path d="M7 17L17 7M17 7H7M17 7V17"/></svg></div>
+      </a>
+
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-line"></div>
+    <p>© 2024 震坤行 · AI 产品能力中心</p>
+  </footer>
+</div>
+
+<script>
+(function() {
+  // === THREE.JS SCENE (Lightweight Particle Overlay) ===
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera.position.z = 5;
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0); // Transparent background so video shows through
+  container.appendChild(renderer.domElement);
+
+  // --- Particles (Blue + Purple tones for light bg) ---
+  const particleCount = 350;
+  const particlesGeometry = new THREE.BufferGeometry();
+  const positions = new Float32Array(particleCount * 3);
+  const colors = new Float32Array(particleCount * 3);
+  const sizes = new Float32Array(particleCount);
+
+  const blueColor = new THREE.Color(0x4f7df7);
+  const purpleColor = new THREE.Color(0x7c5bf5);
+
+  for (let i = 0; i < particleCount; i++) {
+    const i3 = i * 3;
+    const radius = 2 + Math.random() * 6;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+
+    positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+    positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+    positions[i3 + 2] = radius * Math.cos(phi);
+
+    const mixRatio = Math.random();
+    const color = blueColor.clone().lerp(purpleColor, mixRatio);
+    colors[i3] = color.r;
+    colors[i3 + 1] = color.g;
+    colors[i3 + 2] = color.b;
+
+    sizes[i] = Math.random() * 3 + 0.5;
+  }
+
+  particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  particlesGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  particlesGeometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+
+  const particlesMaterial = new THREE.PointsMaterial({
+    size: 0.02,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.3,
+    blending: THREE.NormalBlending,
+    sizeAttenuation: true
+  });
+
+  const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+  scene.add(particles);
+
+  // --- Mouse interaction ---
+  let mouseX = 0, mouseY = 0;
+  let targetMouseX = 0, targetMouseY = 0;
+
+  document.addEventListener('mousemove', (e) => {
+    targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+    targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+  });
+
+  // --- Scroll state ---
+  let scrollProgress = 0;
+
+  // --- Animation Loop ---
+  function animate() {
+    requestAnimationFrame(animate);
+
+    mouseX += (targetMouseX - mouseX) * 0.05;
+    mouseY += (targetMouseY - mouseY) * 0.05;
+
+    // Rotate particles
+    particles.rotation.y += 0.0004;
+    particles.rotation.x += 0.0002;
+    particles.rotation.y += mouseX * 0.0008;
+    particles.rotation.x += mouseY * 0.0008;
+
+    // Mouse tilt
+    scene.rotation.y = mouseX * 0.06;
+    scene.rotation.x = mouseY * 0.04;
+
+    // Scroll-driven: particles fade as user scrolls
+    camera.position.z = 5 + scrollProgress * 2;
+    particlesMaterial.opacity = 0.3 - scrollProgress * 0.25;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  // --- Resize ---
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // === VIDEO FALLBACK ===
+  const heroVideo = document.querySelector('.hero-video');
+  if (heroVideo) {
+    heroVideo.addEventListener('error', function() {
+      // If video fails, boost particle opacity as fallback
+      particlesMaterial.opacity = 0.5;
+      heroVideo.style.display = 'none';
+    });
+    // Also handle source error
+    const source = heroVideo.querySelector('source');
+    if (source) {
+      source.addEventListener('error', function() {
+        particlesMaterial.opacity = 0.5;
+        heroVideo.style.display = 'none';
+      });
+    }
+  }
+
+  // === GSAP ANIMATIONS ===
+  gsap.registerPlugin(ScrollTrigger);
+
+  // Hero entrance
+  const tl = gsap.timeline({ delay: 0.3 });
+  tl.to('.hero-badge', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' })
+    .to('.hero-title', { opacity: 1, y: 0, duration: 1.2, ease: 'power3.out' }, '-=0.6')
+    .to('.hero-subtitle', { opacity: 1, y: 0, duration: 1, ease: 'power3.out' }, '-=0.6')
+    .to('.scroll-hint', { opacity: 1, duration: 1, ease: 'power2.out' }, '-=0.3');
+
+  // Set initial states
+  gsap.set(['.hero-badge', '.hero-title', '.hero-subtitle'], { y: 30 });
+
+  // Scroll progress for Three.js
+  ScrollTrigger.create({
+    trigger: '.cards-section',
+    start: 'top bottom',
+    end: 'top top',
+    onUpdate: (self) => {
+      scrollProgress = self.progress;
+    }
+  });
+
+  // Section label animation
+  gsap.to('.section-label', {
+    opacity: 1,
+    y: 0,
+    duration: 0.8,
+    scrollTrigger: {
+      trigger: '.section-label',
+      start: 'top 80%',
+      toggleActions: 'play none none reverse'
+    }
+  });
+  gsap.set('.section-label', { y: 20 });
+
+  // Data highlights animation
+  gsap.from('.data-highlights-inner > span', {
+    opacity: 0,
+    y: 15,
+    duration: 0.6,
+    stagger: 0.08,
+    ease: 'power2.out',
+    scrollTrigger: {
+      trigger: '.data-highlights',
+      start: 'top 90%',
+      toggleActions: 'play none none reverse'
+    }
+  });
+
+  // Cards stagger animation
+  const cards = document.querySelectorAll('.card');
+  cards.forEach((card, i) => {
+    gsap.to(card, {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      delay: i * 0.15,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: card,
+        start: 'top 85%',
+        toggleActions: 'play none none reverse'
+      }
+    });
+    gsap.set(card, { y: 40 });
+  });
+
+  // Card 3D tilt on mouse
+  cards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      card.style.transform = `translateY(-8px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg)`;
+    });
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'translateY(0) rotateX(0) rotateY(0)';
+    });
+  });
+
+  // === COUNTER ANIMATION (IntersectionObserver, fire once) ===
+  const counterEls = document.querySelectorAll('.data-highlights-inner .hl-num');
+  const counterData = [];
+  counterEls.forEach(el => {
+    const raw = el.textContent.trim();
+    const match = raw.match(/^([\d,]+)(.*)$/);
+    if (match) {
+      const target = parseInt(match[1].replace(/,/g, ''), 10);
+      const suffix = match[2] || '';
+      counterData.push({ el, target, suffix });
+      el.textContent = '0' + suffix;
+    }
+  });
+
+  function animateCounter(data, duration) {
+    const { el, target, suffix } = data;
+    const startTime = performance.now();
+    const showDecimal = target >= 100;
+    function update(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      // easeOutExpo
+      const eased = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      if (progress < 1) {
+        const current = eased * target;
+        el.textContent = (showDecimal ? current.toFixed(1) : Math.floor(current).toString()) + suffix;
+        requestAnimationFrame(update);
+      } else {
+        el.textContent = Math.floor(target).toLocaleString() + suffix;
+      }
+    }
+    requestAnimationFrame(update);
+  }
+
+  if (counterData.length > 0 && 'IntersectionObserver' in window) {
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          counterData.forEach(d => animateCounter(d, 2000));
+          counterObserver.disconnect();
+        }
+      });
+    }, { threshold: 0.3 });
+    const dataSection = document.querySelector('.data-highlights');
+    if (dataSection) counterObserver.observe(dataSection);
+  } else {
+    counterData.forEach(d => { d.el.textContent = d.target.toLocaleString() + d.suffix; });
+  }
+
+  // === SCROLL INDICATOR FADE-OUT ===
+  const scrollHint = document.querySelector('.scroll-hint');
+  if (scrollHint) {
+    let hintHidden = false;
+    const onScrollFade = () => {
+      if (!hintHidden && window.scrollY > 50) {
+        scrollHint.classList.add('is-hidden');
+        hintHidden = true;
+        window.removeEventListener('scroll', onScrollFade);
+      }
+    };
+    window.addEventListener('scroll', onScrollFade, { passive: true });
+  }
+
+  // === LOADING OVERLAY HIDE ===
+  const loaderEl = document.getElementById('loader');
+  if (loaderEl) {
+    let loaderHidden = false;
+    const hideLoader = () => {
+      if (loaderHidden) return;
+      loaderHidden = true;
+      loaderEl.classList.add('is-hidden');
+      setTimeout(() => { loaderEl.style.display = 'none'; }, 820);
+    };
+    if (heroVideo) {
+      heroVideo.addEventListener('canplaythrough', hideLoader, { once: true });
+      heroVideo.addEventListener('error', hideLoader, { once: true });
+    }
+    // 3 秒超时兜底
+    setTimeout(hideLoader, 3000);
+    // 页面完全加载后也兜底一次
+    window.addEventListener('load', () => setTimeout(hideLoader, 500), { once: true });
+  }
+
+})();
+</script>
+</body>
+</html>

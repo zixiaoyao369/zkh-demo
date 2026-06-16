@@ -450,6 +450,29 @@ body {
   .hl-item { flex: 0 0 calc(50% - 0.4rem); min-width: 0; }
   .hero-content { text-align: center; }
 }
+
+/* === Customer Cases Section === */
+.cases-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: clamp(3rem, 6vw, 6rem) clamp(1rem, 4vw, 3rem);
+  gap: clamp(2rem, 4vw, 3rem);
+  background: var(--bg);
+  border-top: 1px solid var(--border-blue);
+}
+
+.cases-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: clamp(1.2rem, 2vw, 2rem);
+  max-width: 1280px;
+  width: 100%;
+}
+
+@media (max-width: 767px) {
+  .cases-grid { grid-template-columns: 1fr; max-width: 480px; }
+}
 </style>
 </head>
 <body>
@@ -538,6 +561,25 @@ body {
           <span>一品多商</span><span>商品审核</span><span>方案文档</span><span>对客交付</span>
         </div>
         <span class="card-link">了解详情 <span class="card-link-arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Customer Cases Section -->
+  <section class="cases-section" id="cases-section">
+    <p class="section-label">Customer Cases · 客户定制案例</p>
+    <div class="cases-grid">
+
+      <a href="./保利物业/index.html" class="card" data-case="1">
+        <div class="card-icon">🏢</div>
+        <span class="card-tag">Poly Property · 保利物业</span>
+        <h2 class="card-title">保利物业 · 定制采购解决方案</h2>
+        <p class="card-desc">为保利物业量身打造的 AI 采购商城，包含前端用户商城与运营工作台双端演示</p>
+        <div class="card-features">
+          <span>采购商城</span><span>运营工作台</span><span>金色主题</span><span>定制开发</span>
+        </div>
+        <span class="card-link">查看案例 <span class="card-link-arrow">→</span></span>
       </a>
 
     </div>

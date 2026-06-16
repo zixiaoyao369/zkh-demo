@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>保利物业 · 定制采购解决方案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a1628;
+  --bg-light: #0f1d32;
+  --orange: #FF6A00;
+  --orange-light: #FF9500;
+  --blue: #2196F3;
+  --text-primary: #e2e8f0;
+  --text-body: #94a3b8;
+  --text-muted: #64748b;
+  --text-dim: #475569;
+  --card-bg: rgba(15, 29, 50, 0.8);
+  --border-blue: rgba(33, 150, 243, 0.15);
+  --font-cn: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-en: "Inter", -apple-system, sans-serif;
+}
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-cn);
+  overflow-x: hidden;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === Back Nav === */
+.back-nav {
+  padding: 1.5rem clamp(1rem, 4vw, 3rem);
+  position: relative;
+  z-index: 10;
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.85rem;
+  color: var(--blue);
+  text-decoration: none;
+  transition: gap 0.3s ease, color 0.3s ease;
+  font-family: var(--font-cn);
+}
+
+.back-link:hover { gap: 0.7em; color: var(--orange); }
+
+.back-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.back-link:hover .back-arrow { transform: translateX(-3px); }
+
+/* === Hero Section === */
+.page-hero {
+  text-align: center;
+  padding: clamp(2rem, 5vw, 4rem) clamp(1rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.hero-badge {
+  font-family: var(--font-en);
+  font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 1.2rem;
+  display: inline-block;
+  padding: 0.4em 1.2em;
+  border: 1px solid rgba(33, 150, 243, 0.25);
+  border-radius: 20px;
+  background: rgba(33, 150, 243, 0.06);
+}
+
+.hero-title {
+  font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  background: linear-gradient(180deg, #ffffff 0%, #e0eaff 35%, #a8c8ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 2px 20px rgba(168, 200, 255, 0.25));
+}
+
+.hero-subtitle {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  font-weight: 400;
+  color: var(--text-body);
+  margin-top: 1rem;
+  line-height: 1.7;
+}
+
+/* === Cards Section === */
+.cards-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: clamp(2rem, 4vw, 4rem) clamp(1rem, 4vw, 3rem);
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.section-label {
+  font-family: var(--font-en);
+  font-size: clamp(0.65rem, 0.9vw, 0.8rem);
+  letter-spacing: 0.5em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(1.2rem, 2vw, 2rem);
+  max-width: 900px;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-blue);
+  border-radius: 12px;
+  padding: clamp(1.8rem, 2.5vw, 2.5rem) clamp(1.5rem, 2vw, 2rem);
+  text-decoration: none;
+  color: var(--text-primary);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
+              border-color 0.35s ease,
+              box-shadow 0.35s ease;
+  overflow: hidden;
+  border-left: 3px solid transparent;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(33, 150, 243, 0.3);
+  border-left-color: var(--orange);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(33, 150, 243, 0.06);
+}
+
+.card-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  background: rgba(33, 150, 243, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 1.2rem;
+  flex-shrink: 0;
+}
+
+.card-tag {
+  font-family: var(--font-en);
+  font-size: clamp(0.65rem, 0.85vw, 0.75rem);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-bottom: 0.6rem;
+  display: inline-block;
+}
+
+.card-title {
+  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 0.8rem;
+  line-height: 1.4;
+}
+
+.card-desc {
+  font-size: clamp(0.85rem, 1.2vw, 0.98rem);
+  color: var(--text-body);
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+  flex: 1;
+}
+
+.card-features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+
+.card-features span {
+  font-size: clamp(0.65rem, 0.85vw, 0.75rem);
+  padding: 0.2em 0.6em;
+  border-radius: 4px;
+  background: rgba(255, 106, 0, 0.06);
+  color: var(--orange);
+  border: 1px solid rgba(255, 106, 0, 0.12);
+}
+
+.card-link {
+  font-size: clamp(0.8rem, 1vw, 0.9rem);
+  color: var(--orange);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  transition: gap 0.3s ease;
+}
+
+.card:hover .card-link { gap: 0.6em; }
+
+.card-link-arrow {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .card-link-arrow { transform: translateX(2px); }
+
+/* === Footer === */
+.footer {
+  text-align: center;
+  padding: 2rem 2rem;
+  background: var(--bg);
+  font-family: var(--font-en);
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  border-top: 1px solid rgba(33, 150, 243, 0.08);
+  margin-top: auto;
+}
+
+.footer-line {
+  width: 60px; height: 1px;
+  background: linear-gradient(to right, transparent, var(--blue), transparent);
+  margin: 0 auto 1rem;
+  opacity: 0.3;
+}
+
+/* === Responsive === */
+@media (max-width: 767px) {
+  .cards-grid { grid-template-columns: 1fr; max-width: 480px; }
+  .card { padding: clamp(1.2rem, 4vw, 2rem) clamp(1rem, 3vw, 1.5rem); }
+}
+</style>
+</head>
+<body>
+
+  <!-- Back Navigation -->
+  <nav class="back-nav">
+    <a href="../index.html" class="back-link">
+      <span class="back-arrow">←</span> 返回主页
+    </a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="page-hero">
+    <p class="hero-badge">Poly Property · 保利物业</p>
+    <h1 class="hero-title">保利物业 · 定制采购解决方案</h1>
+    <p class="hero-subtitle">为保利物业量身打造的 AI 采购商城，涵盖前端用户商城与运营工作台双端能力</p>
+  </section>
+
+  <!-- Demo Cards -->
+  <section class="cards-section">
+    <p class="section-label">Demo Collection · 演示合集</p>
+    <div class="cards-grid">
+
+      <a href="./保利和采DEMO/保利和采DEMO_V7_金色LOGO.html" class="card">
+        <div class="card-icon">🛒</div>
+        <span class="card-tag">Frontend · 采购商城前端</span>
+        <h2 class="card-title">保利和采 DEMO</h2>
+        <p class="card-desc">面向用户的采购商城前端交互演示，涵盖商品浏览、智能搜索、AI 辅助采购下单等核心流程，金色品牌主题定制</p>
+        <div class="card-features">
+          <span>采购商城</span><span>智能搜索</span><span>金色主题</span><span>AI辅助</span>
+        </div>
+        <span class="card-link">打开演示 <span class="card-link-arrow">→</span></span>
+      </a>
+
+      <a href="./原型DEMO/index.html" class="card">
+        <div class="card-icon">🖥️</div>
+        <span class="card-tag">Workbench · 运营工作台</span>
+        <h2 class="card-title">AI 采购商城工作台 DEMO</h2>
+        <p class="card-desc">面向运营人员的采购工作台系统演示，包含物料管理、订单处理、供应商管理、数据分析等功能模块</p>
+        <div class="card-features">
+          <span>工作台</span><span>物料管理</span><span>订单处理</span><span>数据分析</span>
+        </div>
+        <span class="card-link">打开演示 <span class="card-link-arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-line"></div>
+    <p>震坤行 · AI产品能力演示 V4.0</p>
+  </footer>
+
+</body>
+</html>

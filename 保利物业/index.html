@@ -260,9 +260,144 @@ body {
   .cards-grid { grid-template-columns: 1fr; max-width: 480px; }
   .card { padding: clamp(1.2rem, 4vw, 2rem) clamp(1rem, 3vw, 1.5rem); }
 }
+
+/* === Password Gate === */
+.pw-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--bg) 0%, #0d1e38 50%, var(--bg) 100%);
+  gap: 1.5rem;
+  padding: 2rem;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.pw-gate.is-unlocked {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pw-gate .pw-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: rgba(33, 150, 243, 0.1);
+  border: 1px solid var(--border-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.pw-gate .pw-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.02em;
+}
+
+.pw-gate .pw-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  max-width: 320px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.pw-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+.pw-input {
+  padding: 0.75em 1em;
+  border-radius: 10px;
+  border: 1px solid var(--border-blue);
+  background: rgba(15, 29, 50, 0.6);
+  color: var(--text-primary);
+  font-family: var(--font-cn);
+  font-size: 1rem;
+  text-align: center;
+  letter-spacing: 0.15em;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pw-input:focus {
+  border-color: rgba(33, 150, 243, 0.4);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.08);
+}
+
+.pw-input::placeholder {
+  color: var(--text-dim);
+  letter-spacing: normal;
+  font-size: 0.85rem;
+}
+
+.pw-btn {
+  padding: 0.75em 1.5em;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, var(--orange), var(--orange-light));
+  color: #ffffff;
+  font-family: var(--font-cn);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(255, 106, 0, 0.25);
+}
+
+.pw-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255, 106, 0, 0.35);
+}
+
+.pw-btn:active { transform: scale(0.98); }
+
+.pw-error {
+  font-size: 0.8rem;
+  color: #ef4444;
+  text-align: center;
+  min-height: 1.2em;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pw-error.is-visible { opacity: 1; }
+
+.page-content {
+  opacity: 0;
+  transition: opacity 0.6s ease 0.2s;
+}
+
+.page-content.is-visible { opacity: 1; }
 </style>
 </head>
 <body>
+
+  <!-- Password Gate -->
+  <div class="pw-gate" id="pwGate">
+    <div class="pw-icon">🔐</div>
+    <div class="pw-title">访问验证</div>
+    <div class="pw-desc">该页面为保利物业专属演示，请输入访问密码</div>
+    <div class="pw-form">
+      <input type="password" class="pw-input" id="pwInput" placeholder="请输入密码" maxlength="20">
+      <button class="pw-btn" id="pwBtn">确认进入</button>
+    </div>
+    <div class="pw-error" id="pwError">密码错误，请重试</div>
+  </div>
+
+  <!-- Page Content -->
+  <div class="page-content" id="pageContent">
 
   <!-- Back Navigation -->
   <nav class="back-nav">
@@ -313,6 +448,47 @@ body {
     <div class="footer-line"></div>
     <p>震坤行 · AI产品能力演示 V4.0</p>
   </footer>
+
+  </div>
+
+<script>
+(function() {
+  const CORRECT_PW = 'blwy888';
+  const pwGate = document.getElementById('pwGate');
+  const pageContent = document.getElementById('pageContent');
+  const pwInput = document.getElementById('pwInput');
+  const pwBtn = document.getElementById('pwBtn');
+  const pwError = document.getElementById('pwError');
+
+  function unlock() {
+    pwGate.classList.add('is-unlocked');
+    pageContent.classList.add('is-visible');
+    sessionStorage.setItem('poly_auth', '1');
+  }
+
+  function check() {
+    if (pwInput.value.trim() === CORRECT_PW) {
+      unlock();
+    } else {
+      pwError.classList.add('is-visible');
+      pwInput.value = '';
+      pwInput.focus();
+      setTimeout(() => pwError.classList.remove('is-visible'), 2000);
+    }
+  }
+
+  // Auto-unlock if already authenticated this session
+  if (sessionStorage.getItem('poly_auth') === '1') {
+    unlock();
+  }
+
+  pwBtn.addEventListener('click', check);
+  pwInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') check();
+  });
+  pwInput.focus();
+})();
+</script>
 
 </body>
 </html>

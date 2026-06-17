@@ -16,8 +16,8 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .intro-screen{background:radial-gradient(circle at 50% 40%,rgba(107,92,74,.22) 0%,transparent 55%),radial-gradient(circle at 80% 20%,rgba(139,115,85,.15) 0%,transparent 40%),#1A1510;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden}
 .outro-screen{background:radial-gradient(circle at 50% 40%,rgba(107,92,74,.22) 0%,transparent 55%),radial-gradient(circle at 20% 80%,rgba(139,115,85,.15) 0%,transparent 40%),#1A1510;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden}
 .intro-title,.outro-title{font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:900;background:linear-gradient(135deg,#A6896A,#6B5C4A,#5A4D3E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;letter-spacing:-1px;filter:drop-shadow(0 0 30px rgba(107,92,74,.3))}
-.intro-sub,.outro-sub{font-size:1.15rem;color:rgba(255,255,255,.72);text-align:center;font-weight:400;letter-spacing:1px}
-.outro-footer{font-size:0.85rem;color:rgba(255,255,255,.4);margin-top:24px;letter-spacing:2px}
+.intro-sub,.outro-sub{font-size:1.35rem;color:rgba(255,255,255,.85);text-align:center;font-weight:500;letter-spacing:1px}
+.outro-footer{font-size:0.95rem;color:rgba(255,255,255,.55);margin-top:24px;letter-spacing:2px}
 .transition-overlay{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(26,21,16,.96) 0%,rgba(0,0,0,.98) 100%);backdrop-filter:blur(20px);overflow:hidden}
 .transition-overlay .trans-text{font-size:2.2rem;font-weight:500;color:rgba(255,255,255,.9);text-shadow:0 0 30px rgba(107,92,74,.4);text-align:center;opacity:0;letter-spacing:3px;z-index:2}
 .transition-overlay .trans-title{font-size:3.2rem;font-weight:900;background:linear-gradient(135deg,#D4A853,#A6896A,#8B7355);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;opacity:0;letter-spacing:6px;filter:drop-shadow(0 0 30px rgba(166,137,106,.4));z-index:2}
@@ -256,41 +256,14 @@ tr.best-price.row-highlight{background:#FAF7F2 !important;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .search-input-strikethrough{text-decoration:line-through;color:#94a3b8}
 .click-highlight{position:fixed;border:2px solid #6B5C4A;border-radius:8px;pointer-events:none;z-index:450;opacity:0;box-shadow:0 0 12px rgba(107,92,74,.3)}
-/* Scene 4: 商品审核 */
-.audit-card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:28px;margin:16px auto;max-width:720px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.04)}
-.audit-card-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #f1f5f9}
-.audit-card-img{width:90px;height:90px;background:linear-gradient(180deg,#f8fafc,#f1f5f9);border-radius:14px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:8px}
-.audit-card-img img{max-width:100%;max-height:100%;object-fit:contain}
-.audit-card-info h3{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:4px}
-.audit-card-info .audit-specs{font-size:12px;color:#64748b;line-height:1.8}
-.audit-card-info .audit-price{font-size:20px;font-weight:800;color:#6B5C4A;margin-top:4px;font-family:"JetBrains Mono","Noto Sans SC",monospace;letter-spacing:-.5px}
-.audit-extra-info{display:flex;gap:12px;margin-top:8px;flex-wrap:wrap}
-.audit-extra-tag{font-size:11px;color:#475569;background:#f1f5f9;padding:3px 10px;border-radius:8px;border:1px solid #e2e8f0;font-weight:500}
-.audit-submit-btn{padding:8px 20px;background:linear-gradient(135deg,#6B5C4A,#5A4D3E);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;margin-left:auto;transition:all .2s;box-shadow:0 2px 8px rgba(107,92,74,.15)}
-.audit-submit-btn.submitted{background:#64748b;pointer-events:none}
-.audit-submit-btn.approved{background:linear-gradient(135deg,#10b981,#059669)}
-.audit-results{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:18px;margin-top:16px}
-.audit-results-title{font-size:13px;font-weight:700;color:#0f172a;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.audit-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;margin-bottom:8px;font-size:12px;font-weight:500;opacity:0;transform:translateX(-8px);transition:all .3s;box-shadow:0 1px 2px rgba(0,0,0,.02)}
-.audit-item.show{opacity:1;transform:translateX(0)}
-.audit-item.pass{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
-.audit-item.warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
-.audit-item .audit-icon{font-size:14px;flex-shrink:0}
-.audit-item .audit-text{flex:1}
-.audit-summary{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:12px;font-size:14px;font-weight:700;margin-top:14px;opacity:0;transition:all .4s;box-shadow:0 2px 8px rgba(0,0,0,.04)}
-.audit-summary.show{opacity:1}
-.audit-summary.pass-bg{background:#dcfce7;border:2px solid #22c55e;color:#166534}
-.audit-progress-bar{height:6px;background:#e2e8f0;border-radius:3px;margin:12px 0;overflow:hidden}
-.audit-progress-bar .fill{height:100%;background:linear-gradient(90deg,#6B5C4A,#8B7355,#10b981);border-radius:3px;width:0%;transition:width 2s ease-out}
-.audit-progress-text{font-size:12px;color:#64748b;text-align:center;margin-bottom:6px;font-weight:500}
 .feature-chip{display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:40px;backdrop-filter:blur(8px);transition:all .3s}
 .feature-chip:hover{background:rgba(107,92,74,.15);border-color:rgba(107,92,74,.3);box-shadow:0 0 20px rgba(107,92,74,.15)}
 .chip-icon{font-size:18px}
 .chip-text{font-size:14px;color:rgba(255,255,255,.8);font-weight:500;letter-spacing:0.5px}
 .outro-stat{text-align:center;padding:0 8px}
-.stat-number{font-size:28px;font-weight:800;background:linear-gradient(135deg,#A6896A,#8B7355);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:"JetBrains Mono","Noto Sans SC",monospace;letter-spacing:-1px}
-.stat-label{font-size:12px;color:rgba(255,255,255,.5);margin-top:4px;letter-spacing:1px}
-.outro-stat-divider{width:1px;height:40px;background:rgba(255,255,255,.1);align-self:center}
+.stat-number{font-size:44px;font-weight:800;background:linear-gradient(135deg,#D4A853,#A6896A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:"JetBrains Mono","Noto Sans SC",monospace;letter-spacing:-1px;filter:drop-shadow(0 0 12px rgba(212,168,83,.4))}
+.stat-label{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px;letter-spacing:1px}
+.outro-stat-divider{width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(212,168,83,.35),transparent);align-self:center}
 .intro-logo-wrap{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:4px}
 .intro-logo-img{height:clamp(80px,13vw,130px);width:auto}
 .title-shine-img::after{content:'';position:absolute;top:-30%;left:-100%;width:50%;height:160%;background:radial-gradient(ellipse at center,rgba(245,240,232,.15) 0%,transparent 70%);filter:blur(12px);animation:titleShine 4s ease-in-out infinite;pointer-events:none}
@@ -321,7 +294,6 @@ tr.best-price.row-highlight{background:#FAF7F2 !important;}
     <div class="feature-chip" style="opacity:0"><span class="chip-icon">🔍</span><span class="chip-text">AI 语义搜索</span></div>
     <div class="feature-chip" style="opacity:0"><span class="chip-icon">📋</span><span class="chip-text">需求澄清</span></div>
     <div class="feature-chip" style="opacity:0"><span class="chip-icon">📊</span><span class="chip-text">一品多商</span></div>
-    <div class="feature-chip" style="opacity:0"><span class="chip-icon">✅</span><span class="chip-text">智能审核</span></div>
   </div>
 </div>
 
@@ -535,81 +507,6 @@ tr.best-price.row-highlight{background:#FAF7F2 !important;}
   </div>
 </div>
 
-<!-- SCENE 4: 商品审核上架 -->
-<div class="scene" id="scene4">
-  <div class="top-banner"><span style="color:#8B7355">●</span> 企业采购专属通道&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#8B7355">●</span> 华东区域仓次日达&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#8B7355">●</span> 满500免运费</div>
-  <div class="mall-header">
-    <div class="logo"><img src="保利和采LOGO金色.png" alt="保利和采" style="height:32px;width:auto" loading="eager"></div>
-    <div class="search-box"><input type="text" value="M12×80 内六角圆柱头螺钉 12.9级" readonly><button class="search-btn">搜索</button></div>
-    <div class="ai-btn">✦ AI需求澄清</div>
-    <div class="header-right">
-      <span class="enterprise-name">保利和采测试企业</span>
-      <span>🔔</span>
-      <span>❤️</span>
-      <span>🛒 购物车</span>
-      <span>📋 订单</span>
-      <span>👤 我的</span>
-    </div>
-  </div>
-  <div class="mall-toolbar"><div class="breadcrumb" id="s4Breadcrumb">首页 &gt; 寻源结果 &gt; 商品审核</div></div>
-  <div class="mall-body">
-    <div class="audit-card" id="auditCard">
-      <div class="audit-card-header">
-        <div class="audit-card-img"><img src="images/12.9级.jpg" alt="内六角圆柱头螺钉12.9级" loading="lazy" decoding="async"></div>
-        <div class="audit-card-info">
-          <h3>M12×80 内六角圆柱头螺钉 12.9级</h3>
-          <div class="audit-specs">规格：M12×80 | 材质：合金钢 | 等级：12.9级 | 表面处理：达克罗<br>来源：外部寻源 · 供应商A | 报价：¥3.20/个</div>
-          <div class="audit-extra-info">
-            <span class="audit-extra-tag">📍 产地：浙江温州</span>
-            <span class="audit-extra-tag">🏅 ISO9001认证</span>
-            <span class="audit-extra-tag">📦 最小包装：100个/盒</span>
-            <span class="audit-extra-tag"><span style="color:#8B7355">●</span> 供货周期：7天</span>
-          </div>
-          <div class="audit-price">¥3.20<span style="font-size:12px;font-weight:400;color:#94a3b8">/个</span></div>
-        </div>
-
-      </div>
-      <div class="audit-progress-text" id="auditProgressText">审核进度 0/6</div>
-      <div class="audit-progress-bar" id="auditProgressBar"><div class="fill" id="auditProgressFill"></div></div>
-      <div class="audit-results" id="auditResults" style="display:none">
-        <div class="audit-results-title">🛡️ AI六维审核结果</div>
-        <div class="audit-item pass" id="auditItem0"><span class="audit-icon">✅</span><span class="audit-text">文本合规：商品名称及描述规范</span></div>
-        <div class="audit-item pass" id="auditItem1"><span class="audit-icon">✅</span><span class="audit-text">品类校验：已匹配 紧固件→螺钉→内六角圆柱头螺钉（96%）</span></div>
-        <div class="audit-item pass" id="auditItem2"><span class="audit-icon">✅</span><span class="audit-text">参数规范：符合GB/T 5782-2016</span></div>
-        <div class="audit-item pass" id="auditItem3"><span class="audit-icon">✅</span><span class="audit-text">图片合规：主图清晰，符合上架要求</span></div>
-        <div class="audit-item pass" id="auditItem4"><span class="audit-icon">✅</span><span class="audit-text">价格检测：当前¥3.20，低于市场均价约12%，价格合理</span></div>
-        <div class="audit-item pass" id="auditItem5"><span class="audit-icon">✅</span><span class="audit-text">重复商品：已检索24件商品，未发现重复</span></div>
-      </div>
-      <div class="audit-summary pass-bg" id="auditSummary">✅ 置信度 98% | 建议通过（6项检测完成，全部通过）</div>
-      <div style="text-align:right;margin-top:12px;display:none" id="auditShelfBtnWrap">
-        <button class="audit-submit-btn" id="auditShelfBtn" style="background:#10b981;font-size:14px;padding:10px 24px">确认上架</button>
-      </div>
-    </div>
-    <!-- 商品详情已上架视图 -->
-    <div id="productDetailView" style="display:none;background:#fff;border-radius:12px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,0.06)">
-      <div style="display:flex;gap:20px;align-items:flex-start">
-        <img src="images/12.9级.jpg" style="width:180px;height:180px;border-radius:8px;object-fit:cover" loading="lazy" decoding="async">
-        <div style="flex:1">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            <h3 style="margin:0;font-size:18px;color:#1e293b">M12×80 内六角圆柱头螺钉 12.9级</h3>
-            <span style="background:#10b981;color:#fff;font-size:12px;padding:3px 10px;border-radius:20px">已上架</span>
-          </div>
-          <div style="color:#64748b;font-size:13px;line-height:2">规格：M12×80 | 材质：合金钢 | 等级：12.9级 | 表面处理：达克罗<br>品牌：中紧标准件 | 来源：外部寻源 · 供应商A<br>SKU编码：BLHC-FS-M12080-129<br>审核状态：<span style="color:#10b981;font-weight:600">AI审核通过（置信度98%）</span></div>
-          <div style="margin-top:12px;font-size:24px;font-weight:700;color:#1e293b">¥3.20<span style="font-size:13px;font-weight:400;color:#94a3b8">/个</span></div>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <span style="background:#f0fdf4;color:#16a34a;font-size:11px;padding:4px 8px;border-radius:4px">✅ 文本合规</span>
-            <span style="background:#f0fdf4;color:#16a34a;font-size:11px;padding:4px 8px;border-radius:4px">✅ 品类校验</span>
-            <span style="background:#f0fdf4;color:#16a34a;font-size:11px;padding:4px 8px;border-radius:4px">✅ 参数规范</span>
-            <span style="background:#f0fdf4;color:#16a34a;font-size:11px;padding:4px 8px;border-radius:4px">✅ 图片合规</span>
-            <span style="background:#f0fdf4;color:#16a34a;font-size:11px;padding:4px 8px;border-radius:4px">✅ 价格合理</span>
-            <span style="background:#f0fdf4;color:#16a34a;font-size:11px;padding:4px 8px;border-radius:4px">✅ 无重复</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- SCENE: OUTRO -->
 <div class="scene outro-screen" id="sceneOutro">
   <div class="floating-orb"></div>
@@ -619,14 +516,12 @@ tr.best-price.row-highlight{background:#FAF7F2 !important;}
   <div class="intro-logo-wrap title-shine-img"><img src="保利和采LOGO金色.png" alt="保利和采" class="intro-logo-img" loading="eager"></div>
   <div style="width:100px;height:2px;background:linear-gradient(90deg,transparent,#6B5C4A,#8B7355,transparent);margin:10px auto;border-radius:1px;box-shadow:0 0 8px rgba(107,92,74,.4)"></div>
   <div class="outro-sub">AI 驱动的智能采购体验</div>
-  <div class="outro-features" style="display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;justify-content:center;align-items:center">
-    <div class="outro-stat" style="opacity:0"><div class="stat-number">12→3</div><div class="stat-label">精准收敛</div></div>
+  <div class="outro-features" style="display:flex;gap:16px;margin-top:28px;flex-wrap:wrap;justify-content:center;align-items:center;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:24px 40px;backdrop-filter:blur(8px)">
+    <div class="outro-stat" style="opacity:0"><div class="stat-number">90%</div><div class="stat-label">有货报出率</div></div>
     <div class="outro-stat-divider" style="opacity:0"></div>
-    <div class="outro-stat" style="opacity:0"><div class="stat-number">5家</div><div class="stat-label">实时比价</div></div>
+    <div class="outro-stat" style="opacity:0"><div class="stat-number">5倍↑</div><div class="stat-label">比价效率</div></div>
     <div class="outro-stat-divider" style="opacity:0"></div>
-    <div class="outro-stat" style="opacity:0"><div class="stat-number">6维</div><div class="stat-label">AI审核</div></div>
-    <div class="outro-stat-divider" style="opacity:0"></div>
-    <div class="outro-stat" style="opacity:0"><div class="stat-number">~150s</div><div class="stat-label">全链路体验</div></div>
+    <div class="outro-stat" style="opacity:0"><div class="stat-number">95%</div><div class="stat-label">综合匹配准确率</div></div>
   </div>
   <div class="outro-footer">保利和采 · 让物业采购更简单</div>
 </div>
@@ -637,7 +532,7 @@ tr.best-price.row-highlight{background:#FAF7F2 !important;}
   <button id="btnPause" title="暂停">⏸</button>
   <button id="btnPlay" title="播放" style="display:none">▶</button>
   <button id="btnNext" title="跳过">⏭</button>
-  <span class="progress" id="progressText">场景 1/4</span>
+  <span class="progress" id="progressText">场景 1/3</span>
 </div>
 
 <script>
@@ -672,7 +567,7 @@ function getProductImage(name,fallback){
 const $=id=>document.getElementById(id);
 const cursor=$('cursor'),transOverlay=$('transOverlay'),transText=$('transText'),transTitle=$('transTitle'),toastEl=$('toast'),teleprompterEl=$('teleprompter'),progressText=$('progressText'),sceneHeader=$('sceneHeader'),annotationEl=$('annotation'),progressBar=$('progressBar'),transNumber=$('transNumber'),searchStatusBar=$('searchStatusBar'),clickHighlightEl=$('clickHighlight'),transDivider=$('transDivider'),transRing=$('transRing');
 let currentScene=0;
-const sceneLabels=['intro','scene1','trans12','scene2','trans23','scene3','trans34','scene4','outro'];
+const sceneLabels=['intro','scene1','trans12','scene2','trans23','scene3','outro'];
 function showScene(id){
   document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
@@ -822,9 +717,9 @@ master.call(()=>showScene('sceneIntro'))
 
 // ── SCENE 1 ──
 master.addLabel('scene1')
-  .call(()=>{showScene('scene1');renderGrid('productGrid1',[]);progressText.textContent='场景 1/4';})
-  .call(()=>updateSceneHeader('场景 1/4 ▸ 保利和采 — 知识图谱+需求澄清'))
-  .add(addSceneTransition('01','描述越模糊，结果越泛滥','AI需求澄清'))
+  .call(()=>{showScene('scene1');renderGrid('productGrid1',[]);progressText.textContent='场景 1/3';})
+  .call(()=>updateSceneHeader('场景 1/3 ▸ AI搜索 — 语义搜索+需求澄清'))
+  .add(addSceneTransition('01','描述不够精确，如何快速定品？','AI需求澄清'))
 
 // Step 1: Type "不锈钢螺栓 M8" — charDelay 0.15
 master.add(showCursor(),'>+0.15')
@@ -840,57 +735,9 @@ master.add(showCursor(),'>+0.15')
   .to('#searchBtn1',{scale:0.95,duration:0.08},'>')
   .to('#searchBtn1',{scale:1,duration:0.1},'>');
 
-// Step 2: AI Panel + Knowledge Graph — 搜索后立即分析缺失维度
-master.call(()=>showSearchStatus('🤖 AI正在分析搜索范围...','analyzing'),null,'>+0.5')
-  .call(()=>{$('searchBtn1').classList.remove('loading');$('searchBtn1').textContent='搜索';},null,'>')
-  .to('#aiPanel1',{opacity:1,duration:0.25,onStart:()=>{$('aiPanel1').style.pointerEvents='auto';}},'>+0.15')
-  .call(()=>showTeleprompter('AI 引擎启动，通过知识图谱分析缺失维度…'),null,'>')
-  // AI Step 0 — 中心节点
-  .to('#aiStep0',{opacity:1,y:0,duration:0.2},'>+0.25')
-  .call(()=>activateDot(0),null,'>')
-  .fromTo('#kgCenter',{scale:0,svgOrigin:'200 150'},{scale:1,duration:0.3,ease:'back.out(1.5)'},'>+0.2')
-  .to('#kgCenter',{opacity:1,duration:0.1},'<')
-  .to('#kgL0',{opacity:1,duration:0.1},'<')
-  .call(()=>completeDot(0),null,'>+0.3')
-  // AI Step 1 — 头型
-  .to('#aiStep1',{opacity:1,y:0,duration:0.2},'>+0.2')
-  .call(()=>activateDot(1),null,'>')
-  .to('#kgEdge1',{opacity:1,duration:0.15},'>+0.2')
-  .fromTo('#kgN1',{scale:0,svgOrigin:'100 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
-  .to('#kgN1',{opacity:1,duration:0.1},'<')
-  .to('#kgL1',{opacity:1,duration:0.1},'<')
-  .call(()=>completeDot(1),null,'>+0.3')
-  // AI Step 2 — 长度 + 等级
-  .to('#aiStep2',{opacity:1,y:0,duration:0.2},'>+0.2')
-  .call(()=>activateDot(2),null,'>')
-  .to('#kgEdge2',{opacity:1,duration:0.15},'>+0.2')
-  .fromTo('#kgN2',{scale:0,svgOrigin:'320 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
-  .to('#kgN2',{opacity:1,duration:0.1},'<')
-  .to('#kgL2',{opacity:1,duration:0.1},'<')
-  .to('#kgEdge3',{opacity:1,duration:0.15},'>+0.15')
-  .fromTo('#kgN3',{scale:0,svgOrigin:'80 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
-  .to('#kgN3',{opacity:1,duration:0.1},'<')
-  .to('#kgL3',{opacity:1,duration:0.1},'<')
-  .call(()=>completeDot(2),null,'>+0.3')
-  // AI Step 3 — 标准
-  .to('#aiStep3',{opacity:1,y:0,duration:0.2},'>+0.2')
-  .call(()=>activateDot(3),null,'>')
-  .to('#kgEdge4',{opacity:1,duration:0.15},'>+0.2')
-  .fromTo('#kgN4',{scale:0,svgOrigin:'320 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
-  .to('#kgN4',{opacity:1,duration:0.1},'<')
-  .to('#kgL4',{opacity:1,duration:0.1},'<')
-  .call(()=>completeDot(3),null,'>+0.3')
-  // L2 nodes — 展开间隔加大
-  .to(['#kgEdge5','#kgEdge6','#kgEdge7'],{opacity:1,duration:0.15,stagger:0.12},'>+0.2')
-  .to(['#kgN5','#kgN6','#kgN7'],{opacity:1,duration:0.2,stagger:0.12},'>+0.15')
-  .to(['#kgL5','#kgL6','#kgL7'],{opacity:1,duration:0.12,stagger:0.08},'<')
-  .call(()=>showTeleprompter('识别到4个未指定参数：头型、长度、等级、标准'),null,'>+0.2')
-  .to({},{duration:1.5},'>')
-  // Close AI panel
-  .to('#aiPanel1',{opacity:0,duration:0.2,onComplete:()=>{$('aiPanel1').style.pointerEvents='none';}},'>+0.1');
-
-// Step 3: SortBar + FilterSidebar 先就位，再渲染商品 — 消除布局跳动
-master.call(()=>{
+// Step 2: 搜索后直接出结果 — 12件混乱商品
+master.call(()=>{$('searchBtn1').classList.remove('loading');$('searchBtn1').textContent='搜索';},null,'>+0.5')
+  .call(()=>{
     $('sortBar1').style.display='flex';$('filterSidebar').style.display='block';$('resultCount1').textContent='共找到 12 件商品';
     gsap.set($('sortBar1'),{opacity:0});gsap.set($('filterSidebar'),{opacity:0});
   },null,'>+0.25')
@@ -902,18 +749,12 @@ master.call(()=>{
     const cards=document.querySelectorAll('#productGrid1 .product-card');
     cards.forEach((card,i)=>{gsap.fromTo(card,{opacity:0,y:16},{opacity:1,y:0,duration:0.25,delay:i*0.06,ease:'back.out(1.2)'});});
   },null,'>+0.15')
-  .call(()=>showTeleprompter('匹配到12件商品——规格组合过多，无法直接决策'),null,'>+0.15')
-  .to({},{duration:3.0},'>');
-
-// Step 4: Search status — 提示结果过多
-master.call(()=>showSearchStatus('⚠️ 搜索到12件商品，建议补全参数精准定位','analyzing'),null,'>+1.0')
-  .add(hideSearchStatus(),'>+0.5')
-  .call(()=>{$('searchBox1').classList.remove('search-active');},null,'>')
-  .call(()=>showTeleprompter('商品太多，描述不够精确——不知道选哪个'),null,'>+0.25')
+  .call(()=>showTeleprompter('搜索结果混乱，无法定品'),null,'>+0.15')
   .to({},{duration:2.0},'>');
 
-// Step 5: AI button highlight + click → clarify panel
-master.call(()=>{$('aiBtn1').classList.add('ai-glow');},null,'>')
+// Step 3: 触发AI需求澄清
+master.call(()=>{$('searchBox1').classList.remove('search-active');},null,'>')
+  .call(()=>{$('aiBtn1').classList.add('ai-glow');},null,'>+0.25')
   .add(moveCursor('#aiBtn1'),'>')
   .add(showAnnotation('触发AI需求澄清'),'>+0.1')
   .call(()=>showTeleprompter('触发AI需求澄清，智能补全缺失参数'),null,'>+0.1')
@@ -921,7 +762,8 @@ master.call(()=>{$('aiBtn1').classList.add('ai-glow');},null,'>')
   .call(()=>flashHighlight('#aiBtn1'),null,'>')
   .call(()=>{$('aiBtn1').style.boxShadow='0 0 0 8px rgba(107,92,74,.3)';setTimeout(()=>{$('aiBtn1').style.boxShadow='';},400);},null,'>');
 
-// Step 8: Clarify panel animation — 行间距0.8s，每行打字后有停顿
+
+// Step 4: Clarify panel animation — 行间距0.8s，每行打字后有停顿
 master.to('#clarifyPanel',{opacity:1,duration:0.25,onStart:()=>{$('clarifyPanel').style.pointerEvents='auto';}},'>+0.15')
   .call(()=>showTeleprompter('AI 自动提取规格参数：品名、规格、材质、等级…'),null,'>');
 
@@ -970,7 +812,53 @@ master.add(moveCursor('#clarifyConfirm'),'>+0.3')
 // Close clarify panel
 master.to('#clarifyPanel',{opacity:0,duration:0.2,onComplete:()=>{$('clarifyPanel').style.pointerEvents='none';}},'>+0.15');
 
-// Step 9: Precise results — 停留3秒
+// Step 5: 澄清后展示知识图谱 + AI分析
+master.call(()=>showTeleprompter('需求已确认，AI通过知识图谱构建采购Query'),null,'>+0.25')
+  .to('#aiPanel1',{opacity:1,duration:0.25,onStart:()=>{$('aiPanel1').style.pointerEvents='auto';}},'>+0.15')
+  // AI Step 0 — 中心节点
+  .to('#aiStep0',{opacity:1,y:0,duration:0.2},'>+0.25')
+  .call(()=>activateDot(0),null,'>')
+  .fromTo('#kgCenter',{scale:0,svgOrigin:'200 150'},{scale:1,duration:0.3,ease:'back.out(1.5)'},'>+0.2')
+  .to('#kgCenter',{opacity:1,duration:0.1},'<')
+  .to('#kgL0',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(0),null,'>+0.3')
+  // AI Step 1 — 头型
+  .to('#aiStep1',{opacity:1,y:0,duration:0.2},'>+0.2')
+  .call(()=>activateDot(1),null,'>')
+  .to('#kgEdge1',{opacity:1,duration:0.15},'>+0.2')
+  .fromTo('#kgN1',{scale:0,svgOrigin:'100 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN1',{opacity:1,duration:0.1},'<')
+  .to('#kgL1',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(1),null,'>+0.3')
+  // AI Step 2 — 长度 + 等级
+  .to('#aiStep2',{opacity:1,y:0,duration:0.2},'>+0.2')
+  .call(()=>activateDot(2),null,'>')
+  .to('#kgEdge2',{opacity:1,duration:0.15},'>+0.2')
+  .fromTo('#kgN2',{scale:0,svgOrigin:'320 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN2',{opacity:1,duration:0.1},'<')
+  .to('#kgL2',{opacity:1,duration:0.1},'<')
+  .to('#kgEdge3',{opacity:1,duration:0.15},'>+0.15')
+  .fromTo('#kgN3',{scale:0,svgOrigin:'80 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN3',{opacity:1,duration:0.1},'<')
+  .to('#kgL3',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(2),null,'>+0.3')
+  // AI Step 3 — 标准
+  .to('#aiStep3',{opacity:1,y:0,duration:0.2},'>+0.2')
+  .call(()=>activateDot(3),null,'>')
+  .to('#kgEdge4',{opacity:1,duration:0.15},'>+0.2')
+  .fromTo('#kgN4',{scale:0,svgOrigin:'320 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN4',{opacity:1,duration:0.1},'<')
+  .to('#kgL4',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(3),null,'>+0.3')
+  // L2 nodes
+  .to(['#kgEdge5','#kgEdge6','#kgEdge7'],{opacity:1,duration:0.15,stagger:0.12},'>+0.2')
+  .to(['#kgN5','#kgN6','#kgN7'],{opacity:1,duration:0.2,stagger:0.12},'>+0.15')
+  .to(['#kgL5','#kgL6','#kgL7'],{opacity:1,duration:0.12,stagger:0.08},'<')
+  .call(()=>showTeleprompter('已确认参数：头型=六角, 长度=50mm, 等级=A2-70, 标准=GB5783'),null,'>+0.2')
+  .to({},{duration:1.5},'>')
+  .to('#aiPanel1',{opacity:0,duration:0.2,onComplete:()=>{$('aiPanel1').style.pointerEvents='none';}},'>+0.1');
+
+// Step 6: Precise results — 停留3秒
 master.call(()=>{renderGrid('productGrid1',preciseProducts);$('productGrid1').style.gridTemplateColumns='repeat(3,1fr)';document.querySelectorAll('#productGrid1 .product-card').forEach(c=>{c.style.opacity='1';});$('resultCount1').textContent='精准匹配 3 件商品';},null,'>+0.15')
   .add(showToast('✅ 精准匹配：12 → 3 件商品'),'>+0.25')
   .call(()=>showTeleprompter('精准匹配：12 件收敛为 3 件可决策商品'),null,'>+0.15')
@@ -992,8 +880,8 @@ master.add(showCursor(),'>+0.15')
 
 // ── SCENE 2: 一品多商 ──
 master.addLabel('scene2')
-  .call(()=>{showScene('scene2');renderCompare();$('detailImg').src=getProductImage('不锈钢六角螺栓');progressText.textContent='场景 2/4';})
-  .call(()=>updateSceneHeader('场景 2/4 ▸ 一品多商 — 同品多供实时比价'))
+  .call(()=>{showScene('scene2');renderCompare();$('detailImg').src=getProductImage('不锈钢六角螺栓');progressText.textContent='场景 2/3';})
+  .call(()=>updateSceneHeader('场景 2/3 ▸ 一品多商 — 同品多供实时比价'))
   .add(showCursor(),'>+0.15')
   .to('#compareSection',{borderColor:'#6B5C4A',boxShadow:'0 0 0 3px rgba(107,92,74,.15)',border:'2px solid #6B5C4A',borderRadius:'12px',padding:'16px',duration:0.3},'>+0.25')
   .call(()=>{const rows=document.querySelectorAll('#compareBody tr');rows.forEach((r,i)=>gsap.to(r,{opacity:1,duration:0.25,delay:i*0.25}));},null,'>+0.25')
@@ -1025,7 +913,7 @@ master.addLabel('trans23')
 master.addLabel('scene3')
   .call(()=>{
     showScene('scene3');
-    progressText.textContent='场景 3/4';
+    progressText.textContent='场景 3/3';
     // 重置scene3状态
     const si3 = $('searchInput3');
     if(si3) si3.value = '';
@@ -1049,7 +937,7 @@ master.addLabel('scene3')
       if(cb) { cb.classList.remove('checked'); cb.textContent = ''; }
     });
   })
-  .call(()=>updateSceneHeader('场景 3/4 ▸ 一键寻源 — 搜不到也能买到'))
+  .call(()=>updateSceneHeader('场景 3/3 ▸ 一键寻源 — 搜不到也能买到'))
   .call(()=>showTeleprompter('搜索\'M12×80 12.9级内六角圆柱头螺钉\'——平台暂无'),null,'>+0.15')
   .add(showCursor(),'>+0.15')
   .add(moveCursor('#searchInput3'),'>')
@@ -1101,83 +989,10 @@ master.to({},{duration:1.5},'>')
   },null,'>+0.2')
   .to({},{duration:1.5},'>');
 
-// ── TRANSITION 3→4 ──
-master.addLabel('trans34')
-  .add(addSceneTransition('04','寻源回来的商品，如何确保质量？','AI商品审核上架'))
-
-// ── SCENE 4: 商品审核上架 ──
-// 注意：不立即调用showScene('scene4')，保持scene3 active以确保 sourcePanel可见
-master.addLabel('scene4')
-  .call(()=>{progressText.textContent='场景 4/4';})
-  .call(()=>updateSceneHeader('场景 4/4 ▸ AI商品审核 — 寻源商品智能质检上架'))
-  .call(()=>showTeleprompter('点击“选择上架”提交寻源商品进入审核'),null,'>+0.3')
-  .add(showCursor(),'>+0.5')
-  .add(moveCursor('#sourceSelectBtn'),'>+0.3')
-  .add(clickPulse(),'>+0.15')
-  .call(()=>{
-    const btn=$('sourceSelectBtn');if(btn){btn.textContent='✓ 已选择';btn.style.background='#6b7280';btn.style.color='#fff';}
-    showToast('📋 已选择供应商A商品，进入AI审核...');
-  },null,'>+0.15')
-  .to({},{duration:0.6},'>')
-  .to('#sourcePanel',{right:'-420px',duration:0.3,ease:'power2.in'},'>')
-  .call(()=>{
-    // sourcePanel滑出后，切换到场景4审核界面
-    showScene('scene4');
-    $('s4Breadcrumb').innerHTML='首页 &gt; 寻源结果 &gt; 商品审核 &gt; <b>AI审核中</b>';
-    $('auditProgressBar').style.display='block';
-    $('auditProgressText').style.display='block';
-    gsap.to('#auditProgressFill',{width:'100%',duration:2,ease:'power1.out',onUpdate:function(){
-      const progress=Math.round(this.progress()*6);
-      $('auditProgressText').textContent='审核进度 '+progress+'/6';
-    },onComplete:function(){$('auditProgressText').textContent='审核进度 6/6';}});
-  },null,'>+0.2')
-  .call(()=>showTeleprompter('AI审核引擎启动，六维度并行检测...'),null,'>+0.3')
-  .to({},{duration:2.2},'>')
-  .call(()=>{
-    $('auditResults').style.display='block';
-    $('auditProgressBar').style.display='none';
-    $('auditProgressText').style.display='none';
-  },null,'>');
-
-// 逐步展示6维审核结果
-const auditItems=['auditItem0','auditItem1','auditItem2','auditItem3','auditItem4','auditItem5'];
-auditItems.forEach((id,i)=>{
-  master.call(()=>{const el=$(id);if(el){el.style.opacity='1';el.style.transform='translateX(0)';}},null,i===0?'>+0.3':`>+0.6`);
-});
-
-// 六维审核全部通过
-master.call(()=>showTeleprompter('六维审核全部通过，商品质量合格'),null,'>+0.8')
-  .to({},{duration:2.0},'>');
-
-// 审核汇总
-master.call(()=>{const sum=$('auditSummary');if(sum){sum.style.opacity='1';}},null,'>+0.3')
-  .call(()=>{
-    $('auditShelfBtnWrap').style.display='block';
-    showTeleprompter('审核通过，置信度98%，点击“确认上架”');
-  },null,'>+0.3')
-  .to({},{duration:1.0},'>')
-  .add(moveCursor('#auditShelfBtn'),'>+0.2')
-  .add(clickPulse(),'>+0.1')
-  .call(()=>{
-    const btn=$('auditShelfBtn');
-    if(btn){btn.textContent='上架成功 ✓';btn.style.background='#6b7280';}
-    showToast('✅ 商品已通过AI审核并成功上架');
-  },null,'>+0.1')
-  .to({},{duration:1.5},'>')
-  .call(()=>{
-    // 跳转到商品详情页
-    $('auditCard').style.display='none';
-    $('productDetailView').style.display='block';
-    $('s4Breadcrumb').innerHTML='首页 &gt; 寻源结果 &gt; 商品详情 &gt; <b>已上架</b>';
-    showTeleprompter('商品上架成功，全链路完成：搜索→比价→寻源→审核上架');
-  },null,'>+0.3')
-  .add(hideCursor(),'>+0.5')
-  .to({},{duration:3.0},'>');
-
 // ── OUTRO ──
 master.addLabel('outro')
   .call(()=>{showScene('sceneOutro');progressText.textContent='完成';})
-  .call(()=>showTeleprompter('保利和采：搜索 → 比价 → 寻源 → 审核上架，全链路AI采购'),null,'>+0.1')
+  .call(()=>showTeleprompter('保利和采：搜索 → 比价 → 寻源，全链路AI采购'),null,'>+0.1')
   .add(hideSceneHeader(),'>+0.1')
   .add(hideTeleprompter(),'>+2')
   .from('#sceneOutro .intro-logo-wrap',{opacity:0,y:30,duration:0.6},'>+0.1')
@@ -1186,9 +1001,9 @@ master.addLabel('outro')
   .from('#sceneOutro .outro-footer',{opacity:0,duration:0.3},'>+0.15');
 
 // ══════ CONTROLS ══════
-const SCENE_NAV=['scene1','trans12','scene2','trans23','scene3','trans34','scene4','outro'];
-const SCENE_ONLY=['scene1','trans12','trans23','trans34'];
-const SCENE_ID_MAP={scene1:'scene1',trans12:'scene1',scene2:'scene2',trans23:'scene2',scene3:'scene3',trans34:'scene3',scene4:'scene4',outro:'sceneOutro'};
+const SCENE_NAV=['scene1','trans12','scene2','trans23','scene3','outro'];
+const SCENE_ONLY=['scene1','trans12','trans23'];
+const SCENE_ID_MAP={scene1:'scene1',trans12:'scene1',scene2:'scene2',trans23:'scene2',scene3:'scene3',outro:'sceneOutro'};
 let isPaused=false;
 function seekToLabel(label){
   master.seek(label);

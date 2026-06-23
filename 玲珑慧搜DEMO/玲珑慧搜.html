@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>玲珑慧搜 — AI智能采购演示 V8 Purple AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+<style>
+/* 玲珑慧搜 V8 Purple AI Theme：基于Logo紫色渐变重配色 */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;background:#f8fafc;color:#0f172a;overflow:hidden;height:100vh;width:100vw;background-image:radial-gradient(circle at 1px 1px,rgba(148,163,184,.12) 1px,transparent 0);background-size:24px 24px}
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none;display:flex;flex-direction:column}
+.scene.active{opacity:1;pointer-events:auto}
+.intro-screen{background:radial-gradient(circle at 50% 40%,rgba(122,43,255,.22) 0%,transparent 55%),radial-gradient(circle at 80% 20%,rgba(161,77,255,.15) 0%,transparent 40%),#0F061A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden}
+.outro-screen{background:radial-gradient(circle at 50% 40%,rgba(122,43,255,.22) 0%,transparent 55%),radial-gradient(circle at 20% 80%,rgba(161,77,255,.15) 0%,transparent 40%),#0F061A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden}
+.intro-title,.outro-title{font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:900;background:linear-gradient(135deg,#C67BFF,#7A2BFF,#5B21D9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;letter-spacing:-1px;filter:drop-shadow(0 0 30px rgba(122,43,255,.3))}
+.intro-sub,.outro-sub{font-size:1.35rem;color:rgba(255,255,255,.85);text-align:center;font-weight:500;letter-spacing:1px}
+.outro-footer{font-size:0.95rem;color:rgba(255,255,255,.55);margin-top:24px;letter-spacing:2px}
+.transition-overlay{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(26,21,16,.96) 0%,rgba(0,0,0,.98) 100%);backdrop-filter:blur(20px);overflow:hidden}
+.transition-overlay .trans-text{font-size:2.2rem;font-weight:500;color:rgba(255,255,255,.9);text-shadow:0 0 30px rgba(122,43,255,.4);text-align:center;opacity:0;letter-spacing:3px;z-index:2}
+.transition-overlay .trans-title{font-size:3.2rem;font-weight:900;background:linear-gradient(135deg,#D8A6FF,#C67BFF,#A14DFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;opacity:0;letter-spacing:6px;filter:drop-shadow(0 0 30px rgba(198,123,255,.4));z-index:2}
+.trans-number{position:absolute;font-size:16rem;font-weight:900;color:transparent;background:linear-gradient(180deg,rgba(198,123,255,.25) 0%,rgba(122,43,255,.06) 100%);-webkit-background-clip:text;background-clip:text;z-index:1;pointer-events:none;opacity:0;left:50%;top:50%;transform:translate(-50%,-50%);letter-spacing:-12px;-webkit-text-stroke:1px rgba(198,123,255,.12)}
+.trans-divider{width:0;height:1.5px;background:linear-gradient(90deg,transparent,rgba(198,123,255,.6),transparent);opacity:0;z-index:2;margin:-4px auto 0}
+.trans-ring{position:absolute;width:320px;height:320px;border-radius:50%;border:1px solid rgba(198,123,255,.08);z-index:0;opacity:0;pointer-events:none;box-shadow:0 0 80px rgba(198,123,255,.06),inset 0 0 80px rgba(198,123,255,.03)}
+.top-banner{background:linear-gradient(90deg,#0F061A,#1A0B2E,#0F061A);color:rgba(255,255,255,.85);font-size:11px;padding:5px 24px;text-align:center;letter-spacing:.5px;flex-shrink:0;border-bottom:1px solid rgba(255,255,255,.06)}
+.mall-header{background:rgba(255,255,255,.88);padding:10px 24px;display:flex;align-items:center;gap:16px;flex-shrink:0;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid rgba(226,232,240,.6);position:relative;z-index:10}
+.mall-header::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#7A2BFF,#A14DFF,transparent);opacity:.4}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,#7A2BFF,#5B21D9);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;box-shadow:0 2px 8px rgba(122,43,255,.25)}
+.logo-text{background:linear-gradient(135deg,#0F061A,#7A2BFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:18px;font-weight:800;letter-spacing:-.3px}
+.search-box{flex:1;max-width:600px;display:flex;align-items:center;background:#fff;border-radius:14px;overflow:hidden;position:relative;height:44px;border:1.5px solid #e2e8f0;transition:border-color .2s,box-shadow .2s;box-shadow:0 1px 3px rgba(0,0,0,.04),inset 0 1px 0 rgba(255,255,255,.6)}
+.search-box input{flex:1;padding:10px 20px;border:none;font-size:15px;outline:none;background:transparent;color:#0f172a;font-family:"Noto Sans SC",sans-serif}
+.search-box input::placeholder{color:#94a3b8}
+.search-btn{padding:10px 26px;background:linear-gradient(135deg,#7A2BFF,#5B21D9);color:#fff;border:none;cursor:pointer;font-size:14px;font-weight:600;transition:all .15s;letter-spacing:1px;font-family:"Noto Sans SC",sans-serif}
+.search-btn:hover{background:linear-gradient(135deg,#5B21D9,#4316B8);box-shadow:0 4px 12px rgba(122,43,255,.25)}
+.search-btn:active{transform:scale(.96)}
+.ai-btn{height:36px;border-radius:14px;background:linear-gradient(135deg,#7A2BFF,#C67BFF);color:#fff;border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:700;margin-left:6px;padding:0 16px;cursor:pointer;flex-shrink:0;white-space:nowrap;box-shadow:0 0 16px rgba(122,43,255,.35),0 0 32px rgba(161,77,255,.15),inset 0 1px 0 rgba(255,255,255,.25);text-shadow:0 1px 2px rgba(0,0,0,.3);letter-spacing:.5px;transition:all .2s;font-family:"Noto Sans SC",sans-serif}
+.ai-btn:hover{box-shadow:0 0 20px rgba(122,43,255,.45),0 0 40px rgba(161,77,255,.2),inset 0 1px 0 rgba(255,255,255,.3);transform:translateY(-1px)}
+.ai-btn:active{transform:scale(.96)}
+.header-right{margin-left:auto;display:flex;gap:12px;color:#475569;font-size:12px;align-items:center}
+.header-right span{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;transition:background .15s;cursor:pointer}
+.header-right span:hover{background:rgba(122,43,255,.06);color:#7A2BFF}
+.enterprise-name{font-size:11px;color:#64748b;background:rgba(241,245,249,.8);padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;font-weight:500;white-space:nowrap}
+.mall-body{flex:1;max-width:1200px;width:100%;margin:0 auto;padding:20px 24px;overflow-y:auto}
+.product-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.product-card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;overflow:hidden;transition:all .25s cubic-bezier(.4,0,.2,1);opacity:0;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.04);position:relative}
+.product-card:hover{border-color:#DCC8FF;box-shadow:0 8px 24px rgba(122,43,255,.12),0 2px 8px rgba(0,0,0,.06);transform:translateY(-4px)}
+.product-card .img-wrap{width:100%;aspect-ratio:1;background:linear-gradient(180deg,#f8fafc 0%,#f1f5f9 100%);display:flex;align-items:center;justify-content:center;padding:16px;position:relative;overflow:hidden}
+.product-card .img-wrap::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(122,43,255,.03) 100%);pointer-events:none}
+.product-card .img-wrap img{max-width:80%;max-height:80%;object-fit:contain;transition:transform .3s,opacity .3s ease;opacity:0;animation:imgFadeIn .4s ease .1s both}
+@keyframes imgFadeIn{from{opacity:0}to{opacity:1}}
+.product-card:hover .img-wrap img{transform:scale(1.05)}
+.product-card .info{padding:14px}
+.product-card .name{font-size:13px;color:#0f172a;line-height:1.4;height:36px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;margin-bottom:6px;font-weight:500}
+.product-card .spec{font-size:11px;color:#64748b;margin-bottom:6px}
+.product-card .price{font-size:20px;font-weight:800;background:linear-gradient(135deg,#7A2BFF,#5B21D9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:"JetBrains Mono","Noto Sans SC",monospace;letter-spacing:-.5px}
+.product-card .price span{font-size:12px;font-weight:400;color:#94a3b8;-webkit-text-fill-color:#94a3b8}
+.product-card .supplier{font-size:11px;color:#7A2BFF;background:rgba(122,43,255,.06);padding:2px 8px;border-radius:6px;display:inline-block;margin-top:4px;font-weight:500}
+.product-badge{position:absolute;top:10px;left:10px;padding:3px 8px;border-radius:8px;font-size:10px;font-weight:700;color:#fff;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.product-badge.ziying{background:linear-gradient(135deg,#7A2BFF,#5B21D9)}
+.product-badge.youxuan{background:linear-gradient(135deg,#f59e0b,#d97706)}
+.product-rating{display:flex;align-items:center;gap:4px;font-size:11px;color:#f59e0b;margin-bottom:4px}
+.product-rating .score{color:#64748b;font-weight:600;margin-left:2px;font-family:"JetBrains Mono",monospace}
+.product-sold{font-size:11px;color:#94a3b8;margin-bottom:4px}
+.product-original{font-size:12px;color:#94a3b8;text-decoration:line-through;margin-left:6px;font-family:"JetBrains Mono",monospace}
+.product-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.product-tag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500}
+.product-tag.red{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.product-tag.green{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.product-tag.blue{background:#F8F3FF;color:#7A2BFF;border:1px solid #DCC8FF}
+/* AI Panel */
+.ai-panel{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
+.ai-panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.ai-panel-content{position:relative;background:#fff;border-radius:20px;padding:32px;width:90%;max-width:780px;box-shadow:0 24px 80px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.1);border:1px solid #e2e8f0;overflow:hidden}
+.ai-panel-content::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#7A2BFF,#C67BFF,#7A2BFF);border-radius:20px 20px 0 0}
+.ai-panel-header{font-size:14px;font-weight:700;color:#7A2BFF;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f1f5f9}
+.ai-step-row{display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateY(10px);padding:8px 0}
+.ai-step-dot{width:8px;height:8px;border-radius:50%;background:#e2e8f0;flex-shrink:0;margin-top:5px;transition:background .3s,box-shadow .3s}
+.ai-step-dot.active{background:#7A2BFF;animation:dotPulse 1s ease-in-out infinite}
+.ai-step-dot.completed{background:#10b981;box-shadow:none}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(122,43,255,.4)}50%{box-shadow:0 0 0 6px rgba(122,43,255,.15)}}
+/* KG Container */
+.kg-container{flex:1;min-height:340px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:16px}
+.kg-graph{width:100%;height:100%}
+.kg-node{fill:rgba(122,43,255,.12);stroke:#7A2BFF;stroke-width:2;opacity:0;transition:filter .3s}
+.kg-center{fill:rgba(122,43,255,.25)}
+.kg-l1{fill:rgba(122,43,255,.08)}
+.kg-l2{fill:rgba(122,43,255,.05);stroke-width:1.5}
+.kg-node.active{opacity:1;filter:drop-shadow(0 0 8px rgba(122,43,255,.5))}
+.kg-edge{stroke:#7A2BFF;stroke-width:1.5;opacity:0;stroke-dasharray:8 4;animation:dashFlow 2s linear infinite}
+.kg-edge-2{stroke-width:1;stroke-dasharray:4 3}
+.kg-edge.active{opacity:1;filter:drop-shadow(0 0 4px rgba(122,43,255,.4))}
+.kg-label{fill:#0f172a;font-size:12px;text-anchor:middle;opacity:0;pointer-events:none}
+.kg-label-center{font-size:13px;font-weight:700;fill:#7A2BFF}
+.kg-label-sm{font-size:10px;fill:#64748b}
+@keyframes dashFlow{to{stroke-dashoffset:-24}}
+/* Clarify Panel */
+.clarify-panel{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
+.clarify-panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
+.clarify-panel-content{position:relative;background:#fff;border-radius:20px;padding:32px;width:90%;max-width:640px;box-shadow:0 24px 80px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.1);border:1px solid #e2e8f0;overflow:hidden}
+.clarify-panel-content::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#7A2BFF,#C67BFF,#7A2BFF);border-radius:20px 20px 0 0}
+.clarify-header{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:20px;text-align:center}
+.clarify-table{width:100%;border-collapse:collapse;font-size:13px}
+.clarify-table th{background:#f8fafc;padding:8px 10px;text-align:left;font-weight:600;font-size:12px;color:#475569;border-bottom:2px solid #e2e8f0}
+.clarify-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.clarify-row{opacity:0;transform:translateY(6px)}
+.prop-name{border-left:4px solid #f59e0b;padding-left:8px;font-weight:500;color:#0f172a;white-space:nowrap}
+.prop-name .required{color:#ef4444;margin-right:2px;font-size:14px}
+.prop-value{color:#0f172a;min-height:24px}
+.btn-confirm{padding:2px 8px;border:1px solid #10b981;color:#10b981;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;margin-right:4px;transition:all .2s}
+.btn-confirm.confirmed{background:#10b981;color:#fff;border-color:#10b981}
+.btn-edit{padding:2px 8px;border:1px solid #7A2BFF;color:#7A2BFF;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s}
+.source-tag{display:inline-block;padding:2px 6px;border-radius:4px;font-size:11px;font-weight:500}
+.source-tag.extract{background:#f0fdf4;color:#10b981;border:1px solid #a7f3d0}
+.source-tag.infer{background:#faf5ff;color:#a855f7;border:1px solid #d8b4fe}
+.source-tag.standard{background:#F8F3FF;color:#7A2BFF;border:1px solid #DCC8FF}
+.clarify-inference{display:none;overflow:hidden;margin-top:12px;padding-left:16px}
+.inference-title{font-size:13px;font-weight:600;color:#a855f7;margin-bottom:8px}
+.inference-card{background:#f8fafc;border-radius:12px;padding:12px;margin-bottom:8px;opacity:0}
+.inference-card.recommended{border:2px solid #7A2BFF;background:#F8F3FF}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.card-value{font-weight:600;font-size:14px;color:#0f172a}
+.card-votes{font-size:12px;color:#7A2BFF;background:rgba(122,43,255,.08);padding:2px 8px;border-radius:10px}
+.card-models{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.model-tag{padding:1px 6px;border-radius:4px;font-size:10px;font-weight:500}
+.model-tag:nth-child(1){background:#F8F3FF;color:#7A2BFF}
+.model-tag:nth-child(2){background:#f0fdf4;color:#10b981}
+.model-tag:nth-child(3){background:#faf5ff;color:#a855f7}
+.model-tag:nth-child(4){background:#fff7ed;color:#f59e0b}
+.card-reason{font-size:11px;color:#64748b;line-height:1.5}
+.inference-card.manual .card-input input{width:100%;padding:4px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px}
+.clarify-footer{opacity:0;border-top:1px solid #f1f5f9;margin-top:16px;padding-top:12px;display:flex;align-items:center;justify-content:space-between}
+.confirm-count{font-size:13px;color:#64748b}
+.clarify-confirm-btn{padding:10px 32px;background:#0f172a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+/* Detail Page */
+.detail-header{padding:20px 0;border-bottom:1px solid #e2e8f0;margin-bottom:20px;display:flex;align-items:center;gap:20px}
+.detail-img{width:200px;height:200px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:20px;flex-shrink:0}
+.detail-img img{max-width:100%;max-height:100%}
+.detail-info h2{font-size:20px;font-weight:700;margin-bottom:8px;color:#0f172a}
+.detail-info .specs{font-size:13px;color:#64748b;line-height:2}
+.compare-section{position:relative}
+.compare-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;color:#0f172a}
+.compare-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;overflow:hidden;border-radius:12px;border:1px solid #e2e8f0}
+.compare-table th{background:linear-gradient(180deg,#f8fafc,#f1f5f9);padding:12px 14px;text-align:left;font-weight:700;color:#334155;border-bottom:2px solid #e2e8f0;cursor:pointer;user-select:none;font-size:12px;letter-spacing:.3px}
+.compare-table th:first-child{border-radius:12px 0 0 0}
+.compare-table th:last-child{border-radius:0 12px 0 0}
+.compare-table th:hover{color:#7A2BFF;background:linear-gradient(180deg,#F8F3FF,#F0E6FF)}
+.compare-table td{padding:12px 14px;border-bottom:1px solid #f1f5f9}
+.compare-table tbody tr{opacity:0;transition:all .25s}
+.compare-table tbody tr:nth-child(even){background:rgba(248,250,252,.6)}
+.compare-table tbody tr:hover{background:rgba(239,246,255,.5)}
+.compare-table tr.same{background:rgba(16,185,129,.05)}
+.compare-table tr.similar{background:rgba(245,158,11,.05)}
+.compare-table tr.same td:first-child{border-left:3px solid #10b981}
+.compare-table tr.similar td:first-child{border-left:3px solid #f59e0b}
+.compare-rating{display:flex;align-items:center;gap:4px;font-size:11px;color:#f59e0b}
+.compare-cooperate{font-size:10px;color:#64748b;background:#f1f5f9;padding:2px 6px;border-radius:4px;margin-left:6px;white-space:nowrap}
+.refresh-btn{padding:3px 10px;background:#f59e0b;color:#fff;border:none;border-radius:8px;font-size:11px;cursor:pointer;opacity:0}
+.detail-tabs{display:flex;gap:0;border-bottom:1px solid #e2e8f0;margin-top:16px}
+.detail-tabs span{padding:10px 20px;font-size:13px;color:#64748b;cursor:pointer;border-bottom:2px solid transparent}
+.detail-tabs span.active{color:#7A2BFF;border-bottom-color:#7A2BFF;font-weight:600}
+.detail-actions{position:absolute;bottom:0;left:0;right:0;padding:12px 24px;background:#fff;border-top:1px solid #e2e8f0;display:flex;gap:12px;justify-content:flex-end;opacity:0}
+.btn-cart{padding:10px 24px;border:1.5px solid #7A2BFF;color:#7A2BFF;background:#fff;border-radius:10px;font-size:14px;cursor:pointer;font-weight:600;transition:all .15s;font-family:"Noto Sans SC",sans-serif}
+.btn-cart:hover{background:rgba(122,43,255,.04);box-shadow:0 2px 8px rgba(122,43,255,.12)}
+.btn-cart:active{transform:scale(.97)}
+.btn-buy{padding:10px 24px;background:linear-gradient(135deg,#7A2BFF,#5B21D9);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:"Noto Sans SC",sans-serif;box-shadow:0 4px 12px rgba(122,43,255,.2)}
+.btn-buy:hover{background:linear-gradient(135deg,#5B21D9,#4316B8);box-shadow:0 6px 16px rgba(122,43,255,.3)}
+.btn-buy:active{transform:scale(.97)}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;color:#64748b}
+.empty-state .icon{font-size:48px;margin-bottom:16px}
+.empty-state .text{font-size:18px;color:#475569;margin-bottom:8px}
+.source-btn{padding:12px 32px;background:#7A2BFF;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:20px;opacity:0}
+.source-panel{position:fixed;top:0;right:-420px;width:380px;height:100%;background:#fff;z-index:300;box-shadow:-8px 0 40px rgba(0,0,0,.12),-2px 0 8px rgba(0,0,0,.04);padding:32px 24px;display:flex;flex-direction:column;border-radius:20px 0 0 20px;border-left:1px solid #e2e8f0}
+.source-panel h3{font-size:16px;font-weight:700;margin-bottom:24px;color:#0f172a;padding-bottom:12px;border-bottom:2px solid #f1f5f9}
+.source-check{display:flex;align-items:center;gap:10px;padding:14px;border:1.5px solid #e2e8f0;border-radius:14px;margin-bottom:10px;opacity:0;transition:all .2s;background:#fff}
+.source-check:hover{border-color:#DCC8FF;box-shadow:0 2px 8px rgba(122,43,255,.08)}
+.source-check .checkbox{width:22px;height:22px;border:2px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;transition:all .2s}
+.source-check .checkbox.checked{background:linear-gradient(135deg,#7A2BFF,#5B21D9);border-color:#7A2BFF}
+.source-check-info{flex:1;min-width:0}
+.source-check-name{font-size:13px;font-weight:600;color:#0f172a;display:block}
+.source-check-meta{font-size:11px;color:#94a3b8;display:block;margin-top:2px}
+.source-confirm-btn{margin-top:auto;margin-bottom:60px;padding:12px;background:linear-gradient(135deg,#7A2BFF,#5B21D9);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(122,43,255,.2);transition:all .15s;font-family:"Noto Sans SC",sans-serif}
+.source-confirm-btn:hover{box-shadow:0 6px 20px rgba(122,43,255,.3);transform:translateY(-1px)}
+.source-confirm-btn:active{transform:scale(.97)}
+.source-inquiry{background:linear-gradient(135deg,#FAF7FF,#F3EAFF);border:1px solid #E4D4FF;border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.inquiry-title{font-size:13px;font-weight:600;color:#7A2BFF;margin-bottom:8px}
+.inquiry-params{display:flex;flex-wrap:wrap;gap:6px}
+.inquiry-tag{font-size:12px;background:#fff;border:1px solid #DCC8FF;border-radius:6px;padding:3px 10px;color:#5B21D9;white-space:nowrap}
+.inquiry-tag .tag-label{color:#A14DFF;font-weight:500;margin-right:4px}
+.source-loading{display:none;text-align:center;padding:24px;color:#64748b;font-size:14px}
+.source-result{display:none}
+.source-result table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0}
+.source-result th{background:linear-gradient(180deg,#f8fafc,#f1f5f9);padding:10px;text-align:left;font-weight:700;font-size:11px;color:#334155}
+.source-result td{padding:10px;border-bottom:1px solid #f1f5f9}
+.source-result tbody tr:nth-child(even){background:rgba(248,250,252,.5)}
+.source-result tbody tr:hover{background:rgba(239,246,255,.4)}
+.source-result tr.best-price td{background:rgba(16,185,129,.08);font-weight:600}
+.source-recommend{display:inline-flex;align-items:center;gap:2px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px;box-shadow:0 2px 4px rgba(245,158,11,.25)}
+.source-select-btn{background:linear-gradient(135deg,#7A2BFF,#5B21D9);color:#fff;border:none;padding:6px 16px;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;transition:all .15s;box-shadow:0 2px 8px rgba(122,43,255,.15)}
+.source-select-btn:hover{box-shadow:0 4px 12px rgba(122,43,255,.25);transform:translateY(-1px)}
+.source-select-btn:active{transform:scale(.97)}
+tr.best-price.row-highlight{background:#F8F3FF !important;}
+.toast{position:fixed;top:20px;right:20px;background:#fff;border-radius:12px;padding:12px 20px;box-shadow:0 4px 20px rgba(0,0,0,.15);font-size:14px;color:#0f172a;z-index:600;opacity:0;transform:translateX(30px)}
+.teleprompter{position:fixed;bottom:60px;left:50%;transform:translateX(-50%);max-width:800px;min-width:400px;padding:12px 24px;background:rgba(15,23,42,.8);backdrop-filter:blur(12px);border-radius:12px;color:#fff;font-size:16px;z-index:800;opacity:0;text-align:center;letter-spacing:0.5px;line-height:1.6}
+.v-cursor{position:fixed;width:32px;height:32px;z-index:999;pointer-events:none;opacity:0;transform:translate(-4px,-2px)}
+.v-cursor-svg{position:absolute;top:0;left:0;width:32px;height:32px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
+.v-cursor-ring{position:absolute;top:50%;left:50%;width:48px;height:48px;margin-left:-24px;margin-top:-24px;border-radius:50%;border:2.5px solid rgba(122,43,255,.7);box-shadow:0 0 12px rgba(122,43,255,.5),inset 0 0 8px rgba(122,43,255,.15);animation:cursorRing 1.8s ease-in-out infinite}
+@keyframes cursorRing{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.15);opacity:1}}
+.demo-controls{position:fixed;bottom:24px;right:20px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);border-radius:12px;padding:8px 16px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:900;backdrop-filter:blur(10px)}
+.demo-controls button{width:36px;height:36px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.demo-controls button:hover{background:#f1f5f9;border-color:#7A2BFF;color:#7A2BFF}
+.demo-controls .progress{font-size:12px;color:#64748b;margin-left:8px}
+.search-status-bar{opacity:0;margin:0 auto;max-width:600px;padding:8px 20px;border-radius:8px;font-size:13px;color:#fff;text-align:center;pointer-events:none;transition:background .4s}
+.search-status-bar.analyzing{background:linear-gradient(90deg,#7A2BFF,#C67BFF);animation:pulse 1.5s ease-in-out infinite}
+.search-status-bar.done{background:#10b981}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.75;transform:scale(1.02)}}
+.scene-header{display:none}
+.annotation{position:fixed;z-index:998;background:#fff;color:#0f172a;font-size:12px;padding:6px 12px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.15);max-width:180px;pointer-events:none;opacity:0;line-height:1.5}
+.annotation::after{content:'';position:absolute;bottom:-6px;left:16px;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:6px solid #fff}
+.progress-bar-wrap{position:fixed;bottom:0;left:0;width:100%;height:18px;z-index:850;cursor:pointer;display:flex;align-items:flex-end}
+.progress-bar{height:6px;background:linear-gradient(90deg,#7A2BFF,#A14DFF,#C67BFF);width:0%;pointer-events:none;border-radius:3px 3px 0 0;box-shadow:0 0 12px rgba(122,43,255,.3),0 0 4px rgba(122,43,255,.5)}
+.filter-sidebar{width:200px;flex-shrink:0;padding:18px;background:#fff;border-right:1px solid #f1f5f9;border-radius:16px;margin-right:16px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.06)}
+.filter-sidebar h4{font-size:13px;color:#0f172a;margin-bottom:10px;padding-bottom:8px;border-bottom:1.5px solid #f1f5f9;font-weight:700}
+.filter-sidebar .filter-group{margin-bottom:18px}
+.filter-sidebar .filter-item{font-size:12px;color:#64748b;padding:5px 0;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s}
+.filter-sidebar .filter-item:hover{color:#7A2BFF;padding-left:4px}
+.filter-sidebar .filter-item::before{content:'•';color:#cbd5e1;font-size:14px}
+.filter-sidebar .filter-item:hover::before{color:#7A2BFF}
+.filter-price{display:flex;gap:6px;margin-top:6px}
+.filter-price span{font-size:11px;padding:4px 10px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;color:#64748b;cursor:pointer;transition:all .15s}
+.filter-price span:hover{background:#F8F3FF;border-color:#DCC8FF;color:#7A2BFF}
+.filter-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;margin-bottom:6px;cursor:pointer}
+.filter-check input{width:14px;height:14px;accent-color:#7A2BFF}
+.brand-logo-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.brand-logo{height:22px;width:52px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#94a3b8;font-weight:600}
+.floating-orb{position:absolute;border-radius:50%;pointer-events:none;animation:floatOrb 6s ease-in-out infinite}
+@keyframes floatOrb{0%,100%{transform:translateY(0) scale(1);opacity:.4}50%{transform:translateY(-20px) scale(1.1);opacity:.6}}
+.intro-screen .floating-orb:nth-child(1){width:200px;height:200px;background:radial-gradient(circle,rgba(122,43,255,.12) 0%,transparent 70%);top:10%;left:10%;animation-delay:0s}
+.intro-screen .floating-orb:nth-child(2){width:150px;height:150px;background:radial-gradient(circle,rgba(161,77,255,.1) 0%,transparent 70%);bottom:15%;right:15%;animation-delay:2s}
+.intro-screen .floating-orb:nth-child(3){width:100px;height:100px;background:radial-gradient(circle,rgba(122,43,255,.08) 0%,transparent 70%);top:50%;right:20%;animation-delay:4s}
+.outro-screen .floating-orb:nth-child(1){width:180px;height:180px;background:radial-gradient(circle,rgba(122,43,255,.1) 0%,transparent 70%);top:20%;right:10%;animation-delay:1s}
+.outro-screen .floating-orb:nth-child(2){width:120px;height:120px;background:radial-gradient(circle,rgba(161,77,255,.08) 0%,transparent 70%);bottom:20%;left:15%;animation-delay:3s}
+.title-shine{position:relative}
+.title-shine::after{content:'';position:absolute;top:-30%;left:-100%;width:50%;height:160%;background:radial-gradient(ellipse at center,rgba(255,255,255,.1) 0%,transparent 70%);filter:blur(10px);animation:titleShine 4s ease-in-out infinite;pointer-events:none}
+@keyframes titleShine{0%,100%{left:-100%}50%{left:150%}}
+.decoration-ring{position:absolute;border:1.5px solid rgba(255,255,255,.06);border-radius:50%;pointer-events:none}
+.decoration-line{position:absolute;background:linear-gradient(90deg,transparent,rgba(255,255,255,.08),transparent);pointer-events:none}
+@keyframes aiGlow{0%,100%{box-shadow:0 0 0 0 rgba(122,43,255,.4)}50%{box-shadow:0 0 0 8px rgba(122,43,255,.2)}}
+.ai-glow{animation:aiGlow 1.5s ease-in-out infinite}
+.search-active{border-color:#7A2BFF!important;box-shadow:0 0 0 3px rgba(122,43,255,.1)!important}
+.mall-toolbar{padding:8px 24px;background:#fff;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.breadcrumb{font-size:12px;color:#94a3b8}
+.sort-bar{display:flex;align-items:center;gap:16px}
+.result-count{font-size:13px;color:#64748b}
+.sort-options{display:flex;gap:12px;font-size:13px;color:#64748b}
+.sort-options span{cursor:pointer;padding:4px 8px;border-radius:8px;transition:all .2s}
+.sort-options span.active{color:#7A2BFF;font-weight:600;background:rgba(122,43,255,.06)}
+.search-btn.loading{background:#94a3b8;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.search-input-strikethrough{text-decoration:line-through;color:#94a3b8}
+.click-highlight{position:fixed;border:2px solid #7A2BFF;border-radius:8px;pointer-events:none;z-index:450;opacity:0;box-shadow:0 0 12px rgba(122,43,255,.3)}
+.feature-chip{display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:40px;backdrop-filter:blur(8px);transition:all .3s}
+.feature-chip:hover{background:rgba(122,43,255,.15);border-color:rgba(122,43,255,.3);box-shadow:0 0 20px rgba(122,43,255,.15)}
+.chip-icon{font-size:18px}
+.chip-text{font-size:14px;color:rgba(255,255,255,.8);font-weight:500;letter-spacing:0.5px}
+.outro-stat{text-align:center;padding:0 8px}
+.stat-number{font-size:44px;font-weight:800;background:linear-gradient(135deg,#D8A6FF,#C67BFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:"JetBrains Mono","Noto Sans SC",monospace;letter-spacing:-1px;filter:drop-shadow(0 0 12px rgba(216,166,255,.4))}
+.stat-label{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px;letter-spacing:1px}
+.outro-stat-divider{width:1px;height:40px;background:linear-gradient(180deg,transparent,rgba(216,166,255,.35),transparent);align-self:center}
+.compare-card{display:flex;flex-direction:column;margin-top:32px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;backdrop-filter:blur(10px)}
+.compare-header{display:grid;grid-template-columns:90px 1fr 44px 1fr;padding:14px 32px;border-bottom:1px solid rgba(255,255,255,.06)}
+.compare-header-side{text-align:center;font-size:11px;font-weight:700;letter-spacing:4px;text-transform:uppercase}
+.compare-header-before{color:rgba(255,255,255,.25)}
+.compare-header-after{color:#D8A6FF}
+.compare-header-center{display:flex;align-items:center;justify-content:center}
+.compare-row{display:grid;grid-template-columns:90px 1fr 44px 1fr;align-items:center;padding:16px 32px;border-top:1px solid rgba(255,255,255,.04)}
+.compare-dim{font-size:12px;color:rgba(255,255,255,.45);letter-spacing:1px;white-space:nowrap}
+.compare-val-old{font-size:15px;font-weight:500;color:rgba(255,255,255,.28)}
+.compare-val-new{font-size:18px;font-weight:800;background:linear-gradient(135deg,#D8A6FF,#EBD7FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.compare-arrow{display:flex;align-items:center;justify-content:center;color:rgba(216,166,255,.45);font-size:15px}
+.intro-logo-wrap{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:4px}
+.intro-logo-img{height:clamp(80px,13vw,130px);width:auto}
+.title-shine-img::after{content:'';position:absolute;top:-30%;left:-100%;width:50%;height:160%;background:radial-gradient(ellipse at center,rgba(248,243,255,.15) 0%,transparent 70%);filter:blur(12px);animation:titleShine 4s ease-in-out infinite;pointer-events:none}
+</style>
+</head>
+<body>
+<div class="scene-header" id="sceneHeader"></div>
+<div class="annotation" id="annotation"></div>
+<div class="progress-bar-wrap" id="progressBarWrap"><div class="progress-bar" id="progressBar"></div></div>
+<div class="v-cursor" id="cursor"><svg class="v-cursor-svg" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 2L12 26L15 16L25 13L2 2Z" fill="#000" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg><div class="v-cursor-ring"></div></div>
+<div class="transition-overlay" id="transOverlay"><div class="trans-ring" id="transRing"></div><div class="trans-number" id="transNumber"></div><div class="trans-text" id="transText"></div><div class="trans-divider" id="transDivider"></div><div class="trans-title" id="transTitle"></div></div>
+<div class="toast" id="toast"></div>
+<div class="click-highlight" id="clickHighlight"></div>
+<div class="teleprompter" id="teleprompter"></div>
+<div class="clarify-panel" id="clarifyPanel">
+    <div class="clarify-panel-bg"></div>
+    <div class="clarify-panel-content">
+      <div class="clarify-header">🤖 AI 需求澄清 — 物料属性智能补全</div>
+      <table class="clarify-table">
+        <thead><tr><th>属性名称</th><th>属性值</th><th>操作</th><th>来源</th></tr></thead>
+        <tbody id="clarifyBody">
+          <tr class="clarify-row" data-row="0"><td class="prop-name"><span class="required">*</span>品名</td><td class="prop-value" id="cv0"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag extract">AI提取</span></td></tr>
+          <tr class="clarify-row" data-row="1"><td class="prop-name"><span class="required">*</span>规格</td><td class="prop-value" id="cv1"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag extract">AI提取</span></td></tr>
+          <tr class="clarify-row" data-row="2"><td class="prop-name"><span class="required">*</span>材质</td><td class="prop-value" id="cv2"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag infer">AI推断</span></td></tr>
+          <tr class="clarify-row" data-row="3"><td class="prop-name"><span class="required">*</span>等级</td><td class="prop-value" id="cv3"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag infer">AI推断</span></td></tr>
+          <tr class="clarify-row" data-row="4"><td class="prop-name">表面处理</td><td class="prop-value" id="cv4"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag standard">AI标准化</span></td></tr>
+          <tr class="clarify-row" data-row="5"><td class="prop-name"><span class="required">*</span>标准</td><td class="prop-value" id="cv5"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag infer">AI推断</span></td></tr>
+        </tbody>
+      </table>
+      <div class="clarify-inference" id="clarifyInference">
+        <div class="inference-title">🧠 AI属性推断: 等级</div>
+        <div class="inference-cards">
+          <div class="inference-card recommended" id="inferCard1">
+            <div class="card-header"><span class="card-value">A2-70</span><span class="card-votes">4票</span></div>
+            <div class="card-models"><span class="model-tag">Deepseek-R1</span><span class="model-tag">GPT-4</span><span class="model-tag">Claude 3.5</span><span class="model-tag">Qwen-Max</span></div>
+            <div class="card-reason">304不锈钢六角螺栓标配等级，客户近一年6笔订单均为A2-70</div>
+          </div>
+          <div class="inference-card" id="inferCard2">
+            <div class="card-header"><span class="card-value">A4-80</span><span class="card-votes">1票</span></div>
+            <div class="card-models"><span class="model-tag">Gemini 3</span></div>
+            <div class="card-reason">A4-80耐腐蚀性更强，适用于化工/海洋环境</div>
+          </div>
+          <div class="inference-card manual">
+            <div class="card-header"><span class="card-value">手动录入</span></div>
+            <div class="card-input"><input type="text" placeholder="输入自定义值" readonly></div>
+          </div>
+        </div>
+      </div>
+      <div class="clarify-footer" id="clarifyFooter">
+        <span class="confirm-count">4 项属性可一键确认</span>
+        <button class="clarify-confirm-btn" id="clarifyConfirm">✓ 一键确认</button>
+      </div>
+    </div>
+  </div>
+
+<!-- SCENE: INTRO -->
+<div class="scene intro-screen active" id="sceneIntro">
+  <div class="floating-orb"></div>
+  <div class="floating-orb"></div>
+  <div class="floating-orb"></div>
+  <div class="decoration-ring" style="width:300px;height:300px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="decoration-ring" style="width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="decoration-line" style="width:200px;height:1px;top:40%;left:50%;transform:translateX(-50%)"></div>
+  <div class="intro-logo-wrap title-shine-img"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" class="intro-logo-img" loading="eager"></div>
+  <div class="intro-sub">让采购搜索更聪明</div>
+  <div style="font-size:0.95rem;color:rgba(255,255,255,.5);text-align:center;margin-top:4px">全链路AI采购体验 · ~150秒演示</div>
+  <div class="intro-features" style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;justify-content:center">
+    <div class="feature-chip" style="opacity:0"><span class="chip-icon">🔍</span><span class="chip-text">AI 语义搜索</span></div>
+    <div class="feature-chip" style="opacity:0"><span class="chip-icon">📋</span><span class="chip-text">需求澄清</span></div>
+    <div class="feature-chip" style="opacity:0"><span class="chip-icon">📊</span><span class="chip-text">一品多商</span></div>
+  </div>
+</div>
+
+<!-- SCENE 1: AI搜索 -->
+<div class="scene" id="scene1">
+  <div class="top-banner"><span style="color:#A14DFF">●</span> 企业采购专属通道&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 华东区域仓次日达&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 满500免运费</div>
+  <div class="mall-header">
+    <div class="logo"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" style="height:32px;width:auto" loading="eager"></div>
+    <div class="search-box" id="searchBox1">
+      <input type="text" id="searchInput1" placeholder="搜索商品名称、品牌、型号..." readonly>
+      <button class="search-btn" id="searchBtn1">搜索</button>
+    </div>
+    <div class="ai-btn" id="aiBtn1">✦ AI需求澄清</div>
+    <div class="search-status-bar" id="searchStatusBar"></div>
+    <div class="header-right">
+      <span class="enterprise-name">玲珑慧搜测试企业</span>
+      <span>🔔</span>
+      <span>❤️</span>
+      <span>🛒 购物车</span>
+      <span>📋 订单</span>
+      <span>👤 我的</span>
+    </div>
+  </div>
+  <div class="mall-toolbar">
+    <div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺栓</div>
+    <div class="sort-bar" id="sortBar1" style="display:none">
+      <span class="result-count" id="resultCount1"></span>
+      <div class="sort-options"><span class="active">综合</span><span>价格↑</span><span>销量↓</span><span>新品</span></div>
+    </div>
+  </div>
+  <div class="mall-body" id="mallBody1" style="display:flex">
+    <div class="filter-sidebar" id="filterSidebar" style="display:none">
+      <div class="filter-group"><h4>品牌</h4>
+        <div class="brand-logo-row"><div class="brand-logo">世世通</div><div class="brand-logo">瑞玛</div><div class="brand-logo">东明</div></div>
+      </div>
+      <div class="filter-group"><h4>材质</h4><div class="filter-item">不锈钢304</div><div class="filter-item">碳钢</div><div class="filter-item">合金钢</div></div>
+      <div class="filter-group"><h4>规格</h4><div class="filter-item">M6</div><div class="filter-item">M8</div><div class="filter-item">M10</div><div class="filter-item">M12</div></div>
+      <div class="filter-group"><h4>价格区间</h4><div class="filter-price"><span>¥0-1</span><span>¥1-5</span><span>¥5+</span></div></div>
+      <div class="filter-group"><h4>筛选条件</h4>
+        <label class="filter-check"><input type="checkbox"> 仅看自营</label>
+        <label class="filter-check"><input type="checkbox"> 有现货</label>
+        <label class="filter-check"><input type="checkbox"> 包邮</label>
+      </div>
+    </div>
+    <div style="flex:1;min-width:0">
+      <div class="product-grid" id="productGrid1"></div>
+      <div class="empty-state" id="emptyState1" style="display:none">
+        <div class="icon">🔍</div>
+        <div class="text">暂无匹配商品</div>
+        <div style="color:#64748b;font-size:13px">未找到相关商品</div>
+      </div>
+    </div>
+  </div>
+  <!-- AI搜索浮层 + 知识图谱 -->
+  <div class="ai-panel" id="aiPanel1">
+    <div class="ai-panel-bg"></div>
+    <div class="ai-panel-content" id="aiPanelContent1">
+      <div class="ai-panel-header" id="aiPanelHeader1">AI 正在处理 ▸ 智能搜索</div>
+      <div style="display:flex;gap:20px;align-items:flex-start">
+        <div class="ai-steps-left" style="flex:1;min-width:0">
+          <div class="ai-step-row" id="aiStep0"><div class="ai-step-dot" id="aiDot0"></div><div class="ai-step-text">🔍 正在解析搜索意图...</div></div>
+          <div class="ai-step-row" id="aiStep1"><div class="ai-step-dot" id="aiDot1"></div><div class="ai-step-text">📝 识别关键参数：材质=不锈钢, 规格=M8</div></div>
+          <div class="ai-step-row" id="aiStep2"><div class="ai-step-dot" id="aiDot2"></div><div class="ai-step-text">🧠 发现缺失参数：头型、长度、等级、标准</div></div>
+          <div class="ai-step-row" id="aiStep3"><div class="ai-step-dot" id="aiDot3"></div><div class="ai-step-text">📊 匹配到多规格组合，返回全量结果</div></div>
+        </div>
+        <div class="kg-container" id="kgContainer">
+          <svg class="kg-graph" viewBox="-50 -20 500 340" xmlns="http://www.w3.org/2000/svg">
+            <line class="kg-edge" id="kgEdge1" x1="200" y1="150" x2="100" y2="60"/>
+            <line class="kg-edge" id="kgEdge2" x1="200" y1="150" x2="320" y2="60"/>
+            <line class="kg-edge" id="kgEdge3" x1="200" y1="150" x2="80" y2="220"/>
+            <line class="kg-edge" id="kgEdge4" x1="200" y1="150" x2="320" y2="220"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge5" x1="100" y1="60" x2="70" y2="30"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge6" x1="320" y1="60" x2="360" y2="20"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge7" x1="80" y1="220" x2="70" y2="265"/>
+            <circle class="kg-node kg-center" id="kgCenter" cx="200" cy="150" r="28"/>
+            <text class="kg-label kg-label-center" id="kgL0" x="200" y="155">螺栓M8</text>
+            <circle class="kg-node kg-l1" id="kgN1" cx="100" cy="60" r="20"/>
+            <text class="kg-label" id="kgL1" x="100" y="65">头型</text>
+            <circle class="kg-node kg-l1" id="kgN2" cx="320" cy="60" r="20"/>
+            <text class="kg-label" id="kgL2" x="320" y="65">长度</text>
+            <circle class="kg-node kg-l1" id="kgN3" cx="80" cy="220" r="20"/>
+            <text class="kg-label" id="kgL3" x="80" y="225">等级</text>
+            <circle class="kg-node kg-l1" id="kgN4" cx="320" cy="220" r="20"/>
+            <text class="kg-label" id="kgL4" x="320" y="225">标准</text>
+            <circle class="kg-node kg-l2" id="kgN5" cx="70" cy="30" r="14"/>
+            <text class="kg-label kg-label-sm" id="kgL5" x="70" y="34">GB5783</text>
+            <circle class="kg-node kg-l2" id="kgN6" cx="360" cy="20" r="14"/>
+            <text class="kg-label kg-label-sm" id="kgL6" x="360" y="24">DIN912</text>
+            <circle class="kg-node kg-l2" id="kgN7" cx="70" cy="265" r="14"/>
+            <text class="kg-label kg-label-sm" id="kgL7" x="70" y="269">GB5787</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 2: 一品多商 -->
+<div class="scene" id="scene2">
+  <div class="top-banner"><span style="color:#A14DFF">●</span> 企业采购专属通道&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 华东区域仓次日达&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 满500免运费</div>
+  <div class="mall-header">
+    <div class="logo"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" style="height:32px;width:auto" loading="eager"></div>
+    <div class="search-box"><input type="text" value="六角螺栓 M8×50 不锈钢304 A2-70" readonly><button class="search-btn">搜索</button></div>
+    <div class="ai-btn">✦ AI需求澄清</div>
+    <div class="header-right">
+      <span class="enterprise-name">玲珑慧搜测试企业</span>
+      <span>🔔</span>
+      <span>❤️</span>
+      <span>🛒 购物车</span>
+      <span>📋 订单</span>
+      <span>👤 我的</span>
+    </div>
+  </div>
+  <div class="mall-toolbar"><div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺栓 &gt; 商品详情</div></div>
+  <div class="mall-body" style="position:relative;padding-bottom:60px">
+    <div class="detail-header">
+      <div class="detail-img"><img id="detailImg" alt="螺栓"></div>
+      <div class="detail-info"><h2>不锈钢六角螺栓 M8×50 A2-70</h2><div class="specs">规格：M8×50 | 材质：不锈钢304 | 等级：A2-70 | 表面处理：本色<br>品牌：DIN标准 | 包装：100个/盒</div></div>
+    </div>
+    <div class="compare-section" id="compareSection">
+      <div class="compare-title">📊 一品多商对比 <span style="font-size:12px;color:#94a3b8;font-weight:400">同一商品、相似品，多家供应商多维度排序</span></div>
+      <table class="compare-table" id="compareTable">
+        <thead><tr><th>供应商</th><th>品牌</th><th>评级</th><th id="priceHeader">单价(元) ↕</th><th>货期</th><th>库存</th><th>类型</th><th></th></tr></thead>
+        <tbody id="compareBody"></tbody>
+      </table>
+    </div>
+    <div class="detail-tabs" id="detailTabs"><span class="active">商品详情</span><span>规格参数</span><span>采购记录</span></div>
+    <div class="detail-actions" id="detailActions" style="opacity:0">
+      <button class="btn-cart">加入购物车</button>
+      <button class="btn-buy">立即采购</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCENE 3: 批量寻源 -->
+<div class="scene" id="scene3">
+  <div class="top-banner"><span style="color:#A14DFF">●</span> 企业采购专属通道&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 华东区域仓次日达&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 满500免运费</div>
+  <div class="mall-header">
+    <div class="logo"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" style="height:32px;width:auto" loading="eager"></div>
+    <div class="search-box" id="searchBox3"><input type="text" id="searchInput3" placeholder="搜索商品名称、品牌、型号..." readonly><button class="search-btn" id="searchBtn3">搜索</button></div>
+    <div class="ai-btn" id="aiBtn3">✦ AI需求澄清</div>
+    <div class="header-right">
+      <span class="enterprise-name">玲珑慧搜测试企业</span>
+      <span>🔔</span>
+      <span>❤️</span>
+      <span>🛒 购物车</span>
+      <span>📋 订单</span>
+      <span>👤 我的</span>
+    </div>
+  </div>
+  <div class="mall-toolbar"><div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺钉</div></div>
+  <div class="mall-body">
+    <div class="empty-state" id="emptyState" style="display:none">
+      <div class="icon">🔍</div>
+      <div class="text">暂无匹配商品</div>
+      <div style="color:#64748b;font-size:13px">未找到"M12×80 12.9级内六角圆柱头螺钉"相关商品</div>
+    </div>
+  </div>
+  <div class="source-panel" id="sourcePanel">
+    <div class="source-inquiry" id="sourceInquiry" style="display:none">
+      <div class="inquiry-title">📋 寻源询价单</div>
+      <div class="inquiry-params" id="inquiryParams"></div>
+    </div>
+    <h3>选择寻源供应商</h3>
+    <div class="source-check" id="sc1"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">玲珑慧搜（自营）</span><span class="source-check-meta">⭐⭐⭐⭐⭐ 4.9分 · 响应率99%</span></div></div>
+    <div class="source-check" id="sc2"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商A</span><span class="source-check-meta">⭐⭐⭐⭐☆ 4.5分 · 响应率92%</span></div></div>
+    <div class="source-check" id="sc3"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商B</span><span class="source-check-meta">⭐⭐⭐⭐☆ 4.6分 · 响应率95%</span></div></div>
+    <div class="source-check" id="sc4"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商C</span><span class="source-check-meta">⭐⭐⭐⭐⭐ 4.8分 · 响应率97%</span></div></div>
+    <div class="source-check" id="sc5"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商D</span><span class="source-check-meta">⭐⭐⭐⭐☆ 4.3分 · 响应率88%</span></div></div>
+    <div class="source-loading" id="sourceLoading">⏳ 正在向5家供应商询价...</div>
+    <div class="source-result" id="sourceResult"><table><thead><tr><th>供应商</th><th>品牌</th><th>单价(元)</th><th>起订量</th><th>货期</th><th>备注</th><th>操作</th></tr></thead><tbody id="sourceBody"></tbody></table></div>
+    <button class="source-confirm-btn" id="sourceConfirmBtn">一键发起寻源</button>
+  </div>
+</div>
+
+<!-- SCENE: OUTRO -->
+<div class="scene outro-screen" id="sceneOutro">
+  <div class="floating-orb"></div>
+  <div class="floating-orb"></div>
+  <div class="decoration-ring" style="width:250px;height:250px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
+  <div class="decoration-line" style="width:180px;height:1px;top:42%;left:50%;transform:translateX(-50%)"></div>
+  <div class="intro-logo-wrap title-shine-img"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" class="intro-logo-img" loading="eager"></div>
+  <div style="width:100px;height:2px;background:linear-gradient(90deg,transparent,#7A2BFF,#A14DFF,transparent);margin:10px auto;border-radius:1px;box-shadow:0 0 8px rgba(122,43,255,.4)"></div>
+  <div class="outro-sub">AI 驱动的智能采购体验</div>
+  <div class="compare-card" id="compareCard" style="opacity:0">
+    <div class="compare-header">
+      <div></div>
+      <div class="compare-header-side compare-header-before">使用前</div>
+      <div class="compare-header-center"></div>
+      <div class="compare-header-side compare-header-after">使用后</div>
+    </div>
+    <div class="compare-row" style="opacity:0">
+      <span class="compare-dim">有货报出率</span>
+      <span class="compare-val-old">~60%</span>
+      <div class="compare-arrow">→</div>
+      <span class="compare-val-new">90%</span>
+    </div>
+    <div class="compare-row" style="opacity:0">
+      <span class="compare-dim">比价效率</span>
+      <span class="compare-val-old">人工逐一询价</span>
+      <div class="compare-arrow">→</div>
+      <span class="compare-val-new">一键5家 ↑</span>
+    </div>
+    <div class="compare-row" style="opacity:0">
+      <span class="compare-dim">合规留痕</span>
+      <span class="compare-val-old">手动记录</span>
+      <div class="compare-arrow">→</div>
+      <span class="compare-val-new">100%可追溯</span>
+    </div>
+    <div class="compare-row" style="opacity:0">
+      <span class="compare-dim">需求澄清</span>
+      <span class="compare-val-old">天级 · 多轮沟通</span>
+      <div class="compare-arrow">→</div>
+      <span class="compare-val-new">分钟级 · AI提取</span>
+    </div>
+  </div>
+  <div class="outro-footer">玲珑慧搜 · 让物业采购更简单</div>
+</div>
+
+<!-- CONTROLS -->
+<div class="demo-controls">
+  <button id="btnPrev" title="回退">⏮</button>
+  <button id="btnPause" title="暂停">⏸</button>
+  <button id="btnPlay" title="播放" style="display:none">▶</button>
+  <button id="btnNext" title="跳过">⏭</button>
+  <span class="progress" id="progressText">场景 1/3</span>
+</div>
+
+<script>
+(function(){
+'use strict';
+const PRODUCT_IMAGES={
+  '六角螺栓':'images/六角螺栓.jpg',
+  '内六角':'images/内六角.jpg',
+  '内六角螺钉':'images/内六角螺钉.jpg',
+  '法兰螺栓':'images/法兰螺栓.jpg',
+  '马车螺栓':'images/马车螺栓.jpg',
+  'U型螺栓':'images/U型螺栓.jpg',
+  '双头螺柱':'images/双头螺柱.jpg',
+  '地脚螺栓':'images/地脚螺栓.jpg',
+  '膨胀螺栓':'images/膨胀螺栓.jpg',
+  '蝶形螺栓':'images/蝶形螺栓.jpg',
+  '吊环螺栓':'images/吊环螺栓.jpg',
+  'T型螺栓':'images/T型螺栓.jpg',
+  '十字':'images/十字.jpg',
+  '不锈钢六角':'images/不锈钢六角.jpg',
+  '碳钢六角':'images/碳钢六角.jpg',
+  '镀锌六角':'images/镀锌六角.jpg',
+  '12.9级':'images/12.9级.jpg',
+  '螺栓':'images/螺栓.jpg',
+  '螺钉':'images/螺钉.jpg'
+};
+function getProductImage(name,fallback){
+  if(fallback&&fallback!=='null'&&fallback!=='undefined'&&fallback!==''&&!fallback.includes('images/'))return fallback;
+  for(const[k,v]of Object.entries(PRODUCT_IMAGES)){if(name&&name.includes(k))return v;}
+  return PRODUCT_IMAGES['螺栓'];
+}
+const $=id=>document.getElementById(id);
+const cursor=$('cursor'),transOverlay=$('transOverlay'),transText=$('transText'),transTitle=$('transTitle'),toastEl=$('toast'),teleprompterEl=$('teleprompter'),progressText=$('progressText'),sceneHeader=$('sceneHeader'),annotationEl=$('annotation'),progressBar=$('progressBar'),transNumber=$('transNumber'),searchStatusBar=$('searchStatusBar'),clickHighlightEl=$('clickHighlight'),transDivider=$('transDivider'),transRing=$('transRing');
+let currentScene=0;
+const sceneLabels=['intro','scene1','trans12','scene2','trans23','scene3','outro'];
+function showScene(id){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  gsap.set(teleprompterEl,{opacity:0});gsap.set(toastEl,{opacity:0,x:30});gsap.set(searchStatusBar,{opacity:0});gsap.set(annotationEl,{opacity:0});gsap.set(clickHighlightEl,{opacity:0});
+  if(id!=='scene1'){const sb=$('sortBar1');if(sb)sb.style.display='none';const fs=$('filterSidebar');if(fs)fs.style.display='none';}
+  if(id==='scene3'){
+    const si3=$('searchInput3');if(si3)si3.value='';
+  }
+}
+function moveCursor(target,duration=0.4){
+  const tl=gsap.timeline();
+  tl.call(()=>{const el=typeof target==='string'?document.querySelector(target):target;if(!el)return;const r=el.getBoundingClientRect();gsap.to(cursor,{left:r.left+r.width/2,top:r.top+r.height/2,duration,ease:'power2.inOut'});});
+  tl.to({},{duration});return tl;
+}
+function showCursor(){return gsap.to(cursor,{opacity:1,duration:0.2});}
+function hideCursor(){return gsap.to(cursor,{opacity:0,duration:0.2});}
+function clickPulse(){return gsap.timeline().to(cursor,{scale:0.7,duration:0.08}).to(cursor,{scale:1,duration:0.12});}
+function flashHighlight(selector){
+  const el=typeof selector==='string'?document.querySelector(selector):selector;if(!el)return;
+  const r=el.getBoundingClientRect();gsap.killTweensOf(clickHighlightEl);
+  gsap.set(clickHighlightEl,{left:r.left-4,top:r.top-4,width:r.width+8,height:r.height+8,opacity:0});
+  gsap.to(clickHighlightEl,{opacity:1,duration:0.12});gsap.to(clickHighlightEl,{opacity:0,duration:0.2,delay:0.3});
+}
+function typeText(elOrId,text,charDelay=0.12){
+  const tl=gsap.timeline();
+  for(let i=0;i<text.length;i++){tl.call(()=>{const el=typeof elOrId==='string'?document.getElementById(elOrId):elOrId;if(el)el.value+=text[i];},null,`+=${charDelay}`);}
+  return tl;
+}
+function typeInDiv(elOrId,text,charDelay=0.05){
+  const tl=gsap.timeline();
+  for(let i=0;i<text.length;i++){tl.call(()=>{const el=typeof elOrId==='string'?document.getElementById(elOrId):elOrId;if(el)el.textContent+=text[i];},null,`+=${charDelay}`);}
+  return tl;
+}
+function showToast(text,dur=1.5){toastEl.textContent=text;return gsap.timeline().to(toastEl,{opacity:1,x:0,duration:0.2}).to(toastEl,{opacity:0,x:30,duration:0.2},`+=${dur}`);}
+function showTeleprompter(text){
+  teleprompterEl.textContent=text;
+  return gsap.to(teleprompterEl,{opacity:1,duration:0.2});
+}
+function hideTeleprompter(){return gsap.to(teleprompterEl,{opacity:0,duration:0.2});}
+function showAnnotation(text,duration=1){
+  const cx=parseFloat(cursor.style.left)||0,cy=parseFloat(cursor.style.top)||0;
+  annotationEl.textContent=text;annotationEl.style.left=(cx+20)+'px';annotationEl.style.top=(cy-40)+'px';
+  return gsap.timeline().to(annotationEl,{opacity:1,duration:0.15}).to(annotationEl,{opacity:0,duration:0.15},`+=${duration}`);
+}
+function updateSceneHeader(text){sceneHeader.textContent=text;return gsap.to(sceneHeader,{opacity:1,duration:0.2});}
+function hideSceneHeader(){return gsap.to(sceneHeader,{opacity:0,duration:0.2});}
+function showSearchStatus(text,cls){searchStatusBar.textContent=text;searchStatusBar.className='search-status-bar '+cls;return gsap.to(searchStatusBar,{opacity:1,duration:0.2});}
+function hideSearchStatus(){return gsap.to(searchStatusBar,{opacity:0,duration:0.2});}
+function addSceneTransition(num,text,title){
+  return gsap.timeline()
+    .call(()=>{
+      transText.textContent=text;transTitle.textContent='';
+      transNumber.textContent=num;
+      gsap.set(transDivider,{width:0,opacity:0});
+      gsap.set(transRing,{scale:0.8,opacity:0});
+      gsap.set(transNumber,{scale:0.85});
+      gsap.set(transText,{y:20,opacity:0});
+      gsap.set(transTitle,{y:15,opacity:0});
+    })
+    .to(transOverlay,{opacity:1,duration:0.3})
+    .to(transRing,{opacity:1,scale:1,duration:0.6,ease:'power2.out'},0)
+    .to(transNumber,{opacity:1,scale:1,duration:0.35,ease:'power2.out'},0.05)
+    .to(transText,{opacity:1,y:0,duration:0.25,ease:'power2.out'},'>-0.1')
+    .to(transText,{opacity:0,y:-10,duration:0.2},'>+0.8')
+    .call(()=>{transTitle.textContent=title;})
+    .to(transDivider,{width:120,opacity:1,duration:0.3,ease:'power2.out'},'>-0.05')
+    .to(transTitle,{opacity:1,y:0,duration:0.25,ease:'power2.out'},'>-0.15')
+    .to(transTitle,{opacity:0,duration:0.2},'>+0.7')
+    .to(transDivider,{width:0,opacity:0,duration:0.2},'<')
+    .to([transNumber,transRing],{opacity:0,duration:0.2},'>-0.1')
+    .to(transOverlay,{opacity:0,duration:0.3},'>-0.1');
+}
+function activateDot(idx){const d=$('aiDot'+idx);if(d){d.classList.remove('completed');d.classList.add('active');}}
+function completeDot(idx){const d=$('aiDot'+idx);if(d){d.classList.remove('active');d.classList.add('completed');}}
+const products=[
+  {name:'不锈钢六角螺栓 M8×20 A2-70',spec:'304/本色/GB5783',price:'0.45',supplier:'玲珑慧搜自营',img:getProductImage('六角螺栓')},
+  {name:'不锈钢六角螺栓 M8×30 A2-70',spec:'304/本色/GB5783',price:'0.52',supplier:'供应商D',img:getProductImage('六角螺栓')},
+  {name:'不锈钢六角螺栓 M8×40 A2-70',spec:'304/本色/GB5783',price:'0.58',supplier:'玲珑慧搜自营',img:getProductImage('六角螺栓')},
+  {name:'不锈钢六角螺栓 M8×50 A2-70',spec:'304/本色/GB5783',price:'0.65',supplier:'供应商A',img:getProductImage('六角螺栓')},
+  {name:'不锈钢内六角螺栓 M8×25 A2-70',spec:'304/本色/DIN912',price:'0.72',supplier:'供应商D',img:getProductImage('内六角')},
+  {name:'不锈钢内六角螺栓 M8×40 A2-70',spec:'304/本色/DIN912',price:'0.85',supplier:'玲珑慧搜自营',img:getProductImage('内六角')},
+  {name:'不锈钢法兰螺栓 M8×30 A2-70',spec:'304/本色/GB5787',price:'0.92',supplier:'供应商B',img:getProductImage('法兰螺栓')},
+  {name:'不锈钢法兰螺栓 M8×50 A2-70',spec:'304/本色/GB5787',price:'1.05',supplier:'供应商C',img:getProductImage('法兰螺栓')},
+  {name:'不锈钢六角螺栓 M8×50 A4-80',spec:'316/本色/GB5783',price:'1.35',supplier:'供应商A',img:getProductImage('六角螺栓')},
+  {name:'不锈钢马车螺栓 M8×40',spec:'304/本色/GB12',price:'0.78',supplier:'供应商D',img:getProductImage('马车螺栓')},
+  {name:'不锈钢六角螺栓 M8×60 A2-70',spec:'304/本色/GB5783',price:'0.72',supplier:'玲珑慧搜自营',img:getProductImage('六角螺栓')},
+  {name:'不锈钢内六角螺栓 M8×50 A2-70',spec:'304/本色/DIN912',price:'0.95',supplier:'供应商B',img:getProductImage('内六角')}
+];
+const preciseProducts=[
+  {name:'不锈钢六角螺栓 M8×50 A2-70',spec:'不锈钢304 / 本色',price:'0.85',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺栓')},
+  {name:'碳钢六角螺栓 M8×50 8.8级',spec:'碳钢 / 达克罗',price:'0.72',supplier:'供应商D',img:getProductImage('碳钢六角螺栓')},
+  {name:'镀锌六角螺栓 M8×50 4.8级',spec:'碳钢 / 镀锌',price:'0.58',supplier:'供应商A',img:getProductImage('镀锌六角螺栓')}
+];
+const compareData=[
+  {supplier:'玲珑慧搜',brand:'世世通',rating:4.9,price:0.85,delivery:'次日达',stock:'5000+',type:'相同品',cooperate:28},
+  {supplier:'供应商D',brand:'瑞玛',rating:4.5,price:0.92,delivery:'2-3天',stock:'3200',type:'相同品',cooperate:15},
+  {supplier:'供应商A',brand:'东明',rating:4.7,price:0.78,delivery:'3-5天',stock:'8000+',type:'相同品',cooperate:42},
+  {supplier:'供应商B',brand:'盛祥紧固',rating:4.3,price:0.95,delivery:'次日达',stock:'1500',type:'相似品',cooperate:8},
+  {supplier:'供应商C',brand:'华东螺丝',rating:4.6,price:1.02,delivery:'2天',stock:'4200',type:'相似品',cooperate:21}
+];
+const sourceData=[
+  {supplier:'玲珑慧搜',brand:'高强紧固',price:3.85,moq:'100个',delivery:'3天',note:'含税含运'},
+  {supplier:'供应商A',brand:'中紧标准件',price:3.20,moq:'500个',delivery:'7天',note:'需自提'},
+  {supplier:'供应商B',brand:'金鼎紧固',price:3.68,moq:'100个',delivery:'4天',note:'含税含运'},
+  {supplier:'供应商C',brand:'东方螺丝',price:3.95,moq:'50个',delivery:'2天',note:'含税含运/急件'},
+  {supplier:'供应商D',brand:'永年标准件',price:3.52,moq:'200个',delivery:'5天',note:'含税'}
+];
+function renderGrid(containerId,items){
+  const c=$(containerId);c.innerHTML='';
+  items.forEach((p,idx)=>{
+    const badge=p.supplier==='玲珑慧搜自营'?`<div class="product-badge ziying">自营</div>`:(idx%3===0?`<div class="product-badge youxuan">优选</div>`:'');
+    const rating=(4.5+Math.random()*.5).toFixed(1);
+    const sold=['月售2000+','月售1500+','月售800+','月售3200+','月售5600+'][idx%5];
+    const original=(parseFloat(p.price)*1.25).toFixed(2);
+    const tags=[['满减','包邮'],['包邮'],['满减'],['新品','包邮'],['满减','包邮']][idx%5];
+    const tagHtml=tags.map(t=>`<span class="product-tag ${t==='满减'?'red':(t==='包邮'?'green':'blue')}">${t}</span>`).join('');
+    c.innerHTML+=`<div class="product-card">${badge}<div class="img-wrap"><img src="${p.img}" alt="${p.name}" loading="lazy" decoding="async"></div><div class="info"><div class="name">${p.name}</div><div class="spec">${p.spec}</div><div class="product-rating">★★★★☆<span class="score">${rating}分</span></div><div class="product-sold">${sold}</div><div class="price">¥${p.price}<span>/个</span><span class="product-original">¥${original}</span></div><div class="product-tags">${tagHtml}</div>${p.supplier?`<div class="supplier">${p.supplier}</div>`:''}</div></div>`;
+  });
+}
+function renderCompare(){
+  const body=$('compareBody');body.innerHTML='';
+  compareData.forEach(d=>{
+    const cls=d.type==='相同品'?'same':'similar';
+    const stars='★'.repeat(Math.floor(d.rating))+('☆'.repeat(5-Math.floor(d.rating)));
+    body.innerHTML+=`<tr class="${cls}" data-price="${d.price}"><td>${d.supplier}${d.cooperate?`<span class="compare-cooperate">已合作${d.cooperate}次</span>`:''}</td><td>${d.brand}</td><td><div class="compare-rating">${stars}<span style="color:#64748b;margin-left:4px;font-weight:600">${d.rating}</span></div></td><td>¥${d.price.toFixed(2)}</td><td>${d.delivery}</td><td>${d.stock}</td><td><span style="color:${cls==='same'?'#10b981':'#f59e0b'};font-weight:600">${d.type}</span></td><td>${cls==='similar'?'<button class="refresh-btn">🔄 换一换</button>':''}</td></tr>`;
+  });
+}
+function renderSource(){
+  const body=$('sourceBody');body.innerHTML='';const minP=Math.min(...sourceData.map(d=>d.price));
+  sourceData.forEach((d,i)=>{
+    const cls=d.price===minP?'best-price':'';
+    const actionBtn=d.price===minP?`<button class="source-select-btn" id="sourceSelectBtn">选择上架 →</button>`:'';
+    const recommend=d.price===minP?`<span class="source-recommend">🏆 推荐</span>`:'';
+    body.innerHTML+=`<tr class="${cls}" id="sourceRow${i}"><td>${d.supplier}${recommend}</td><td>${d.brand}</td><td>¥${d.price.toFixed(2)}</td><td>${d.moq}</td><td>${d.delivery}</td><td>${d.note}</td><td>${actionBtn}</td></tr>`;
+  });
+}
+
+// ══════ MASTER TIMELINE (V8 — 四场景全链路版) ══════
+const master=gsap.timeline({paused:false});
+
+// ── INTRO ──
+master.call(()=>showScene('sceneIntro'))
+  .from('#sceneIntro .intro-logo-wrap',{opacity:0,y:30,duration:0.6,ease:'power2.out'},0.2)
+  .from('#sceneIntro .intro-sub',{opacity:0,y:20,duration:0.4},0.5)
+  .fromTo('#sceneIntro .feature-chip',{opacity:0,y:12},{opacity:1,y:0,duration:0.3,stagger:0.12,ease:'power2.out'},'>-0.1')
+  .to({},{duration:0.5},'>');
+
+// ── SCENE 1 ──
+master.addLabel('scene1')
+  .call(()=>{showScene('scene1');renderGrid('productGrid1',[]);progressText.textContent='场景 1/3';})
+  .call(()=>updateSceneHeader('场景 1/3 ▸ AI搜索 — 语义搜索+需求澄清'))
+  .add(addSceneTransition('01','描述不够精确，如何快速定品？','AI需求澄清'))
+
+// Step 1: Type "不锈钢螺栓 M8" — charDelay 0.15
+master.add(showCursor(),'>+0.15')
+  .call(()=>showTeleprompter('用户搜索\'不锈钢螺栓 M8\'——仅提供了部分规格参数'),null,'>+0.1')
+  .add(moveCursor('#searchInput1'),'>+0.1')
+  .add(clickPulse(),'>+0.1')
+  .call(()=>{$('aiBtn1').classList.add('ai-glow');},null,'>')
+  .add(typeText('searchInput1','不锈钢螺栓 M8',0.15),'>+0.15')
+  .call(()=>{$('searchBox1').classList.add('search-active');},null,'>+0.15')
+  .add(moveCursor('#searchBtn1'),'>+0.15')
+  .add(clickPulse(),'>+0.05')
+  .call(()=>{$('searchBtn1').classList.add('loading');$('searchBtn1').textContent='⟳ 搜索中';})
+  .to('#searchBtn1',{scale:0.95,duration:0.08},'>')
+  .to('#searchBtn1',{scale:1,duration:0.1},'>');
+
+// Step 2: 搜索后直接出结果 — 12件混乱商品
+master.call(()=>{$('searchBtn1').classList.remove('loading');$('searchBtn1').textContent='搜索';},null,'>+0.5')
+  .call(()=>{
+    $('sortBar1').style.display='flex';$('filterSidebar').style.display='block';$('resultCount1').textContent='共找到 12 件商品';
+    gsap.set($('sortBar1'),{opacity:0});gsap.set($('filterSidebar'),{opacity:0});
+  },null,'>+0.25')
+  .to($('sortBar1'),{opacity:1,duration:0.2},'>')
+  .to($('filterSidebar'),{opacity:1,duration:0.2},'<')
+  .call(()=>{$('productGrid1').style.gridTemplateColumns='repeat(4,1fr)';},null,'>+0.1')
+  .call(()=>renderGrid('productGrid1',products),null,'>')
+  .call(()=>{
+    const cards=document.querySelectorAll('#productGrid1 .product-card');
+    cards.forEach((card,i)=>{gsap.fromTo(card,{opacity:0,y:16},{opacity:1,y:0,duration:0.25,delay:i*0.06,ease:'back.out(1.2)'});});
+  },null,'>+0.15')
+  .call(()=>showTeleprompter('搜索结果混乱，无法定品'),null,'>+0.15')
+  .to({},{duration:2.0},'>');
+
+// Step 3: 触发AI需求澄清
+master.call(()=>{$('searchBox1').classList.remove('search-active');},null,'>')
+  .call(()=>{$('aiBtn1').classList.add('ai-glow');},null,'>+0.25')
+  .add(moveCursor('#aiBtn1'),'>')
+  .add(showAnnotation('触发AI需求澄清'),'>+0.1')
+  .call(()=>showTeleprompter('触发AI需求澄清，智能补全缺失参数'),null,'>+0.1')
+  .add(clickPulse(),'>+0.1')
+  .call(()=>flashHighlight('#aiBtn1'),null,'>')
+  .call(()=>{$('aiBtn1').style.boxShadow='0 0 0 8px rgba(122,43,255,.3)';setTimeout(()=>{$('aiBtn1').style.boxShadow='';},400);},null,'>');
+
+
+// Step 4: Clarify panel animation — 行间距0.8s，每行打字后有停顿
+master.to('#clarifyPanel',{opacity:1,duration:0.25,onStart:()=>{$('clarifyPanel').style.pointerEvents='auto';}},'>+0.15')
+  .call(()=>showTeleprompter('AI 自动提取规格参数：品名、规格、材质、等级…'),null,'>');
+
+const clarifyValues=['六角螺栓','M8×50','不锈钢304','A2-70','本色','GB5783'];
+const clarifyIds=['cv0','cv1','cv2','cv3','cv4','cv5'];
+const clarifyRows=document.querySelectorAll('.clarify-row');
+clarifyRows.forEach((row,i)=>{
+  const delay=i===0?'>+0.3':'>+0.8';
+  master.to(row,{opacity:1,y:0,duration:0.15},delay)
+    .add(typeInDiv(clarifyIds[i],clarifyValues[i],0.06),'>')
+    .to({},{duration:0.5},'>');
+});
+
+// Expand inference (after row 3 - 等级) — 展开后停留5秒
+master.call(()=>{
+  const el=$('clarifyInference');el.style.display='block';el.style.overflow='hidden';
+  const h=el.scrollHeight;gsap.fromTo(el,{height:0},{height:h,duration:0.3});
+},null,'>+1.0')
+.call(()=>showTeleprompter('等级字段由多模型投票推断——4个模型一致推荐 A2-70'),null,'>+0.2');
+
+// Inference cards — 停留5秒让观众看清投票结果
+master.fromTo('#inferCard1',{opacity:0,y:8,scale:0.95},{opacity:1,y:0,scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.3')
+  .fromTo('#inferCard2',{opacity:0,y:8,scale:0.95},{opacity:1,y:0,scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.3')
+  .to({},{duration:5.0},'>');
+
+// Collapse inference
+master.call(()=>{
+  const el=$('clarifyInference');gsap.to(el,{height:0,duration:0.15,onComplete:()=>{el.style.display='none';}});
+},null,'>+0.15');
+
+// Footer
+master.to('#clarifyFooter',{opacity:1,duration:0.15},'>+0.1')
+  .call(()=>showTeleprompter('一键确认所有属性，生成标准采购 Query'),null,'>+0.15');
+
+// Cursor to confirm
+master.add(moveCursor('#clarifyConfirm'),'>+0.3')
+  .add(clickPulse(),'>+0.08')
+  .call(()=>{
+    document.querySelectorAll('.btn-confirm').forEach(btn=>{
+      btn.textContent='✓ 已确认';btn.style.background='#10b981';btn.style.color='#fff';btn.style.borderColor='#10b981';
+    });
+    document.querySelectorAll('.btn-edit').forEach(btn=>{btn.style.display='none';});
+  },null,'>+0.08')
+  .to({},{duration:0.5},'>');
+
+// Close clarify panel
+master.to('#clarifyPanel',{opacity:0,duration:0.2,onComplete:()=>{$('clarifyPanel').style.pointerEvents='none';}},'>+0.15');
+
+// Step 5: 澄清后展示知识图谱 + AI分析
+master.call(()=>showTeleprompter('需求已确认，AI通过知识图谱构建采购Query'),null,'>+0.25')
+  .to('#aiPanel1',{opacity:1,duration:0.25,onStart:()=>{$('aiPanel1').style.pointerEvents='auto';}},'>+0.15')
+  // AI Step 0 — 中心节点
+  .to('#aiStep0',{opacity:1,y:0,duration:0.2},'>+0.25')
+  .call(()=>activateDot(0),null,'>')
+  .fromTo('#kgCenter',{scale:0,svgOrigin:'200 150'},{scale:1,duration:0.3,ease:'back.out(1.5)'},'>+0.2')
+  .to('#kgCenter',{opacity:1,duration:0.1},'<')
+  .to('#kgL0',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(0),null,'>+0.3')
+  // AI Step 1 — 头型
+  .to('#aiStep1',{opacity:1,y:0,duration:0.2},'>+0.2')
+  .call(()=>activateDot(1),null,'>')
+  .to('#kgEdge1',{opacity:1,duration:0.15},'>+0.2')
+  .fromTo('#kgN1',{scale:0,svgOrigin:'100 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN1',{opacity:1,duration:0.1},'<')
+  .to('#kgL1',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(1),null,'>+0.3')
+  // AI Step 2 — 长度 + 等级
+  .to('#aiStep2',{opacity:1,y:0,duration:0.2},'>+0.2')
+  .call(()=>activateDot(2),null,'>')
+  .to('#kgEdge2',{opacity:1,duration:0.15},'>+0.2')
+  .fromTo('#kgN2',{scale:0,svgOrigin:'320 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN2',{opacity:1,duration:0.1},'<')
+  .to('#kgL2',{opacity:1,duration:0.1},'<')
+  .to('#kgEdge3',{opacity:1,duration:0.15},'>+0.15')
+  .fromTo('#kgN3',{scale:0,svgOrigin:'80 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN3',{opacity:1,duration:0.1},'<')
+  .to('#kgL3',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(2),null,'>+0.3')
+  // AI Step 3 — 标准
+  .to('#aiStep3',{opacity:1,y:0,duration:0.2},'>+0.2')
+  .call(()=>activateDot(3),null,'>')
+  .to('#kgEdge4',{opacity:1,duration:0.15},'>+0.2')
+  .fromTo('#kgN4',{scale:0,svgOrigin:'320 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .to('#kgN4',{opacity:1,duration:0.1},'<')
+  .to('#kgL4',{opacity:1,duration:0.1},'<')
+  .call(()=>completeDot(3),null,'>+0.3')
+  // L2 nodes
+  .to(['#kgEdge5','#kgEdge6','#kgEdge7'],{opacity:1,duration:0.15,stagger:0.12},'>+0.2')
+  .to(['#kgN5','#kgN6','#kgN7'],{opacity:1,duration:0.2,stagger:0.12},'>+0.15')
+  .to(['#kgL5','#kgL6','#kgL7'],{opacity:1,duration:0.12,stagger:0.08},'<')
+  .call(()=>showTeleprompter('已确认参数：头型=六角, 长度=50mm, 等级=A2-70, 标准=GB5783'),null,'>+0.2')
+  .to({},{duration:1.5},'>')
+  .to('#aiPanel1',{opacity:0,duration:0.2,onComplete:()=>{$('aiPanel1').style.pointerEvents='none';}},'>+0.1');
+
+// Step 6: Precise results — 停留3秒
+master.call(()=>{renderGrid('productGrid1',preciseProducts);$('productGrid1').style.gridTemplateColumns='repeat(3,1fr)';document.querySelectorAll('#productGrid1 .product-card').forEach(c=>{c.style.opacity='1';});$('resultCount1').textContent='精准匹配 3 件商品';},null,'>+0.15')
+  .add(showToast('✅ 精准匹配：12 → 3 件商品'),'>+0.25')
+  .call(()=>showTeleprompter('精准匹配：12 件收敛为 3 件可决策商品'),null,'>+0.15')
+  .add(hideCursor(),'>+0.25')
+  .to({},{duration:3.0},'>');
+
+// ── TRANSITION 1→2 ── (保持快速过渡)
+master.addLabel('trans12')
+  .add(addSceneTransition('02','搜到了，但不知道选哪家？','一品多商 - 多维度对比'))
+
+// Click card (保持快速)
+master.add(showCursor(),'>+0.15')
+  .add(moveCursor('#productGrid1 .product-card:first-child'),'>+0.1')
+  .add(showAnnotation('点击查看详情'),'>+0.15')
+  .add(clickPulse(),'>+0.15')
+  .call(()=>flashHighlight('#productGrid1 .product-card:first-child'),null,'>')
+  .add(hideCursor(),'>+0.15')
+  .to({},{duration:0.15},'');
+
+// ── SCENE 2: 一品多商 ──
+master.addLabel('scene2')
+  .call(()=>{showScene('scene2');renderCompare();$('detailImg').src=getProductImage('不锈钢六角螺栓');progressText.textContent='场景 2/3';})
+  .call(()=>updateSceneHeader('场景 2/3 ▸ 一品多商 — 同品多供实时比价'))
+  .add(showCursor(),'>+0.15')
+  .to('#compareSection',{borderColor:'#7A2BFF',boxShadow:'0 0 0 3px rgba(122,43,255,.15)',border:'2px solid #7A2BFF',borderRadius:'12px',padding:'16px',duration:0.3},'>+0.25')
+  .call(()=>{const rows=document.querySelectorAll('#compareBody tr');rows.forEach((r,i)=>gsap.to(r,{opacity:1,duration:0.25,delay:i*0.25}));},null,'>+0.25')
+  .call(()=>showTeleprompter('同一商品，5 家供应商多维度实时比价'),null,'>+1.5')
+  .call(()=>{document.querySelectorAll('.refresh-btn').forEach(b=>gsap.to(b,{opacity:1,duration:0.2}));},null,'>+3.5')
+  .to({},{duration:2.0},'>')
+  .to('#detailActions',{opacity:1,duration:0.2},'>+0.15')
+  .to({},{duration:0.15},'>')
+  // Sort — 排序后停留3秒
+  .add(moveCursor('#priceHeader'),'>+0.75')
+  .add(showAnnotation('按价格排序'),'>+0.1')
+  .add(clickPulse(),'>+0.1')
+  .call(()=>{
+    const body=$('compareBody');const rows=[...body.querySelectorAll('tr')];
+    rows.sort((a,b)=>parseFloat(a.dataset.price)-parseFloat(b.dataset.price));
+    rows.forEach(r=>body.appendChild(r));
+  },null,'>+0.1')
+  .call(()=>flashHighlight('#priceHeader'),null,'>')
+  .call(()=>showTeleprompter('按价格排序，最低 ¥0.78/个'),null,'>+0.15')
+  .add(hideCursor(),'>+0.25')
+  .to({},{duration:3.0},'>')
+  .call(()=>gsap.set(clickHighlightEl,{opacity:0}),null,'>');
+
+// ── TRANSITION 2→3 ── (保持快速过渡)
+master.addLabel('trans23')
+  .add(addSceneTransition('03','平台没有怎么办？','一键外部寻源'))
+
+// ── SCENE 3: 批量寻源（含需求澄清+寻源询价单） ──
+
+// 辅助函数：重置澄清面板
+function resetClarifyPanel(){
+  ['cv0','cv1','cv2','cv3','cv4','cv5'].forEach(function(id){var el=$(id);if(el)el.textContent='';});
+  document.querySelectorAll('.clarify-row').forEach(function(r){r.style.opacity='0';r.style.transform='translateY(8px)';});
+  var inf=$('clarifyInference');if(inf)inf.style.display='none';
+  document.querySelectorAll('.btn-confirm').forEach(function(btn){btn.textContent='✓ 确认';btn.style.background='';btn.style.color='';btn.style.borderColor='';});
+  document.querySelectorAll('.btn-edit').forEach(function(btn){btn.style.display='';});
+  var ft=$('clarifyFooter');if(ft)ft.style.opacity='0';
+}
+// 辅助函数：填充询价单参数
+function fillInquiryParams(){
+  var params=[
+    {label:'品名',value:'内六角圆柱头螺钉'},
+    {label:'规格',value:'M12×80'},
+    {label:'材质',value:'合金钢'},
+    {label:'等级',value:'12.9级'},
+    {label:'表面处理',value:'达克罗'},
+    {label:'标准',value:'GB/T 70.1'}
+  ];
+  var container=$('inquiryParams');
+  container.innerHTML=params.map(function(p){return '<span class="inquiry-tag" style="opacity:0"><span class="tag-label">'+p.label+':</span>'+p.value+'</span>';}).join('');
+}
+
+master.addLabel('scene3')
+  .call(()=>{
+    showScene('scene3');
+    progressText.textContent='场景 3/3';
+    // 重置scene3状态
+    const si3 = $('searchInput3');
+    if(si3) si3.value = '';
+    const es = $('emptyState');
+    if(es) es.style.display = 'none';
+    const sp = $('sourcePanel');
+    if(sp) sp.style.right = '-420px';
+    const sl = $('sourceLoading');
+    if(sl) sl.style.display = 'none';
+    const sr = $('sourceResult');
+    if(sr) sr.style.display = 'none';
+    const scb = $('sourceConfirmBtn');
+    if(scb) { scb.style.display = 'block'; scb.textContent = '一键发起寻源'; }
+    const sb3 = $('searchBtn3');
+    if(sb3) { sb3.classList.remove('loading'); sb3.textContent = '搜索'; }
+    // 重置询价单
+    var siq=$('sourceInquiry');if(siq)siq.style.display='none';
+    // 重置澄清面板
+    resetClarifyPanel();
+    // 重置供应商勾选
+    document.querySelectorAll('.source-check').forEach(c => {
+      c.style.display = 'flex';
+      c.style.opacity = '0';
+      const cb = c.querySelector('.checkbox');
+      if(cb) { cb.classList.remove('checked'); cb.textContent = ''; }
+    });
+  })
+  .call(()=>updateSceneHeader('场景 3/3 ▸ 一键寻源 — 搜不到也能买到'))
+  .call(()=>showTeleprompter('搜索\'M12×80 12.9级内六角圆柱头螺钉\'——平台暂无'),null,'>+0.15')
+  .add(showCursor(),'>+0.15')
+  .add(moveCursor('#searchInput3'),'>')
+  .add(clickPulse(),'>+0.1')
+  .add(typeText('searchInput3','M12×80 12.9级内六角圆柱头螺钉',0.12),'>+0.15')
+  .add(moveCursor('#searchBtn3'),'>+0.15')
+  .add(clickPulse(),'>+0.05')
+  .call(()=>{$('searchBtn3').classList.add('loading');$('searchBtn3').textContent='⟳ 搜索中';})
+  .to('#searchBtn3',{scale:0.95,duration:0.08},'>')
+  .to('#searchBtn3',{scale:1,duration:0.1},'>');
+
+// Empty state — 停留2秒
+master.call(()=>{$('emptyState').style.display='flex';$('searchBtn3').classList.remove('loading');$('searchBtn3').textContent='搜索';},null,'>+0.25')
+  .from('#emptyState',{opacity:0,y:20,duration:0.3},'>')
+  .to({},{duration:2.0},'>');
+
+// Step 2: 触发AI需求澄清
+master.call(()=>showTeleprompter('平台暂无该物料，触发AI需求澄清补全寻源参数'),null,'>+0.1')
+  .add(moveCursor('#aiBtn3'),'>+0.2')
+  .add(clickPulse(),'>+0.1')
+  .call(()=>flashHighlight('#aiBtn3'),null,'>')
+  .call(()=>{$('aiBtn3').style.boxShadow='0 0 0 8px rgba(122,43,255,.3)';setTimeout(()=>{$('aiBtn3').style.boxShadow='';},400);},null,'>');
+
+// Step 3: 复用澄清面板 — 填入Scene 3数据
+master.to('#clarifyPanel',{opacity:1,duration:0.25,onStart:()=>{$('clarifyPanel').style.pointerEvents='auto';}},'>+0.15')
+  .call(()=>showTeleprompter('AI 自动提取寻源参数：品名、规格、材质、等级…'),null,'>');
+
+const s3ClarifyValues=['内六角圆柱头螺钉','M12×80','合金钢','12.9级','达克罗','GB/T 70.1'];
+const s3ClarifyIds=['cv0','cv1','cv2','cv3','cv4','cv5'];
+const s3ClarifyRows=document.querySelectorAll('.clarify-row');
+s3ClarifyRows.forEach((row,i)=>{
+  const delay=i===0?'>+0.3':'>+0.6';
+  master.to(row,{opacity:1,y:0,duration:0.15},delay)
+    .add(typeInDiv(s3ClarifyIds[i],s3ClarifyValues[i],0.06),'>')
+    .to({},{duration:0.3},'>');
+});
+
+// Footer + 一键确认
+master.to('#clarifyFooter',{opacity:1,duration:0.15},'>+0.1')
+  .call(()=>showTeleprompter('一键确认所有寻源参数'),null,'>+0.1')
+  .add(moveCursor('#clarifyConfirm'),'>+0.2')
+  .add(clickPulse(),'>+0.08')
+  .call(()=>{
+    document.querySelectorAll('.btn-confirm').forEach(btn=>{
+      btn.textContent='✓ 已确认';btn.style.background='#10b981';btn.style.color='#fff';btn.style.borderColor='#10b981';
+    });
+    document.querySelectorAll('.btn-edit').forEach(btn=>{btn.style.display='none';});
+  },null,'>+0.08')
+  .to({},{duration:0.5},'>');
+
+// 关闭澄清面板
+master.to('#clarifyPanel',{opacity:0,duration:0.2,onComplete:()=>{$('clarifyPanel').style.pointerEvents='none';}},'>+0.15');
+
+// Step 4: 寻源询价单展示
+master.call(()=>showTeleprompter('需求参数已确认，自动生成寻源询价单'),null,'>+0.2')
+  .call(()=>{fillInquiryParams();$('sourceInquiry').style.display='block';},null,'>')
+  .to('#sourcePanel',{right:0,duration:0.3,ease:'power2.out'},'>+0.1')
+  .from('#sourceInquiry',{opacity:0,y:10,duration:0.2},'>+0.1');
+
+// 询价单tag逐个入场
+master.call(()=>{
+  var tags=document.querySelectorAll('.inquiry-tag');
+  tags.forEach(function(tag,i){
+    gsap.to(tag,{opacity:1,duration:0.15,delay:i*0.12});
+  });
+},null,'>+0.1')
+  .to({},{duration:1.2},'>')
+  .call(()=>showTeleprompter('基于澄清参数，向5家供应商发起询价'),null,'>');
+
+// Step 5: 供应商勾选
+const checks=['sc1','sc2','sc3','sc4','sc5'];
+checks.forEach((id,i)=>{
+  master.to('#'+id,{opacity:1,duration:0.2},`>+${i===0?0.3:0.35}`)
+    .add(moveCursor('#'+id),'>+0.1')
+    .add(clickPulse(),'>+0.05')
+    .call(()=>{document.querySelector('#'+id+' .checkbox').classList.add('checked');document.querySelector('#'+id+' .checkbox').textContent='✓';},null,'>');
+});
+
+// Confirm source
+master.add(moveCursor('#sourceConfirmBtn'),'>+0.2')
+  .add(clickPulse(),'>+0.1')
+  .call(()=>{$('sourceConfirmBtn').style.display='none';document.querySelectorAll('.source-check').forEach(c=>c.style.display='none');$('sourceInquiry').style.display='none';$('sourceLoading').style.display='block';},null,'>+0.1');
+
+// Loading → result
+master.to({},{duration:1.5},'>')
+  .call(()=>{$('sourceLoading').style.display='none';$('sourceResult').style.display='block';renderSource();},null,'>')
+  .from('#sourceResult',{opacity:0,duration:0.3},'>')
+  .call(()=>showToast('✅ 5家供应商报价完成，最低价 ¥3.20'),null,'>')
+  .call(()=>showTeleprompter('报价回传完成，最低价来自供应商A ¥3.20'),null,'>+0.25')
+  .to({},{duration:1.5},'>')
+  .call(()=>{
+    const row=document.querySelector('tr.best-price');
+    if(row)row.classList.add('row-highlight');
+  },null,'>+0.2')
+  .to({},{duration:1.5},'>');
+
+// ── OUTRO ──
+master.addLabel('outro')
+  .call(()=>{showScene('sceneOutro');progressText.textContent='完成';})
+  .call(()=>showTeleprompter('玲珑慧搜：搜索 → 比价 → 寻源，全链路AI采购'),null,'>+0.1')
+  .add(hideSceneHeader(),'>+0.1')
+  .add(hideTeleprompter(),'>+2')
+  .from('#sceneOutro .intro-logo-wrap',{opacity:0,y:30,duration:0.6},'>+0.1')
+  .from('#sceneOutro .outro-sub',{opacity:0,y:20,duration:0.4},'>+0.1')
+  .fromTo('#compareCard',{opacity:0,y:16},{opacity:1,y:0,duration:0.4,ease:'power2.out'},'>-0.1')
+  .fromTo('.compare-row',{opacity:0},{opacity:1,duration:0.3,stagger:0.08,ease:'power2.out'},'>+0.1')
+  .fromTo('.compare-dim',{opacity:0,x:-12},{opacity:1,x:0,duration:0.25,stagger:0.08,ease:'power2.out'},'>-0.2')
+  .fromTo('.compare-val-old',{opacity:0},{opacity:1,duration:0.25,stagger:0.08,ease:'power2.out'},'>-0.2')
+  .fromTo('.compare-arrow',{opacity:0,scale:0.4},{opacity:1,scale:1,duration:0.2,stagger:0.08,ease:'back.out(2)'},'>-0.2')
+  .fromTo('.compare-val-new',{opacity:0,x:12},{opacity:1,x:0,duration:0.3,stagger:0.1,ease:'power2.out'},'>-0.3')
+  .from('#sceneOutro .outro-footer',{opacity:0,duration:0.3},'>+0.15');
+
+// ══════ CONTROLS ══════
+const SCENE_NAV=['scene1','trans12','scene2','trans23','scene3','outro'];
+const SCENE_ONLY=['scene1','trans12','trans23'];
+const SCENE_ID_MAP={scene1:'scene1',trans12:'scene1',scene2:'scene2',trans23:'scene2',scene3:'scene3',outro:'sceneOutro'};
+let isPaused=false;
+function seekToLabel(label){
+  master.seek(label);
+  const sceneId=SCENE_ID_MAP[label];if(sceneId)showScene(sceneId);
+  ['aiPanel1','clarifyPanel'].forEach(id=>{const el=$(id);if(el){el.style.opacity='0';el.style.pointerEvents='none';}});
+  const sp=$('sourcePanel');if(sp){sp.style.right='-420px';}
+  const siq=$('sourceInquiry');if(siq){siq.style.display='none';}
+  const cc=$('compareCard');if(cc){cc.style.opacity='0';}
+  document.querySelectorAll('.compare-row,.compare-arrow').forEach(el=>{el.style.opacity='0';});
+  transOverlay.style.opacity='0';cursor.style.opacity='0';
+}
+$('btnPause').addEventListener('click',()=>{master.pause();isPaused=true;$('btnPause').style.display='none';$('btnPlay').style.display='flex';});
+$('btnPlay').addEventListener('click',()=>{master.resume();isPaused=false;$('btnPlay').style.display='none';$('btnPause').style.display='flex';});
+$('btnNext').addEventListener('click',()=>{const ct=master.time();for(let l of SCENE_ONLY){const t=master.labels[l];if(t>ct+0.5){seekToLabel(l);if(!isPaused)master.resume();break;}}});
+$('btnPrev').addEventListener('click',()=>{const ct=master.time();let prev=SCENE_ONLY[0];for(let l of SCENE_ONLY){const t=master.labels[l];if(t>=ct-0.5)break;prev=l;}seekToLabel(prev);if(!isPaused)master.resume();});
+$('progressBarWrap').addEventListener('click',(e)=>{
+  const ratio=e.clientX/window.innerWidth;
+  const targetTime=master.duration()*ratio;
+  master.seek(targetTime);
+  let activeLabel='scene1';
+  for(let l of SCENE_NAV){const t=master.labels[l];if(t<=targetTime)activeLabel=l;else break;}
+  const sceneId=SCENE_ID_MAP[activeLabel];if(sceneId)showScene(sceneId);
+  ['aiPanel1','clarifyPanel'].forEach(id=>{const el=$(id);if(el){el.style.opacity='0';el.style.pointerEvents='none';}});
+  const sp=$('sourcePanel');if(sp){sp.style.right='-420px';}
+  const siq2=$('sourceInquiry');if(siq2){siq2.style.display='none';}
+  const cc2=$('compareCard');if(cc2){cc2.style.opacity='0';}
+  document.querySelectorAll('.compare-row,.compare-arrow').forEach(el=>{el.style.opacity='0';});
+  transOverlay.style.opacity='0';cursor.style.opacity='0';
+  progressBar.style.width=(ratio*100)+'%';
+  if(!isPaused)master.resume();
+});
+master.eventCallback('onUpdate',()=>{progressBar.style.width=(master.progress()*100)+'%';});
+master.play();
+})();
+</script>
+</body>
+</html>

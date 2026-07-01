@@ -173,8 +173,8 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .empty-state .icon{font-size:48px;margin-bottom:16px}
 .empty-state .text{font-size:18px;color:#475569;margin-bottom:8px}
 .source-btn{padding:12px 32px;background:#7A2BFF;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;margin-top:20px;opacity:0}
-.source-panel{position:fixed;top:0;right:-420px;width:380px;height:100%;background:#fff;z-index:300;box-shadow:-8px 0 40px rgba(0,0,0,.12),-2px 0 8px rgba(0,0,0,.04);padding:32px 24px;display:flex;flex-direction:column;border-radius:20px 0 0 20px;border-left:1px solid #e2e8f0}
-.source-panel h3{font-size:16px;font-weight:700;margin-bottom:24px;color:#0f172a;padding-bottom:12px;border-bottom:2px solid #f1f5f9}
+.source-panel{position:fixed;top:0;right:-860px;width:min(820px,72vw);height:100%;background:#fff;z-index:300;box-shadow:-18px 0 48px rgba(15,6,26,.16),-2px 0 8px rgba(0,0,0,.04);padding:28px 28px 24px;display:flex;flex-direction:column;border-radius:22px 0 0 22px;border-left:1px solid #e2e8f0;overflow-y:auto;overflow-x:hidden}
+.source-panel h3{font-size:17px;font-weight:800;margin-bottom:18px;color:#0f172a;padding-bottom:12px;border-bottom:2px solid #f1f5f9;letter-spacing:.2px}
 .source-check{display:flex;align-items:center;gap:10px;padding:14px;border:1.5px solid #e2e8f0;border-radius:14px;margin-bottom:10px;opacity:0;transition:all .2s;background:#fff}
 .source-check:hover{border-color:#DCC8FF;box-shadow:0 2px 8px rgba(122,43,255,.08)}
 .source-check .checkbox{width:22px;height:22px;border:2px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;transition:all .2s}
@@ -190,16 +190,62 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .inquiry-params{display:flex;flex-wrap:wrap;gap:6px}
 .inquiry-tag{font-size:12px;background:#fff;border:1px solid #DCC8FF;border-radius:6px;padding:3px 10px;color:#5B21D9;white-space:nowrap}
 .inquiry-tag .tag-label{color:#A14DFF;font-weight:500;margin-right:4px}
-.source-loading{display:none;text-align:center;padding:24px;color:#64748b;font-size:14px}
+.source-loading{display:none;padding:22px;border:1px solid #E4D4FF;border-radius:16px;background:linear-gradient(180deg,#FBF8FF,#fff);color:#475569;font-size:14px}
+.source-loading-title{font-size:15px;font-weight:800;color:#5B21D9;margin-bottom:14px}
+.eval-track{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.eval-item{background:#fff;border:1px solid #ede9fe;border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(122,43,255,.06)}
+.eval-label{font-size:12px;font-weight:700;color:#334155;margin-bottom:8px}
+.eval-bar{height:6px;background:#f1f5f9;border-radius:99px;overflow:hidden}
+.eval-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#7A2BFF,#C67BFF);border-radius:99px}
 .source-result{display:none}
-.source-result table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0}
-.source-result th{background:linear-gradient(180deg,#f8fafc,#f1f5f9);padding:10px;text-align:left;font-weight:700;font-size:11px;color:#334155}
-.source-result td{padding:10px;border-bottom:1px solid #f1f5f9}
-.source-result tbody tr:nth-child(even){background:rgba(248,250,252,.5)}
-.source-result tbody tr:hover{background:rgba(239,246,255,.4)}
-.source-result tr.best-price td{background:rgba(16,185,129,.08);font-weight:600}
-.source-recommend{display:inline-flex;align-items:center;gap:2px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-size:10px;padding:2px 6px;border-radius:4px;font-weight:700;margin-left:4px;box-shadow:0 2px 4px rgba(245,158,11,.25)}
-.source-select-btn{background:linear-gradient(135deg,#7A2BFF,#5B21D9);color:#fff;border:none;padding:6px 16px;border-radius:8px;font-size:12px;cursor:pointer;white-space:nowrap;font-weight:600;transition:all .15s;box-shadow:0 2px 8px rgba(122,43,255,.15)}
+.dashboard-overview{display:grid;grid-template-columns:1.15fr 1.15fr repeat(4,1fr);gap:10px;margin-bottom:14px}
+.overview-card{border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:12px 14px;min-height:76px;box-shadow:0 4px 14px rgba(15,23,42,.04)}
+.overview-card.primary{border-color:#DCC8FF;background:#FBF8FF}
+.overview-label{font-size:11px;color:#64748b;font-weight:700;margin-bottom:7px;white-space:nowrap}
+.overview-value{font-size:18px;color:#0f172a;font-weight:900;letter-spacing:-.2px;white-space:nowrap}
+.overview-value.purple{color:#5B21D9}
+.overview-note{font-size:11px;color:#94a3b8;margin-top:5px;white-space:nowrap}
+.recommend-card{border:1.5px solid #C7B3FF;border-radius:18px;background:linear-gradient(180deg,#fff,#FBF8FF);padding:16px;margin-bottom:14px;box-shadow:0 12px 28px rgba(122,43,255,.1)}
+.recommend-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:14px}
+.recommend-title{font-size:18px;font-weight:900;color:#0f172a}
+.recommend-sub{font-size:12px;color:#64748b;margin-top:4px}
+.score-ring{width:84px;height:84px;border-radius:50%;background:conic-gradient(#7A2BFF 0 92%,#ede9fe 92% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:inset 0 0 0 8px #fff}
+.score-ring span{display:block;text-align:center;font-family:"JetBrains Mono","Noto Sans SC",monospace;font-size:20px;font-weight:900;color:#5B21D9;line-height:1}
+.score-ring small{display:block;font-size:10px;color:#64748b;font-weight:700;margin-top:3px}
+.tag-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.decision-tag{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800;border:1px solid #e5e7eb;background:#fff;color:#475569;white-space:nowrap}
+.decision-tag.hot{background:#F8F3FF;border-color:#DCC8FF;color:#5B21D9}
+.decision-tag.warn{background:#fff7ed;border-color:#fed7aa;color:#c2410c}
+.recommend-metrics{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px}
+.metric-cell{border:1px solid #f1f5f9;background:#fff;border-radius:12px;padding:9px 10px}
+.metric-label{font-size:10px;color:#94a3b8;font-weight:700;margin-bottom:5px;white-space:nowrap}
+.metric-value{font-size:13px;color:#0f172a;font-weight:800;white-space:nowrap}
+.ai-reason{border-left:3px solid #7A2BFF;background:#fff;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.55;color:#334155;margin-bottom:12px}
+.recommend-actions{display:flex;align-items:center;gap:12px}
+.source-select-btn{background:linear-gradient(135deg,#7A2BFF,#5B21D9);color:#fff;border:none;padding:10px 18px;border-radius:10px;font-size:13px;cursor:pointer;white-space:nowrap;font-weight:800;transition:all .15s;box-shadow:0 6px 16px rgba(122,43,255,.22)}
+.source-secondary-btn{border:1px solid #DCC8FF;background:#fff;color:#5B21D9;padding:9px 14px;border-radius:10px;font-size:12px;font-weight:800;white-space:nowrap}
+.decision-title{font-size:14px;font-weight:900;color:#0f172a;margin:12px 0 10px;display:flex;align-items:center;justify-content:space-between}
+.decision-title span{font-size:11px;color:#94a3b8;font-weight:600}
+.source-table-wrap{border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:12px}
+.source-result table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.source-result th{background:#f8fafc;padding:9px 8px;text-align:left;font-weight:800;font-size:10.5px;color:#475569;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+.source-result td{padding:10px 8px;border-bottom:1px solid #f1f5f9;vertical-align:middle;color:#334155;line-height:1.35;word-break:normal}
+.source-result tbody tr:nth-child(even){background:#fcfdff}
+.source-result tbody tr:hover{background:#F8F3FF}
+.source-result tr.best-price td{background:#FBF8FF;font-weight:700}
+.source-result tr.row-highlight td{background:#F0E6FF!important;box-shadow:inset 0 1px 0 rgba(122,43,255,.12),inset 0 -1px 0 rgba(122,43,255,.12)}
+.source-supplier{font-weight:900;color:#0f172a;display:block;white-space:nowrap}
+.source-brand{font-size:11px;color:#94a3b8;display:block;margin-top:2px;white-space:nowrap}
+.risk-pill{display:inline-flex;border-radius:999px;padding:3px 7px;font-size:10px;font-weight:800;white-space:nowrap}
+.risk-low{background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0}
+.risk-mid{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.action-advice{font-size:11px;font-weight:800;color:#5B21D9;line-height:1.35}
+.basis-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:10px}
+.basis-card{border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:12px}
+.basis-head{font-size:12px;font-weight:900;color:#0f172a;margin-bottom:8px}
+.basis-copy{font-size:11px;color:#64748b;line-height:1.45;margin-top:7px}
+.score-bar{height:7px;background:#f1f5f9;border-radius:99px;overflow:hidden}
+.score-bar span{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#7A2BFF,#A14DFF)}
 .source-select-btn:hover{box-shadow:0 4px 12px rgba(122,43,255,.25);transform:translateY(-1px)}
 .source-select-btn:active{transform:scale(.97)}
 tr.best-price.row-highlight{background:#F8F3FF !important;}
@@ -520,8 +566,28 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
     <div class="source-check" id="sc3"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商B</span><span class="source-check-meta">⭐⭐⭐⭐☆ 4.6分 · 响应率95%</span></div></div>
     <div class="source-check" id="sc4"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商C</span><span class="source-check-meta">⭐⭐⭐⭐⭐ 4.8分 · 响应率97%</span></div></div>
     <div class="source-check" id="sc5"><div class="checkbox"></div><div class="source-check-info"><span class="source-check-name">供应商D</span><span class="source-check-meta">⭐⭐⭐⭐☆ 4.3分 · 响应率88%</span></div></div>
-    <div class="source-loading" id="sourceLoading">⏳ 正在向5家供应商询价...</div>
-    <div class="source-result" id="sourceResult"><table><thead><tr><th>供应商</th><th>品牌</th><th>单价(元)</th><th>起订量</th><th>货期</th><th>备注</th><th>操作</th></tr></thead><tbody id="sourceBody"></tbody></table></div>
+    <div class="source-loading" id="sourceLoading">
+      <div class="source-loading-title">AI正在综合评估价格 / 货期 / 资质 / 履约风险</div>
+      <div class="eval-track">
+        <div class="eval-item"><div class="eval-label">价格与税运</div><div class="eval-bar"><span></span></div></div>
+        <div class="eval-item"><div class="eval-label">MOQ与库存</div><div class="eval-bar"><span></span></div></div>
+        <div class="eval-item"><div class="eval-label">资质与响应</div><div class="eval-bar"><span></span></div></div>
+        <div class="eval-item"><div class="eval-label">履约可信度</div><div class="eval-bar"><span></span></div></div>
+      </div>
+    </div>
+    <div class="source-result" id="sourceResult">
+      <div class="dashboard-overview" id="sourceOverview"></div>
+      <div class="recommend-card" id="recommendCard"></div>
+      <div class="decision-title">供应商对比明细 <span>价格、货期、MOQ、税运、资质、响应、风险综合排序</span></div>
+      <div class="source-table-wrap">
+        <table>
+          <thead><tr><th style="width:16%">供应商</th><th style="width:10%">报价</th><th style="width:9%">MOQ</th><th style="width:8%">货期</th><th style="width:13%">税运</th><th style="width:11%">资质</th><th style="width:9%">响应</th><th style="width:10%">风险</th><th style="width:14%">建议动作</th></tr></thead>
+          <tbody id="sourceBody"></tbody>
+        </table>
+      </div>
+      <div class="decision-title">AI决策依据 <span>不是单看最低价，而是面向采购场景的综合推荐</span></div>
+      <div class="basis-grid" id="basisGrid"></div>
+    </div>
     <button class="source-confirm-btn" id="sourceConfirmBtn">一键发起寻源</button>
   </div>
 </div>
@@ -713,11 +779,11 @@ const compareData=[
   {supplier:'供应商C',brand:'华东螺丝',rating:4.6,price:1.02,delivery:'2天',stock:'4200',type:'相似品',cooperate:21}
 ];
 const sourceData=[
-  {supplier:'玲珑慧搜',brand:'高强紧固',price:3.85,moq:'100个',delivery:'3天',note:'含税含运'},
-  {supplier:'供应商A',brand:'中紧标准件',price:3.20,moq:'500个',delivery:'7天',note:'需自提'},
-  {supplier:'供应商B',brand:'金鼎紧固',price:3.68,moq:'100个',delivery:'4天',note:'含税含运'},
-  {supplier:'供应商C',brand:'东方螺丝',price:3.95,moq:'50个',delivery:'2天',note:'含税含运/急件'},
-  {supplier:'供应商D',brand:'永年标准件',price:3.52,moq:'200个',delivery:'5天',note:'含税'}
+  {supplier:'玲珑慧搜',brand:'高强紧固',price:3.85,moq:'100个',delivery:'3天',tax:'含税含运',qualification:'资质已验',response:'18分钟',risk:'低风险',riskClass:'risk-low',score:88,fulfill:'96%',advice:'稳妥履约'},
+  {supplier:'供应商A',brand:'中紧标准件',price:3.20,moq:'500个',delivery:'7天',tax:'需自提',qualification:'资质已验',response:'26分钟',risk:'中低风险',riskClass:'risk-mid',score:92,fulfill:'91%',advice:'成本优先 / 库存补货',recommended:true},
+  {supplier:'供应商B',brand:'金鼎紧固',price:3.68,moq:'100个',delivery:'4天',tax:'含税含运',qualification:'资质已验',response:'21分钟',risk:'低风险',riskClass:'risk-low',score:89,fulfill:'95%',advice:'综合稳妥'},
+  {supplier:'供应商C',brand:'东方螺丝',price:3.95,moq:'50个',delivery:'2天',tax:'含税含运',qualification:'资质已验',response:'12分钟',risk:'低风险',riskClass:'risk-low',score:86,fulfill:'93%',advice:'急件 / 小批量优先'},
+  {supplier:'供应商D',brand:'永年标准件',price:3.52,moq:'200个',delivery:'5天',tax:'含税',qualification:'资料待补',response:'34分钟',risk:'中风险',riskClass:'risk-mid',score:78,fulfill:'84%',advice:'价格较优，需补资料'}
 ];
 function renderGrid(containerId,items){
   const c=$(containerId);c.innerHTML='';
@@ -740,13 +806,45 @@ function renderCompare(){
   });
 }
 function renderSource(){
-  const body=$('sourceBody');body.innerHTML='';const minP=Math.min(...sourceData.map(d=>d.price));
+  const body=$('sourceBody'),overview=$('sourceOverview'),recommendCard=$('recommendCard'),basisGrid=$('basisGrid');
+  const recommended=sourceData.find(d=>d.recommended);
+  body.innerHTML='';
+  overview.innerHTML=[
+    ['5家供应商报价已回收','响应完成率 100%','primary'],
+    ['AI综合推荐：供应商A','综合评分 92/100','primary'],
+    ['最低报价','¥3.20 / 个',''],
+    ['预计节省','较自营节省 16.9%',''],
+    ['风险等级','中低风险',''],
+    ['完成状态','09:42 已完成','']
+  ].map(function(item){
+    return '<div class="overview-card '+item[2]+'"><div class="overview-label">'+item[0]+'</div><div class="overview-value '+(item[2]?'purple':'')+'">'+item[1]+'</div><div class="overview-note">AI评估已生成留痕</div></div>';
+  }).join('');
+  recommendCard.innerHTML=
+    '<div class="recommend-head"><div><div class="recommend-title">供应商A · 中紧标准件</div><div class="recommend-sub">AI推荐用于常备库存补货，优先满足成本目标</div></div><div class="score-ring"><div><span>92</span><small>/100</small></div></div></div>'+
+    '<div class="tag-row"><span class="decision-tag hot">推荐</span><span class="decision-tag hot">最低价</span><span class="decision-tag warn">需自提</span><span class="decision-tag warn">MOQ较高</span><span class="decision-tag">资质已验</span></div>'+
+    '<div class="recommend-metrics">'+
+      '<div class="metric-cell"><div class="metric-label">报价</div><div class="metric-value">¥3.20/个</div></div>'+
+      '<div class="metric-cell"><div class="metric-label">MOQ</div><div class="metric-value">500个</div></div>'+
+      '<div class="metric-cell"><div class="metric-label">货期</div><div class="metric-value">7天</div></div>'+
+      '<div class="metric-cell"><div class="metric-label">税运</div><div class="metric-value">需自提</div></div>'+
+      '<div class="metric-cell"><div class="metric-label">资质</div><div class="metric-value">已校验</div></div>'+
+      '<div class="metric-cell"><div class="metric-label">履约</div><div class="metric-value">91%</div></div>'+
+    '</div>'+
+    '<div class="ai-reason"><strong>AI推荐理由：</strong>价格最低，较自营报价预计节省 16.9%；资质已校验、响应速度可接受。注意 MOQ 较高且需自提，更适合常备库存补货，不建议用于小批量急件。</div>'+
+    '<div class="recommend-actions"><button class="source-select-btn" id="sourceSelectBtn">采纳推荐并上架 →</button><button class="source-secondary-btn">查看比价依据</button></div>';
   sourceData.forEach((d,i)=>{
-    const cls=d.price===minP?'best-price':'';
-    const actionBtn=d.price===minP?`<button class="source-select-btn" id="sourceSelectBtn">选择上架 →</button>`:'';
-    const recommend=d.price===minP?`<span class="source-recommend">🏆 推荐</span>`:'';
-    body.innerHTML+=`<tr class="${cls}" id="sourceRow${i}"><td>${d.supplier}${recommend}</td><td>${d.brand}</td><td>¥${d.price.toFixed(2)}</td><td>${d.moq}</td><td>${d.delivery}</td><td>${d.note}</td><td>${actionBtn}</td></tr>`;
+    const cls=d.recommended?'best-price':'';
+    body.innerHTML+=`<tr class="${cls}" id="sourceRow${i}"><td><span class="source-supplier">${d.supplier}${d.recommended?' · 推荐':''}</span><span class="source-brand">${d.brand}</span></td><td>¥${d.price.toFixed(2)}</td><td>${d.moq}</td><td>${d.delivery}</td><td>${d.tax}</td><td>${d.qualification}</td><td>${d.response}</td><td><span class="risk-pill ${d.riskClass}">${d.risk}</span></td><td><div class="action-advice">${d.advice}</div></td></tr>`;
   });
+  const basis=[
+    ['成本最优','供应商A 报价 ¥3.20，较自营节省 16.9%',92],
+    ['交期可接受','7天适合库存补货；急件可切换供应商C',78],
+    ['资质已校验','A/B/C/玲珑慧搜资质已验，D需补资料',88],
+    ['履约风险可控','A履约评分 91%，风险为中低等级',84]
+  ];
+  basisGrid.innerHTML=basis.map(function(b){
+    return '<div class="basis-card"><div class="basis-head">'+b[0]+'</div><div class="score-bar"><span style="width:'+b[2]+'%"></span></div><div class="basis-copy">'+b[1]+'</div></div>';
+  }).join('');
 }
 
 // ══════ MASTER TIMELINE (V8 — 四场景全链路版) ══════
@@ -988,11 +1086,12 @@ master.addLabel('scene3')
     const es = $('emptyState');
     if(es) es.style.display = 'none';
     const sp = $('sourcePanel');
-    if(sp) sp.style.right = '-420px';
+    if(sp) sp.style.right = '-860px';
     const sl = $('sourceLoading');
     if(sl) sl.style.display = 'none';
     const sr = $('sourceResult');
     if(sr) sr.style.display = 'none';
+    document.querySelectorAll('.eval-bar span').forEach(b=>{b.style.width='0';});
     const scb = $('sourceConfirmBtn');
     if(scb) { scb.style.display = 'block'; scb.textContent = '一键发起寻源'; }
     const sb3 = $('searchBtn3');
@@ -1093,18 +1192,29 @@ master.add(moveCursor('#sourceConfirmBtn'),'>+0.2')
   .add(clickPulse(),'>+0.1')
   .call(()=>{$('sourceConfirmBtn').style.display='none';document.querySelectorAll('.source-check').forEach(c=>c.style.display='none');$('sourceInquiry').style.display='none';$('sourceLoading').style.display='block';},null,'>+0.1');
 
-// Loading → result
-master.to({},{duration:1.5},'>')
+// Loading → AI decision dashboard
+master.call(()=>showTeleprompter('5家供应商报价回收完成，AI正在综合评估价格、货期、资质与履约风险'),null,'>+0.1')
+  .to('.eval-bar span',{width:'100%',duration:0.75,stagger:0.14,ease:'power2.out'},'>+0.1')
+  .to({},{duration:0.6},'>')
   .call(()=>{$('sourceLoading').style.display='none';$('sourceResult').style.display='block';renderSource();},null,'>')
-  .from('#sourceResult',{opacity:0,duration:0.3},'>')
-  .call(()=>showToast('✅ 5家供应商报价完成，最低价 ¥3.20'),null,'>')
-  .call(()=>showTeleprompter('报价回传完成，最低价来自供应商A ¥3.20'),null,'>+0.25')
-  .to({},{duration:1.5},'>')
+  .set(['#sourceOverview .overview-card','#recommendCard','.source-table-wrap','#sourceBody tr','#basisGrid .basis-card','#sourceSelectBtn'],{opacity:0,y:12})
+  .call(()=>showToast('5家供应商报价已回收，AI推荐供应商A'),null,'>')
+  .call(()=>showTeleprompter('顶部总览：报价已回收、AI已完成综合评估、推荐供应商A'),null,'>+0.1')
+  .to('#sourceOverview .overview-card',{opacity:1,y:0,duration:0.28,stagger:0.06,ease:'power2.out'},'>')
+  .call(()=>showTeleprompter('AI推荐供应商A：最低价，但MOQ较高且需自提，适合库存补货'),null,'>+0.2')
+  .to('#recommendCard',{opacity:1,y:0,duration:0.35,ease:'power2.out'},'>')
+  .call(()=>showTeleprompter('展开5家供应商对比：价格、MOQ、货期、税运、资质、响应和风险同步呈现'),null,'>+0.2')
+  .to('.source-table-wrap',{opacity:1,y:0,duration:0.25},'>')
+  .to('#sourceBody tr',{opacity:1,y:0,duration:0.22,stagger:0.08,ease:'power2.out'},'>')
   .call(()=>{
     const row=document.querySelector('tr.best-price');
     if(row)row.classList.add('row-highlight');
   },null,'>+0.2')
-  .to({},{duration:1.5},'>');
+  .call(()=>showTeleprompter('推荐行高亮：成本优先选A；急件可选C；稳妥履约可选玲珑慧搜或B'),null,'>')
+  .to('#basisGrid .basis-card',{opacity:1,y:0,duration:0.24,stagger:0.06,ease:'power2.out'},'>+0.2')
+  .to('#sourceSelectBtn',{opacity:1,y:0,duration:0.25,ease:'back.out(1.6)'},'>+0.1')
+  .call(()=>showTeleprompter('可采纳AI推荐并一键上架，保留完整比价依据'),null,'>+0.1')
+  .to({},{duration:6.0},'>');
 
 // ── OUTRO ──
 master.addLabel('outro')
@@ -1131,7 +1241,7 @@ function seekToLabel(label){
   master.seek(label);
   const sceneId=SCENE_ID_MAP[label];if(sceneId)showScene(sceneId);
   ['aiPanel1','clarifyPanel'].forEach(id=>{const el=$(id);if(el){el.style.opacity='0';el.style.pointerEvents='none';}});
-  const sp=$('sourcePanel');if(sp){sp.style.right='-420px';}
+  const sp=$('sourcePanel');if(sp){sp.style.right='-860px';}
   const siq=$('sourceInquiry');if(siq){siq.style.display='none';}
   const cc=$('compareCard');if(cc){cc.style.opacity='0';}
   document.querySelectorAll('.compare-row,.compare-arrow').forEach(el=>{el.style.opacity='0';});

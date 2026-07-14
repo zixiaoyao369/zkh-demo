@@ -3,6 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  var expiry = new Date('2026-07-15T23:59:00+08:00');
+  if (new Date() > expiry) {
+    document.documentElement.style.background = '#0a0118';
+    document.documentElement.innerHTML = '<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>链接已过期</title><style>body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0a0118 0%,#1a0533 50%,#0d0220 100%);font-family:"Noto Sans SC",sans-serif;color:#fff;}.msg{text-align:center;}.msg h1{font-size:2rem;margin-bottom:1rem;background:linear-gradient(135deg,#a855f7,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}.msg p{color:#8888aa;font-size:1rem;}</style></head><body><div class="msg"><h1>该演示链接已过期</h1><p>如需访问请联系演示方获取最新链接</p></div></body>';
+  }
+})();
+</script>
 <title>玲珑慧搜 — AI智能采购演示 V8 Purple AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

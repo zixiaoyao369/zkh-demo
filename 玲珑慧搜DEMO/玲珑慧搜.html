@@ -7,17 +7,23 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/gsap.min.js"></script>
+<script src="images/gsap.min.js"></script>
 <style>
 /* 玲珑慧搜 V8 Purple AI Theme：基于Logo紫色渐变重配色 */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;background:#f8fafc;color:#0f172a;overflow:hidden;height:100vh;width:100vw;background-image:radial-gradient(circle at 1px 1px,rgba(148,163,184,.12) 1px,transparent 0);background-size:24px 24px}
 .scene{position:absolute;inset:0;opacity:0;pointer-events:none;display:flex;flex-direction:column}
 .scene.active{opacity:1;pointer-events:auto}
-.intro-screen{background:radial-gradient(circle at 50% 40%,rgba(122,43,255,.22) 0%,transparent 55%),radial-gradient(circle at 80% 20%,rgba(161,77,255,.15) 0%,transparent 40%),#0F061A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden}
-.outro-screen{background:radial-gradient(circle at 50% 40%,rgba(122,43,255,.22) 0%,transparent 55%),radial-gradient(circle at 20% 80%,rgba(161,77,255,.15) 0%,transparent 40%),#0F061A;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden}
+.intro-visual-bg,.outro-visual-bg{position:absolute;inset:-3%;z-index:0;background-image:url('images/home-industrial-precision.png');background-size:cover;background-position:center;background-repeat:no-repeat;filter:saturate(1.08) contrast(1.06);transform:scale(1.04);animation:precisionDrift 28s ease-in-out infinite alternate;pointer-events:none}
+.intro-visual-bg::after,.outro-visual-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(3,8,18,.08) 0%,rgba(3,8,18,.28) 58%,rgba(3,8,18,.68) 100%),linear-gradient(180deg,rgba(4,9,22,.25),rgba(4,9,22,.58))}
+.intro-visual-grid,.outro-visual-grid{position:absolute;inset:0;z-index:1;background-image:linear-gradient(rgba(177,157,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(177,157,255,.08) 1px,transparent 1px);background-size:72px 72px;mask-image:linear-gradient(90deg,transparent 0%,rgba(0,0,0,.7) 18%,rgba(0,0,0,.7) 82%,transparent 100%);opacity:.32;animation:gridDrift 22s linear infinite;pointer-events:none}
+.precision-scan{position:absolute;left:8%;right:8%;top:22%;height:1px;z-index:2;background:linear-gradient(90deg,transparent,rgba(206,194,255,.5),transparent);box-shadow:0 0 18px rgba(148,116,255,.38);opacity:.45;animation:scanSweep 8s ease-in-out infinite;pointer-events:none}
+.intro-screen,.outro-screen{background:#030816;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;position:absolute;inset:0;overflow:hidden;isolation:isolate}
+.intro-screen>*:not(.intro-visual-bg):not(.intro-visual-grid):not(.precision-scan):not(.precision-frame):not(.intro-video-bg):not(.intro-video-overlay),.outro-screen>*:not(.outro-visual-bg):not(.outro-visual-grid):not(.precision-scan):not(.precision-frame):not(.floating-orb):not(.decoration-ring):not(.decoration-line){position:relative;z-index:3}
+.intro-screen .floating-orb,.outro-screen .floating-orb,.intro-screen .decoration-ring,.outro-screen .decoration-ring,.intro-screen .decoration-line,.outro-screen .decoration-line{display:none}
+.intro-content{position:fixed!important;left:50vw!important;top:49vh!important;right:auto!important;bottom:auto!important;transform:translate(-50%,-50%)!important;width:min(92vw,960px);height:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;z-index:4;box-sizing:border-box}
 .intro-title,.outro-title{font-size:clamp(2.2rem,5.5vw,3.8rem);font-weight:900;background:linear-gradient(135deg,#C67BFF,#7A2BFF,#5B21D9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;letter-spacing:-1px;filter:drop-shadow(0 0 30px rgba(122,43,255,.3))}
-.intro-sub,.outro-sub{font-size:1.35rem;color:rgba(255,255,255,.85);text-align:center;font-weight:500;letter-spacing:1px}
+.intro-sub,.outro-sub{font-size:clamp(1.2rem,2vw,1.5rem);color:rgba(248,250,255,.92);text-align:center;font-weight:650;letter-spacing:2px;text-shadow:0 2px 18px rgba(0,0,0,.35)}
 .outro-footer{font-size:0.95rem;color:rgba(255,255,255,.55);margin-top:24px;letter-spacing:2px}
 .transition-overlay{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;opacity:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(26,21,16,.96) 0%,rgba(0,0,0,.98) 100%);backdrop-filter:blur(20px);overflow:hidden}
 .transition-overlay .trans-text{font-size:2.2rem;font-weight:500;color:rgba(255,255,255,.9);text-shadow:0 0 30px rgba(122,43,255,.4);text-align:center;opacity:0;letter-spacing:3px;z-index:2}
@@ -74,7 +80,7 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 /* AI Panel */
 .ai-panel{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
 .ai-panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-.ai-panel-content{position:relative;background:#fff;border-radius:20px;padding:32px;width:90%;max-width:780px;box-shadow:0 24px 80px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.1);border:1px solid #e2e8f0;overflow:hidden}
+.ai-panel-content{position:relative;background:#fff;border-radius:20px;padding:32px;width:min(960px,calc(100vw - 32px));max-width:960px;max-height:calc(100vh - 48px);box-shadow:0 24px 80px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.1);border:1px solid #e2e8f0;overflow:auto}
 .ai-panel-content::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#7A2BFF,#C67BFF,#7A2BFF);border-radius:20px 20px 0 0}
 .ai-panel-header{font-size:14px;font-weight:700;color:#7A2BFF;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #f1f5f9}
 .ai-step-row{display:flex;align-items:flex-start;gap:10px;opacity:0;transform:translateY(10px);padding:8px 0}
@@ -83,33 +89,78 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .ai-step-dot.completed{background:#10b981;box-shadow:none}
 @keyframes dotPulse{0%,100%{box-shadow:0 0 0 0 rgba(122,43,255,.4)}50%{box-shadow:0 0 0 6px rgba(122,43,255,.15)}}
 /* KG Container */
-.kg-container{flex:1;min-height:340px;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:16px}
-.kg-graph{width:100%;height:100%}
+.kg-container{flex:1;min-width:0;min-height:360px;display:flex;align-items:center;justify-content:center;overflow:visible;padding:12px 16px}
+.kg-graph{display:block;width:100%;height:100%;max-height:360px;overflow:visible}
 .kg-node{fill:rgba(122,43,255,.12);stroke:#7A2BFF;stroke-width:2;opacity:0;transition:filter .3s}
 .kg-center{fill:rgba(122,43,255,.25)}
 .kg-l1{fill:rgba(122,43,255,.08)}
 .kg-l2{fill:rgba(122,43,255,.05);stroke-width:1.5}
+.kg-value-node{rx:8;ry:8}
 .kg-node.active{opacity:1;filter:drop-shadow(0 0 8px rgba(122,43,255,.5))}
 .kg-edge{stroke:#7A2BFF;stroke-width:1.5;opacity:0;stroke-dasharray:8 4;animation:dashFlow 2s linear infinite}
 .kg-edge-2{stroke-width:1;stroke-dasharray:4 3}
 .kg-edge.active{opacity:1;filter:drop-shadow(0 0 4px rgba(122,43,255,.4))}
 .kg-label{fill:#0f172a;font-size:12px;text-anchor:middle;opacity:0;pointer-events:none}
-.kg-label-center{font-size:13px;font-weight:700;fill:#7A2BFF}
+.kg-label-center{font-size:12px;font-weight:700;fill:#7A2BFF}
 .kg-label-sm{font-size:10px;fill:#64748b}
 @keyframes dashFlow{to{stroke-dashoffset:-24}}
-/* Clarify Panel */
+@media (max-width:850px){
+  #aiPanelContent1>div[style*="display:flex"]{flex-direction:column;gap:12px!important}
+  #aiPanelContent1 .ai-steps-left{width:100%}
+  #aiPanelContent1 .kg-container{width:100%;min-height:320px;padding:8px}
+}
+/* Clarify Panel / Scene 1 attribute standardization workbench */
 .clarify-panel{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}
-.clarify-panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}
-.clarify-panel-content{position:relative;background:#fff;border-radius:20px;padding:32px;width:90%;max-width:640px;box-shadow:0 24px 80px rgba(0,0,0,.25),0 0 0 1px rgba(255,255,255,.1);border:1px solid #e2e8f0;overflow:hidden}
-.clarify-panel-content::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#7A2BFF,#C67BFF,#7A2BFF);border-radius:20px 20px 0 0}
-.clarify-header{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:20px;text-align:center}
-.clarify-table{width:100%;border-collapse:collapse;font-size:13px}
-.clarify-table th{background:#f8fafc;padding:8px 10px;text-align:left;font-weight:600;font-size:12px;color:#475569;border-bottom:2px solid #e2e8f0}
-.clarify-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+.clarify-panel{align-items:center;justify-content:center;padding:24px;background:rgba(244,247,251,.72);overflow:auto}
+.clarify-panel-bg{position:absolute;inset:0;background:rgba(11,21,40,.38)}
+.clarify-panel-content{position:relative;background:#fff;border-radius:14px;padding:16px 22px 24px;width:min(1180px,calc(100vw - 48px));max-width:1180px;max-height:88vh;min-height:0;box-shadow:0 18px 60px rgba(15,23,42,.2);border:1px solid #e5eaf1;overflow:auto}
+.clarify-panel-content::before{content:none}
+.clarify-header{font-size:14px;font-weight:700;color:#173b73;margin:0 0 12px;padding:12px 14px;background:#f5f8fc;border-bottom:1px solid #e7edf5;text-align:left}
+.clarify-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px;table-layout:fixed}
+.clarify-table thead{display:none}
+.clarify-table tbody{display:block;padding:0 10px}
+.clarify-table tr{display:grid;grid-template-columns:132px minmax(210px,38%) minmax(260px,1fr);align-items:center;min-height:62px;border-bottom:1px solid #e2eaf3;column-gap:16px}
+.clarify-table td{padding:10px 0;border:0;vertical-align:middle}
 .clarify-row{opacity:0;transform:translateY(6px)}
-.prop-name{border-left:4px solid #f59e0b;padding-left:8px;font-weight:500;color:#0f172a;white-space:nowrap}
-.prop-name .required{color:#ef4444;margin-right:2px;font-size:14px}
-.prop-value{color:#0f172a;min-height:24px}
+.clarify-row.dropdown-open{position:relative;z-index:40}
+.prop-name{border-left:0;padding-left:8px;font-weight:500;color:#24364d;white-space:nowrap}
+.prop-name .required{color:#ff5b61;margin-right:2px;font-size:14px}
+.prop-value{color:#0f172a;min-height:36px;position:relative}
+.field-control{position:relative;height:36px;background:#f5f6f8;border:1px solid transparent;border-radius:8px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:.18s;color:#1f2d3d}
+.field-control:hover,.field-control.open{background:#fff;border-color:#2864f0;box-shadow:0 0 0 2px rgba(40,100,240,.08)}.field-control.open{z-index:41}.field-control.field-empty{background:#fffaf1;border:1px dashed #f0ad4e;color:#9a6500}.field-control.field-empty .field-value-group::after{content:'待补充';color:#c27b17;font-size:11px;margin-left:4px;font-weight:600}.field-control.field-pending-confirm{background:#eef6ff;border:1px solid #78a9f6;color:#2454a6}.field-control.field-pending-confirm .field-value-group::after{content:'待确认';color:#2563c7;background:#dceaff;border-radius:4px;padding:2px 5px;font-size:11px;margin-left:6px;font-weight:700}
+.field-control.readonly{cursor:default}
+.field-control .copy-icon{color:#a9b2c0;font-size:13px}
+.field-menu{display:none;position:absolute;z-index:50;left:0;right:0;top:42px;height:210px;box-sizing:border-box;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 10px 24px rgba(15,23,42,.16);padding:6px;max-height:210px;overflow:auto}
+.field-menu.open{display:block;overflow-x:hidden;padding-bottom:54px}
+.field-option .option-radio{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;box-sizing:border-box;margin-left:auto;border:1px solid #cbd4e1;border-radius:50%;color:transparent;font-size:0;line-height:1;flex:0 0 16px}.field-option.selected .option-radio{border-color:#2864f0}.field-option.selected .option-radio::after{content:'';width:8px;height:8px;border-radius:50%;background:#2864f0}
+.field-option{padding:9px 10px;border-radius:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;color:#34455b}.field-option .option-radio{margin-left:auto;color:#c3cad5;font-size:16px}.field-option.selected .option-radio{color:#2864f0}
+.field-option .option-radio{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:16px!important;height:16px!important;box-sizing:border-box!important;margin-left:auto!important;border:1px solid #cbd4e1!important;border-radius:50%!important;color:transparent!important;background:transparent!important;font-size:0!important;line-height:1!important;flex:0 0 16px!important}.field-option.selected .option-radio{border-color:#2864f0!important}.field-option.selected .option-radio::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#2864f0}
+.manual-radio{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:16px!important;height:16px!important;box-sizing:border-box!important;flex:0 0 16px!important;padding:0!important;border:1px solid #cbd4e1!important;border-radius:50%!important;background:#fff!important;color:transparent!important;font-size:0!important;line-height:1!important}.manual-radio.selected{border-color:#2864f0!important;background:#fff!important}.manual-radio.selected::after{content:'';display:block;width:8px;height:8px;border-radius:50%;background:#2864f0}
+.field-menu{overflow:hidden!important;padding:6px!important}.field-menu.open{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:6px!important}.field-options-scroll{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden}.field-manual-row{position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;flex:0 0 auto!important}
+.field-option:hover,.field-option.selected{background:#edf3ff;color:#245be5}
+.field-option .ai-mini{font-size:11px;color:#6d5ff5;background:#f0edff;padding:2px 6px;border-radius:4px}
+.field-manual-row{position:absolute;left:0;right:0;bottom:0;z-index:10;display:flex;align-items:center;gap:7px;margin:0;padding:7px 10px 8px;background:#fff;border-top:1px solid #eef1f5;box-shadow:0 -3px 7px rgba(15,23,42,.08)}.field-manual-input{width:100%;height:32px;padding:0 9px;border:1px solid #d9dfe8;border-radius:7px;color:#35465d;font-size:12px;outline:none}.field-manual-input:focus{border-color:#2864f0;box-shadow:0 0 0 2px rgba(40,100,240,.08)}.field-manual-input::placeholder{color:#b5bdc9}.manual-radio{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;box-sizing:border-box;flex:0 0 16px;padding:0;border:1px solid #cbd4e1;border-radius:50%;background:#fff;color:transparent;font-size:0;line-height:1;cursor:pointer}.manual-radio.selected{border-color:#2864f0;background:#fff}.manual-radio.selected::after{content:'';width:8px;height:8px;border-radius:50%;background:#2864f0}
+.field-value-group{display:inline-flex;align-items:center;gap:5px;min-width:0}.field-value-group>span:first-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-source{padding:0 10px;color:#4f64d9;font-size:12px;line-height:1.45}
+.ai-source-logo,.ai-models{display:none!important}.ai-source-card{position:relative;border:1px solid #d9e1ef;border-radius:8px;min-height:36px;padding:9px 82px 9px 12px;cursor:pointer;transition:.18s;background:#fff}
+.ai-source-card:hover,.ai-source-card.active{border-color:#2864f0;box-shadow:0 0 0 2px rgba(40,100,240,.08);background:#fbfdff}
+.ai-source-card .ai-label{display:inline-flex;align-items:center;padding:3px 8px;border-radius:5px;color:#4f46e5;background:#eef0ff;margin-right:7px;font-size:12px;font-weight:700;line-height:1.2}.ai-source-card .ai-label::before{content:'✦';margin-right:4px;font-size:10px}.ai-source-card.human-confirmed .ai-label{color:#087f5b;background:#e8f8f1}.ai-source-card.human-confirmed .ai-label::before{content:'✓';font-size:11px}.ai-source-logo{display:inline-flex;align-items:center;margin-left:7px;vertical-align:middle}.ai-source-logo img{width:16px;height:16px;display:block;object-fit:contain}
+.ai-source-card .ai-value{color:#315de0;font-weight:600}
+.ai-source-card .ai-detail{display:block;margin-top:5px;color:#8492a5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ai-source-actions{position:absolute;right:10px;top:50%;display:flex;gap:6px;transform:translateY(-50%)}.ai-source-action{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;padding:0;border-radius:50%;font-size:16px;font-weight:700;line-height:1;cursor:pointer;background:#fff}.ai-source-confirm{border:1px solid #20a56b;color:#07935b}.ai-source-confirm:hover{background:#e8f8f1}.ai-source-delete{border:1px solid #f0a4aa;color:#e0525d}.ai-source-delete:hover{background:#fff1f2}.ai-source-card.ai-applied .ai-source-confirm{background:#20a56b;color:#fff}
+.clarify-header{font-size:16px;font-weight:700;color:#183252;padding:4px 4px 14px;border-bottom:1px solid #e5ebf2;margin-bottom:2px}
+.clarify-header{display:flex;align-items:center;justify-content:center;text-align:center;padding:12px 14px;min-height:44px;box-sizing:border-box}
+.standard-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:5px;border:1px solid #7b8da7;border-radius:50%;font-size:10px;font-weight:700;color:#61748f;cursor:help;vertical-align:middle}
+.standard-info::after{content:attr(data-tooltip);position:absolute;z-index:30;left:22px;top:50%;width:250px;padding:9px 11px;border:1px solid #d9e2ef;border-radius:8px;background:#fff;color:#64748b;font-size:11px;font-weight:400;line-height:1.55;box-shadow:0 8px 22px rgba(15,23,42,.15);opacity:0;pointer-events:none;transform:translateY(-50%) translateX(-4px);transition:.16s;white-space:normal}
+.standard-info:hover::after{opacity:1;transform:translateY(-50%) translateX(0)}
+.standard-info.is-empty{display:none}.standard-option-info{position:relative;display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;margin-left:6px;border:1px solid #8294af;border-radius:50%;font-size:10px;font-weight:700;color:#61748f;cursor:help;vertical-align:middle}.standard-option-info::after{content:attr(data-tooltip);position:absolute;z-index:70;left:22px;top:50%;width:260px;padding:8px 10px;border:1px solid #d9e2ef;border-radius:7px;background:#fff;color:#64748b;font-size:11px;font-weight:400;line-height:1.5;box-shadow:0 8px 22px rgba(15,23,42,.16);opacity:0;pointer-events:none;transform:translateY(-50%) translateX(-4px);transition:.16s;white-space:normal}.standard-option-info:hover::after{opacity:1;transform:translateY(-50%) translateX(0)}
+.ai-reason-popover{display:none;position:absolute;z-index:25;width:min(560px,calc(100% - 32px));box-sizing:border-box;padding:14px 16px;border:1px solid #d9e1ef;border-radius:8px;background:#fff;box-shadow:0 14px 30px rgba(15,23,42,.2)}
+.ai-reason-popover::before{content:'';position:absolute;top:-8px;left:var(--popover-arrow-left,36px);width:14px;height:14px;background:#fff;border-left:1px solid #dce4f2;border-top:1px solid #dce4f2;transform:rotate(45deg)}
+.ai-reason-head{display:flex;align-items:center;gap:8px;color:#28384e;font-size:13px;font-weight:700;margin-bottom:10px}.ai-reason-chip{padding:3px 8px;background:#f1f3f7;border-radius:4px;color:#5e6c7f;font-weight:500}
+.ai-models{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.ai-model-logo{display:inline-flex;align-items:center;gap:4px;padding:3px 7px;border-radius:5px;background:#f5f6ff;color:#4b54dc;font-size:10px;font-weight:600}.ai-model-logo img{width:16px;height:16px;display:block;object-fit:contain}.ai-reason-option{padding:10px 11px;border:1px solid #e2e8f2;border-radius:8px;margin-top:8px}.ai-reason-option.recommended{border-color:#9ba4f5;background:#f7f8ff}.ai-reason-option-title{display:flex;align-items:center;justify-content:space-between;color:#4e55df;font-weight:700;font-size:13px}.ai-reason-option-copy{margin-top:5px;color:#7a8798;font-size:11px;line-height:1.55}
+.category-line{display:flex;align-items:center;gap:8px;padding:0 4px 14px;color:#355078;font-size:12px;border-bottom:1px solid #e5ebf2}.category-line strong{font-size:13px;color:#263e60}.category-path{background:#f5f7fa;border-radius:5px;padding:8px 12px;flex:1;color:#3b5680}.category-path span{color:#2864f0}.original-query{display:flex;align-items:center;gap:18px;margin:0 4px 12px;padding:12px 14px;background:#eef5ff;border:1px solid #cfe0fb;border-radius:7px;color:#213a5b;font-size:14px}.original-query-label{color:#163c70;font-weight:700;white-space:nowrap}.original-query-label::before{content:'◉';display:inline-block;margin-right:7px;color:#2864f0;font-size:11px}.original-query-value{color:#172f51;font-weight:600;letter-spacing:.2px}
+.standardize-title{display:flex;align-items:center;gap:8px;padding:18px 4px 10px;color:#253c5a;font-size:14px;font-weight:700}.standardize-title .title-icon{color:#7d8fa7}.missing-count{font-size:12px;font-weight:400;color:#7d8b9d}.missing-badge{color:#f45c63;background:#fff0f1;border-radius:4px;padding:4px 8px;font-size:11px;font-weight:500}.ai-all-btn{margin-left:auto;border:0;background:#2864f0;color:#fff;padding:8px 14px;border-radius:6px;font-size:12px;cursor:pointer;box-shadow:0 4px 10px rgba(40,100,240,.18)}.ai-all-btn:hover{background:#1d55d5}
+.clarify-table td:last-child{padding-right:0}
 .btn-confirm{padding:2px 8px;border:1px solid #10b981;color:#10b981;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;margin-right:4px;transition:all .2s}
 .btn-confirm.confirmed{background:#10b981;color:#fff;border-color:#10b981}
 .btn-edit{padding:2px 8px;border:1px solid #7A2BFF;color:#7A2BFF;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s}
@@ -117,10 +168,10 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .source-tag.extract{background:#f0fdf4;color:#10b981;border:1px solid #a7f3d0}
 .source-tag.infer{background:#faf5ff;color:#a855f7;border:1px solid #d8b4fe}
 .source-tag.standard{background:#F8F3FF;color:#7A2BFF;border:1px solid #DCC8FF}
-.clarify-inference{display:none;overflow:hidden;margin-top:12px;padding-left:16px}
-.inference-title{font-size:13px;font-weight:600;color:#a855f7;margin-bottom:8px}
-.inference-card{background:#f8fafc;border-radius:12px;padding:12px;margin-bottom:8px;opacity:0}
-.inference-card.recommended{border:2px solid #7A2BFF;background:#F8F3FF}
+.clarify-inference{display:none;overflow:hidden;margin:12px 16px 0;padding:12px 14px;border:1px solid #dbe4f0;border-radius:10px;background:#fbfcff}
+.inference-title{font-size:13px;font-weight:600;color:#4e5feb;margin-bottom:8px}
+.inference-card{background:#fff;border:1px solid #e1e8f2;border-radius:8px;padding:12px;margin-bottom:8px;opacity:0}
+.inference-card.recommended{border:1px solid #6c78f2;background:#f5f6ff}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
 .card-value{font-weight:600;font-size:14px;color:#0f172a}
 .card-votes{font-size:12px;color:#7A2BFF;background:rgba(122,43,255,.08);padding:2px 8px;border-radius:10px}
@@ -132,9 +183,12 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .model-tag:nth-child(4){background:#fff7ed;color:#f59e0b}
 .card-reason{font-size:11px;color:#64748b;line-height:1.5}
 .inference-card.manual .card-input input{width:100%;padding:4px 8px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px}
-.clarify-footer{opacity:0;border-top:1px solid #f1f5f9;margin-top:16px;padding-top:12px;display:flex;align-items:center;justify-content:space-between}
+.custom-add-row{opacity:1!important;min-height:52px!important;border-bottom:0!important}.custom-add-row td{grid-column:1 / -1!important;padding:10px 0!important;display:flex;align-items:center;gap:10px}.custom-add-btn{border:1px dashed #8aa6d8;background:#f7faff;color:#2864f0;border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;transition:.18s}.custom-add-btn:hover{background:#edf3ff;border-color:#2864f0}.custom-add-hint{font-size:11px;color:#9aa7b8}.custom-attribute-row{opacity:1!important;min-height:62px!important}.custom-attribute-row td{padding:10px 0!important}.custom-attr-input{width:100%;height:34px;box-sizing:border-box;border:1px solid #d9e1ef;border-radius:8px;padding:0 10px;font-size:12px;color:#25364e;outline:none;background:#fff}.custom-attr-input:focus{border-color:#2864f0;box-shadow:0 0 0 2px rgba(40,100,240,.08)}.custom-attr-name{font-weight:600}.custom-attr-value-wrap{display:flex;gap:7px}.custom-attr-save,.custom-attr-remove{width:34px;height:34px;padding:0;border-radius:8px;font-size:19px;line-height:32px;font-weight:700;cursor:pointer;transition:.18s}.custom-attr-save{border:1px solid #20a56b;background:#e8f8f1;color:#07935b}.custom-attr-save:hover{background:#d6f3e6;border-color:#0b8f59}.custom-attr-remove{border:1px solid #f0a4aa;background:#fff1f2;color:#e0525d}.custom-attr-remove:hover{background:#ffe3e5;border-color:#df4b56}
+.custom-attr-save.saved{background:#20a56b;color:#fff;border-color:#20a56b;box-shadow:0 2px 6px rgba(32,165,107,.22)}
+.clarify-footer{opacity:0;border-top:1px solid #e4ebf3;margin:18px 16px 0;padding-top:12px;display:flex;align-items:center;justify-content:space-between}
 .confirm-count{font-size:13px;color:#64748b}
 .clarify-confirm-btn{padding:10px 32px;background:#0f172a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.legacy-clarify-panel{position:fixed;inset:0;z-index:210;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none}.legacy-clarify-panel-bg{position:absolute;inset:0;background:rgba(0,0,0,.5)}.legacy-clarify-content{position:relative;background:#fff;border-radius:20px;padding:32px;width:90%;max-width:640px;box-shadow:0 24px 80px rgba(0,0,0,.25);border:1px solid #e2e8f0;overflow:hidden}.legacy-clarify-content::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#7A2BFF,#C67BFF,#7A2BFF);border-radius:20px 20px 0 0}.legacy-clarify-header{font-size:16px;font-weight:700;color:#0f172a;margin-bottom:20px;text-align:center}.legacy-clarify-table{width:100%;border-collapse:collapse;font-size:13px}.legacy-clarify-table th{background:#f8fafc;padding:8px 10px;text-align:left;font-weight:600;font-size:12px;color:#475569;border-bottom:2px solid #e2e8f0}.legacy-clarify-table td{padding:8px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle}.legacy-clarify-row{opacity:0;transform:translateY(6px)}.legacy-clarify-row .prop-name{border-left:4px solid #f59e0b;padding-left:8px}.legacy-clarify-row .prop-value{color:#0f172a;min-height:24px}.legacy-btn-confirm{padding:2px 8px;border:1px solid #10b981;color:#10b981;background:#fff;border-radius:8px;font-size:12px;cursor:pointer;margin-right:4px}.legacy-btn-edit{padding:2px 8px;border:1px solid #7A2BFF;color:#7A2BFF;background:#fff;border-radius:8px;font-size:12px;cursor:pointer}.legacy-inference{display:none;overflow:hidden;margin-top:12px;padding-left:16px}.legacy-inference-title{font-size:13px;font-weight:600;color:#a855f7;margin-bottom:8px}.legacy-inference-card{background:#f8fafc;border-radius:12px;padding:12px;margin-bottom:8px;opacity:0}.legacy-inference-card.recommended{border:2px solid #7A2BFF;background:#F8F3FF}.legacy-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}.legacy-card-value{font-weight:600;font-size:14px}.legacy-card-votes{font-size:12px;color:#7A2BFF;background:rgba(122,43,255,.08);padding:2px 8px;border-radius:10px}.legacy-card-reason{font-size:11px;color:#64748b;line-height:1.5}.legacy-footer{opacity:0;border-top:1px solid #f1f5f9;margin-top:16px;padding-top:12px;display:flex;align-items:center;justify-content:space-between}.legacy-confirm-btn{padding:10px 32px;background:#0f172a;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
 /* Detail Page */
 .detail-header{padding:20px 0;border-bottom:1px solid #e2e8f0;margin-bottom:20px;display:flex;align-items:center;gap:20px}
 .detail-img{width:200px;height:200px;background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;padding:20px;flex-shrink:0}
@@ -236,6 +290,12 @@ body{font-family:"Noto Sans SC","Inter",ui-sans-serif,system-ui,-apple-system,Bl
 .source-select-btn:active{transform:scale(.97)}
 tr.best-price.row-highlight{background:#F8F3FF !important;}
 @media (max-width:640px){
+  .clarify-panel{padding:12px}
+  .clarify-panel-content{border-radius:12px;padding:12px 10px 20px;width:100%;max-height:92vh}
+  .category-line{align-items:flex-start}.category-path{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .standardize-title{align-items:flex-start;flex-wrap:wrap;gap:6px}.ai-all-btn{margin-left:0;width:100%}
+  .clarify-table tbody{padding:0 4px}.clarify-table tr{grid-template-columns:86px minmax(135px,1fr);column-gap:8px;min-height:70px}.clarify-table td:last-child{grid-column:2;grid-row:2;padding-top:0}.ai-source-card .ai-detail{max-width:230px}.standard-info::after{left:auto;right:-8px;top:25px;transform:translateY(-4px)}.standard-info:hover::after{transform:translateY(0)}.ai-reason-popover{width:calc(100% - 20px);left:10px!important}
+  .clarify-footer{margin:16px 4px 0;gap:8px}.confirm-count{font-size:11px}.clarify-confirm-btn{padding:9px 12px;white-space:nowrap}
   .source-panel{width:100vw;right:-100vw;border-radius:0;padding:22px 16px 96px}
   .source-conclusion{align-items:flex-start;flex-direction:column;gap:10px}
   .source-conclusion-copy{font-size:16px}
@@ -255,10 +315,10 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
 .v-cursor-svg{position:absolute;top:0;left:0;width:32px;height:32px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.35))}
 .v-cursor-ring{position:absolute;top:50%;left:50%;width:48px;height:48px;margin-left:-24px;margin-top:-24px;border-radius:50%;border:2.5px solid rgba(122,43,255,.7);box-shadow:0 0 12px rgba(122,43,255,.5),inset 0 0 8px rgba(122,43,255,.15);animation:cursorRing 1.8s ease-in-out infinite}
 @keyframes cursorRing{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.15);opacity:1}}
-.demo-controls{position:fixed;bottom:24px;right:20px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.95);border-radius:12px;padding:8px 16px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:900;backdrop-filter:blur(10px)}
-.demo-controls button{width:36px;height:36px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.demo-controls button:hover{background:#f1f5f9;border-color:#7A2BFF;color:#7A2BFF}
-.demo-controls .progress{font-size:12px;color:#64748b;margin-left:8px}
+.demo-controls{position:fixed;bottom:24px;right:20px;display:flex;align-items:center;gap:8px;background:rgba(7,14,29,.82);border:1px solid rgba(184,166,255,.28);border-radius:14px;padding:8px 12px;box-shadow:0 14px 36px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.08);z-index:900;backdrop-filter:blur(16px)}
+.demo-controls button{width:36px;height:36px;border-radius:50%;border:1px solid rgba(211,203,255,.22);background:rgba(255,255,255,.06);color:#edf0ff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .18s}
+.demo-controls button:hover{background:rgba(126,91,255,.28);border-color:#aa92ff;color:#fff;box-shadow:0 0 18px rgba(126,91,255,.28)}
+.demo-controls .progress{font-size:12px;color:rgba(235,237,255,.72);margin-left:8px;padding-left:10px;border-left:1px solid rgba(211,203,255,.2);letter-spacing:.4px}
 .search-status-bar{opacity:0;margin:0 auto;max-width:600px;padding:8px 20px;border-radius:8px;font-size:13px;color:#fff;text-align:center;pointer-events:none;transition:background .4s}
 .search-status-bar.analyzing{background:linear-gradient(90deg,#7A2BFF,#C67BFF);animation:pulse 1.5s ease-in-out infinite}
 .search-status-bar.done{background:#10b981}
@@ -281,7 +341,7 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
 .filter-check{display:flex;align-items:center;gap:6px;font-size:12px;color:#475569;margin-bottom:6px;cursor:pointer}
 .filter-check input{width:14px;height:14px;accent-color:#7A2BFF}
 .brand-logo-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
-.brand-logo{height:22px;width:52px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#94a3b8;font-weight:600}
+.brand-logo{height:22px;width:52px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;color:#94a3b8;font-weight:600}.brand-logo.active{background:#eef0ff;border-color:#b7a2ff;color:#5b21d9}
 .floating-orb{position:absolute;border-radius:50%;pointer-events:none;animation:floatOrb 6s ease-in-out infinite}
 @keyframes floatOrb{0%,100%{transform:translateY(0) scale(1);opacity:.4}50%{transform:translateY(-20px) scale(1.1);opacity:.6}}
 .intro-screen .floating-orb:nth-child(1){width:200px;height:200px;background:radial-gradient(circle,rgba(122,43,255,.12) 0%,transparent 70%);top:10%;left:10%;animation-delay:0s}
@@ -308,10 +368,14 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .search-input-strikethrough{text-decoration:line-through;color:#94a3b8}
 .click-highlight{position:fixed;border:2px solid #7A2BFF;border-radius:8px;pointer-events:none;z-index:450;opacity:0;box-shadow:0 0 12px rgba(122,43,255,.3)}
-.feature-chip{display:flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:40px;backdrop-filter:blur(8px);transition:all .3s}
-.feature-chip:hover{background:rgba(122,43,255,.15);border-color:rgba(122,43,255,.3);box-shadow:0 0 20px rgba(122,43,255,.15)}
-.chip-icon{font-size:18px}
-.chip-text{font-size:14px;color:rgba(255,255,255,.8);font-weight:500;letter-spacing:0.5px}
+.feature-chip{display:flex;align-items:center;gap:10px;min-width:148px;justify-content:flex-start;padding:11px 16px;background:linear-gradient(135deg,rgba(20,29,52,.74),rgba(8,14,29,.66));border:1px solid rgba(182,165,255,.28);border-radius:13px;backdrop-filter:blur(14px);box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 24px rgba(0,0,0,.16);transition:all .25s}
+.feature-chip:hover{background:linear-gradient(135deg,rgba(76,54,145,.52),rgba(11,18,37,.78));border-color:rgba(202,189,255,.68);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 24px rgba(122,92,255,.3);transform:translateY(-2px)}
+.chip-icon{position:relative;width:26px;height:26px;flex:0 0 26px;border:1px solid rgba(205,195,255,.55);border-radius:8px;background:rgba(131,103,255,.18);color:#e4ddff}
+.chip-icon::before,.chip-icon::after{content:'';position:absolute;box-sizing:border-box}
+.icon-search::before{width:9px;height:9px;border:1.5px solid currentColor;border-radius:50%;left:6px;top:5px}.icon-search::after{width:7px;height:1.5px;background:currentColor;transform:rotate(45deg);left:14px;top:16px;border-radius:2px}
+.icon-clarify::before{width:12px;height:14px;border:1.5px solid currentColor;border-radius:3px;left:6px;top:5px}.icon-clarify::after{width:7px;height:1.5px;background:currentColor;left:8px;top:10px;box-shadow:0 4px 0 currentColor}
+.icon-multi::before{width:4px;height:11px;background:#d8ccff;left:6px;top:9px;box-shadow:6px -4px 0 #a995ff,12px 2px 0 #7f6bff}.icon-multi::after{width:16px;height:1px;background:rgba(235,231,255,.7);left:5px;bottom:5px}
+.chip-text{font-size:13px;color:rgba(245,246,255,.88);font-weight:600;letter-spacing:.8px;white-space:nowrap}
 .outro-stat{text-align:center;padding:0 8px}
 .stat-number{font-size:44px;font-weight:800;background:linear-gradient(135deg,#D8A6FF,#C67BFF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:"JetBrains Mono","Noto Sans SC",monospace;letter-spacing:-1px;filter:drop-shadow(0 0 12px rgba(216,166,255,.4))}
 .stat-label{font-size:13px;color:rgba(255,255,255,.65);margin-top:4px;letter-spacing:1px}
@@ -328,7 +392,15 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
 .compare-val-new{font-size:18px;font-weight:800;background:linear-gradient(135deg,#D8A6FF,#EBD7FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .compare-arrow{display:flex;align-items:center;justify-content:center;color:rgba(216,166,255,.45);font-size:15px}
 .intro-logo-wrap{display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;border-radius:4px}
-.intro-logo-img{height:clamp(80px,13vw,130px);width:auto}
+.intro-logo-img{height:clamp(96px,15vw,158px);width:auto;filter:drop-shadow(0 0 22px rgba(140,101,255,.28))}
+.intro-meta{font-size:.88rem;color:rgba(225,229,245,.54);text-align:center;margin-top:2px;letter-spacing:1.4px}
+.precision-frame{position:absolute;z-index:2;pointer-events:none;border:1px solid rgba(189,175,255,.18);box-shadow:0 0 24px rgba(117,91,255,.08)}
+.precision-frame-a{width:min(64vw,920px);height:min(48vh,500px);left:50%;top:50%;transform:translate(-50%,-50%);border-radius:22px;opacity:.55}
+.precision-frame-b{width:min(75vw,1120px);height:min(62vh,680px);left:50%;top:50%;transform:translate(-50%,-50%);border-radius:28px;opacity:.25}
+@keyframes precisionDrift{0%{transform:scale(1.04) translate3d(-.5%,.2%,0)}100%{transform:scale(1.09) translate3d(.7%,-.5%,0)}}
+@keyframes gridDrift{0%{background-position:0 0;opacity:.22}50%{opacity:.34}100%{background-position:72px 36px;opacity:.22}}
+@keyframes scanSweep{0%,100%{transform:translateY(-12vh);opacity:0}15%,75%{opacity:.45}50%{transform:translateY(48vh);opacity:.32}}
+@media (max-width:640px){.intro-content{top:47vh;width:calc(100vw - 28px);gap:11px}.intro-logo-img{height:clamp(78px,24vw,118px)}.intro-sub{font-size:1.1rem;letter-spacing:1.2px}.intro-meta{font-size:.75rem}.intro-features{gap:8px!important;margin-top:14px!important}.feature-chip{min-width:0;flex:1 1 135px;padding:10px 11px}.chip-text{font-size:12px}.demo-controls{right:10px;bottom:12px;padding:7px 9px}.demo-controls .progress{font-size:11px;margin-left:3px;padding-left:7px}}
 .title-shine-img::after{content:'';position:absolute;top:-30%;left:-100%;width:50%;height:160%;background:radial-gradient(ellipse at center,rgba(248,243,255,.15) 0%,transparent 70%);filter:blur(12px);animation:titleShine 4s ease-in-out infinite;pointer-events:none}
 </style>
 </head>
@@ -344,59 +416,44 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
 <div class="clarify-panel" id="clarifyPanel">
     <div class="clarify-panel-bg"></div>
     <div class="clarify-panel-content">
-      <div class="clarify-header">🤖 AI 需求澄清 — 物料属性智能补全</div>
+      <div class="clarify-header">🤖 AI 需求澄清 · 属性标准化</div>
+      <div class="original-query"><span class="original-query-label">原始描述</span><span class="original-query-value">不锈钢六角螺母 M8</span></div>
+      <div class="category-line"><strong>▦ 标准类目</strong><span class="category-path">紧固件　&gt;　螺母　&gt;　<span>六角螺母</span></span><span>⌄</span></div>
+      <div class="standardize-title"><span class="title-icon">▣</span><span>属性标准化结果</span><span class="missing-count">（*为关键必填参数）</span><span id="missingCount" class="missing-badge">缺 4 个关键参数：　品牌　执行标准　表面处理　性能等级</span><button class="ai-all-btn" id="aiCompleteBtn">一键全部采纳AI推荐</button></div>
       <table class="clarify-table">
-        <thead><tr><th>属性名称</th><th>属性值</th><th>操作</th><th>来源</th></tr></thead>
-        <tbody id="clarifyBody">
-          <tr class="clarify-row" data-row="0"><td class="prop-name"><span class="required">*</span>品名</td><td class="prop-value" id="cv0"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag extract">AI提取</span></td></tr>
-          <tr class="clarify-row" data-row="1"><td class="prop-name"><span class="required">*</span>规格</td><td class="prop-value" id="cv1"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag extract">AI提取</span></td></tr>
-          <tr class="clarify-row" data-row="2"><td class="prop-name"><span class="required">*</span>材质</td><td class="prop-value" id="cv2"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag infer">AI推断</span></td></tr>
-          <tr class="clarify-row" data-row="3"><td class="prop-name"><span class="required">*</span>等级</td><td class="prop-value" id="cv3"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag infer">AI推断</span></td></tr>
-          <tr class="clarify-row" data-row="4"><td class="prop-name">表面处理</td><td class="prop-value" id="cv4"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag standard">AI标准化</span></td></tr>
-          <tr class="clarify-row" data-row="5"><td class="prop-name"><span class="required">*</span>标准</td><td class="prop-value" id="cv5"></td><td class="prop-actions"><button class="btn-confirm">✓ 确认</button><button class="btn-edit">✎ 编辑</button></td><td class="prop-source"><span class="source-tag infer">AI推断</span></td></tr>
-        </tbody>
+        <thead><tr><th>属性名称</th><th>属性值</th><th>AI建议</th></tr></thead>
+        <tbody id="clarifyBody"><tr class="clarify-row" data-row="0"><td class="prop-name"><span class="required">*</span>品牌</td><td class="prop-value"><div class="field-control" data-field="brand"><span class="field-value-group"><span id="cv0"></span></span><span>⌄</span><div class="field-menu" data-menu="brand"><div class="field-option" data-value="无品牌">无品牌 <span class="option-radio">&#9675;</span></div><div class="field-option" data-value="ZKH">ZKH <span class="ai-mini">AI推荐</span><span class="option-radio">&#9675;</span></div><div class="field-option" data-value="世世通">世世通 <span class="ai-mini">AI推荐</span><span class="option-radio">&#9675;</span></div><div class="field-option" data-value="瑞玛">瑞玛 <span class="ai-mini">AI推荐</span><span class="option-radio">&#9675;</span></div><div class="field-option" data-value="东明">东明 <span class="ai-mini">AI推荐</span><span class="option-radio">&#9675;</span></div><div class="field-option" data-value="其他品牌">其他品牌 <span class="option-radio">&#9675;</span></div><div class="field-manual-row"><input class="field-manual-input" data-field="brand" placeholder="没有找到？ 手动输入" /></div></div></div></div></td><td class="ai-source"><div class="ai-source-card" data-ai-field="brand"><span class="ai-label">AI推荐</span><span class="ai-value">ZKH</span><span class="ai-source-logo"><img src="https://cdn.simpleicons.org/deepseek/4D6BFE" alt="DeepSeek Logo"></span><span class="ai-source-logo"><img src="images/openai-logo.svg" alt="OpenAI Logo"></span><span class="ai-source-logo"><img src="images/claude-logo.svg" alt="Anthropic Logo"></span><span class="ai-detail">物料描述仅提供规格和材质，未指定品牌，标准件通常无品牌标识。</span></div></td></tr>
+<tr class="clarify-row" data-row="1"><td class="prop-name"><span class="required">*</span>执行标准</td><td class="prop-value"><div class="field-control" data-field="standard"><span class="field-value-group"><span id="cv1"></span><span class="standard-info" data-tooltip="GB/T 6170 是国内常用标准，适用于常规六角螺母；DIN934 是国际通用候选，适用于客户明确要求 DIN/ISO 标准的场景。">!</span></span><span>⌄</span><div class="field-menu" data-menu="standard"><div class="field-option selected" data-value="GB/T 6170">GB/T 6170 <span class="ai-mini">AI推荐</span><span class="option-radio">●</span></div><div class="field-option" data-value="DIN934">DIN934 <span class="ai-mini">AI推荐</span><span class="option-radio">◯</span></div><div class="field-option" data-value="DIN5587">DIN5587 <span class="option-radio">◯</span></div><div class="field-option" data-value="B18.2.2_Table3-1986">B18.2.2_Table3-1986 <span class="option-radio">◯</span></div><div class="field-option" data-value="B18.2.2_Table8-1986">B18.2.2_Table8-1986 <span class="option-radio">◯</span></div><div class="field-option" data-value="B18.2.2_Table9-1986">B18.2.2_Table9-1986 <span class="option-radio">◯</span></div><div class="field-manual-row"><input class="field-manual-input" data-field="standard" placeholder="没有找到？ 手动输入" /></div></div></div></td><td class="ai-source"><div class="ai-source-card" data-ai-field="standard"><span class="ai-label">AI推荐</span><span class="ai-value">GB6170</span><span class="ai-source-logo"><img src="images/openai-logo.svg" alt="OpenAI Logo"></span><span class="ai-source-logo"><img src="https://cdn.simpleicons.org/deepseek/4D6BFE" alt="DeepSeek Logo"></span><span class="ai-source-logo"><img src="images/claude-logo.svg" alt="Anthropic Logo"></span><span class="ai-detail">M8不锈钢六角螺母在国内通用语境下默认对应 GB/T 6170。</span></div></td></tr>
+<tr class="clarify-row" data-row="2"><td class="prop-name">规格</td><td class="prop-value"><div class="field-control" data-field="spec"><span class="field-value-group"><span id="cv2"></span></span><span>⌄</span><div class="field-menu" data-menu="spec"><div class="field-option" data-value="M6">M6 <span class="option-radio">◯</span></div><div class="field-option selected" data-value="M8">M8 <span class="option-radio">●</span></div><div class="field-option" data-value="M10">M10 <span class="option-radio">◯</span></div><div class="field-option" data-value="M12">M12 <span class="option-radio">◯</span></div><div class="field-manual-row"><input class="field-manual-input" data-field="spec" placeholder="没有找到？ 手动输入" /></div></div></div></td><td class="ai-source"><div class="ai-source-card" data-ai-field="spec"><span class="ai-label">AI提取</span><span class="ai-value">[M8]</span></div></td></tr>
+<tr class="clarify-row" data-row="3"><td class="prop-name">材质</td><td class="prop-value"><div class="field-control" data-field="material"><span class="field-value-group"><span id="cv4"></span></span><span>⌄</span><div class="field-menu" data-menu="material"><div class="field-option selected" data-value="不锈钢">不锈钢 <span class="option-radio">●</span></div><div class="field-option" data-value="碳钢">碳钢 <span class="option-radio">◯</span></div><div class="field-option" data-value="合金钢">合金钢 <span class="option-radio">◯</span></div><div class="field-manual-row"><input class="field-manual-input" data-field="material" placeholder="没有找到？ 手动输入" /></div></div></div></td><td class="ai-source"><div class="ai-source-card" data-ai-field="material"><span class="ai-label">AI提取</span><span class="ai-value">[不锈钢]</span></div></td></tr>
+<tr class="clarify-row" data-row="4"><td class="prop-name">表面处理</td><td class="prop-value"><div class="field-control" data-field="surface"><span class="field-value-group"><span id="cv5"></span></span><span>⌄</span><div class="field-menu" data-menu="surface"><div class="field-option" data-value="本色">本色 <span class="ai-mini">AI推荐</span><span class="option-radio">&#9675;</span></div><div class="field-option" data-value="镀锌">镀锌 <span class="option-radio">&#9675;</span></div><div class="field-option" data-value="达克罗">达克罗 <span class="option-radio">&#9675;</span></div><div class="field-manual-row"><input class="field-manual-input" data-field="surface" placeholder="没有找到？ 手动输入" /></div></div></div></td><td class="ai-source"><div class="ai-source-card" data-ai-field="surface"><span class="ai-label">AI推荐</span><span class="ai-value">本色</span><span class="ai-detail">未识别到额外表面处理要求，按不锈钢标准件默认本色处理。</span></div></td></tr>
+<tr class="clarify-row" data-row="5"><td class="prop-name">性能等级</td><td class="prop-value"><div class="field-control" data-field="grade"><span class="field-value-group"><span id="cv3"></span></span><span>⌄</span><div class="field-menu" data-menu="grade"><div class="field-option" data-value="A2-70">A2-70 <span class="ai-mini">AI推荐</span><span class="option-radio">&#9675;</span></div><div class="field-option" data-value="A4-80">A4-80 <span class="option-radio">&#9675;</span></div><div class="field-option" data-value="8.8级">8.8级 <span class="option-radio">&#9675;</span></div><div class="field-option" data-value="12.9级">12.9级 <span class="option-radio">&#9675;</span></div><div class="field-manual-row"><input class="field-manual-input" data-field="grade" placeholder="没有找到？ 手动输入" /></div></div></div></td><td class="ai-source"><div class="ai-source-card" data-ai-field="grade"><span class="ai-label">AI推荐</span><span class="ai-value">A2-70</span><span class="ai-detail">结合不锈钢标准件常用材质与规格，推荐性能等级 A2-70。</span></div></td></tr>
+<tr class="custom-add-row" id="customAddRow"><td colspan="3"><button type="button" class="custom-add-btn" id="addCustomAttributeBtn">&#43; 手动新增属性</button><span class="custom-add-hint">系统未覆盖的采购属性，可继续添加</span></td></tr></tbody>
       </table>
-      <div class="clarify-inference" id="clarifyInference">
-        <div class="inference-title">🧠 AI属性推断: 等级</div>
-        <div class="inference-cards">
-          <div class="inference-card recommended" id="inferCard1">
-            <div class="card-header"><span class="card-value">A2-70</span><span class="card-votes">4票</span></div>
-            <div class="card-models"><span class="model-tag">Deepseek-R1</span><span class="model-tag">GPT-4</span><span class="model-tag">Claude 3.5</span><span class="model-tag">Qwen-Max</span></div>
-            <div class="card-reason">304不锈钢六角螺栓标配等级，客户近一年6笔订单均为A2-70</div>
-          </div>
-          <div class="inference-card" id="inferCard2">
-            <div class="card-header"><span class="card-value">A4-80</span><span class="card-votes">1票</span></div>
-            <div class="card-models"><span class="model-tag">Gemini 3</span></div>
-            <div class="card-reason">A4-80耐腐蚀性更强，适用于化工/海洋环境</div>
-          </div>
-          <div class="inference-card manual">
-            <div class="card-header"><span class="card-value">手动录入</span></div>
-            <div class="card-input"><input type="text" placeholder="输入自定义值" readonly></div>
-          </div>
-        </div>
-      </div>
+      <div class="ai-reason-popover" id="aiReasonPopover"><div class="ai-reason-head"><span>AI推荐依据：</span><span class="ai-reason-chip" id="reasonChip">GB6170</span></div><div class="ai-models"><span class="ai-model-logo"><img src="https://cdn.simpleicons.org/deepseek/4D6BFE" alt="DeepSeek Logo">DeepSeek</span><span class="ai-model-logo"><img src="images/openai-logo.svg" alt="OpenAI Logo">GPT-4</span><span class="ai-model-logo"><img src="images/claude-logo.svg" alt="Anthropic Logo">Claude</span></div><div class="ai-reason-option recommended"><div class="ai-reason-option-title"><span id="reasonOptionA">GB6170</span><span>首选</span></div><div class="ai-reason-option-copy" id="reasonCopyA"></div></div><div class="ai-reason-option"><div class="ai-reason-option-title"><span id="reasonOptionB">DIN934</span><span>候选</span></div><div class="ai-reason-option-copy" id="reasonCopyB"></div></div></div>
       <div class="clarify-footer" id="clarifyFooter">
-        <span class="confirm-count">4 项属性可一键确认</span>
+        <span class="confirm-count">属性已提取，仍有 1 个关键参数待治理</span>
         <button class="clarify-confirm-btn" id="clarifyConfirm">✓ 一键确认</button>
       </div>
     </div>
   </div>
 
-<!-- SCENE: INTRO -->
+  <!-- SCENE: INTRO -->
 <div class="scene intro-screen active" id="sceneIntro">
+  <div class="intro-visual-bg" aria-hidden="true"></div><div class="intro-visual-grid" aria-hidden="true"></div><div class="precision-scan" aria-hidden="true"></div>
   <div class="floating-orb"></div>
   <div class="floating-orb"></div>
   <div class="floating-orb"></div>
-  <div class="decoration-ring" style="width:300px;height:300px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-  <div class="decoration-ring" style="width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-  <div class="decoration-line" style="width:200px;height:1px;top:40%;left:50%;transform:translateX(-50%)"></div>
+  <div class="precision-frame precision-frame-a"></div><div class="precision-frame precision-frame-b"></div>
+  <div class="intro-content">
   <div class="intro-logo-wrap title-shine-img"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" class="intro-logo-img" loading="eager"></div>
   <div class="intro-sub">让采购搜索更聪明</div>
-  <div style="font-size:0.95rem;color:rgba(255,255,255,.5);text-align:center;margin-top:4px">全链路AI采购体验 · ~150秒演示</div>
+  <div class="intro-meta">全链路AI采购体验 · ~150秒演示</div>
   <div class="intro-features" style="display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;justify-content:center">
-    <div class="feature-chip" style="opacity:0"><span class="chip-icon">🔍</span><span class="chip-text">AI 语义搜索</span></div>
-    <div class="feature-chip" style="opacity:0"><span class="chip-icon">📋</span><span class="chip-text">需求澄清</span></div>
-    <div class="feature-chip" style="opacity:0"><span class="chip-icon">📊</span><span class="chip-text">一品多商</span></div>
+    <div class="feature-chip" style="opacity:0"><span class="chip-icon icon-search" aria-hidden="true"></span><span class="chip-text">AI 语义搜索</span></div>
+    <div class="feature-chip" style="opacity:0"><span class="chip-icon icon-clarify" aria-hidden="true"></span><span class="chip-text">需求澄清</span></div>
+    <div class="feature-chip" style="opacity:0"><span class="chip-icon icon-multi" aria-hidden="true"></span><span class="chip-text">一品多商</span></div>
+  </div>
   </div>
 </div>
 
@@ -421,7 +478,7 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
     </div>
   </div>
   <div class="mall-toolbar">
-    <div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺栓</div>
+    <div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺母</div>
     <div class="sort-bar" id="sortBar1" style="display:none">
       <span class="result-count" id="resultCount1"></span>
       <div class="sort-options"><span class="active">综合</span><span>价格↑</span><span>销量↓</span><span>新品</span></div>
@@ -430,7 +487,7 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
   <div class="mall-body" id="mallBody1" style="display:flex">
     <div class="filter-sidebar" id="filterSidebar" style="display:none">
       <div class="filter-group"><h4>品牌</h4>
-        <div class="brand-logo-row"><div class="brand-logo">世世通</div><div class="brand-logo">瑞玛</div><div class="brand-logo">东明</div></div>
+        <div class="brand-logo-row"><div class="brand-logo active">ZKH</div><div class="brand-logo">世世通</div><div class="brand-logo">瑞玛</div><div class="brand-logo">东明</div><div class="brand-logo">盛祥</div></div>
       </div>
       <div class="filter-group"><h4>材质</h4><div class="filter-item">不锈钢304</div><div class="filter-item">碳钢</div><div class="filter-item">合金钢</div></div>
       <div class="filter-group"><h4>规格</h4><div class="filter-item">M6</div><div class="filter-item">M8</div><div class="filter-item">M10</div><div class="filter-item">M12</div></div>
@@ -458,35 +515,44 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
       <div style="display:flex;gap:20px;align-items:flex-start">
         <div class="ai-steps-left" style="flex:1;min-width:0">
           <div class="ai-step-row" id="aiStep0"><div class="ai-step-dot" id="aiDot0"></div><div class="ai-step-text">🔍 正在解析搜索意图...</div></div>
-          <div class="ai-step-row" id="aiStep1"><div class="ai-step-dot" id="aiDot1"></div><div class="ai-step-text">📝 识别关键参数：材质=不锈钢, 规格=M8</div></div>
-          <div class="ai-step-row" id="aiStep2"><div class="ai-step-dot" id="aiDot2"></div><div class="ai-step-text">🧠 发现缺失参数：头型、长度、等级、标准</div></div>
-          <div class="ai-step-row" id="aiStep3"><div class="ai-step-dot" id="aiDot3"></div><div class="ai-step-text">📊 匹配到多规格组合，返回全量结果</div></div>
+          <div class="ai-step-row" id="aiStep1"><div class="ai-step-dot" id="aiDot1"></div><div class="ai-step-text">📝 已识别关键参数：类型=六角螺母、材质=不锈钢、规格=M8</div></div>
+          <div class="ai-step-row" id="aiStep2"><div class="ai-step-dot" id="aiDot2"></div><div class="ai-step-text">🧠 已补全：执行标准=GB/T 6170、性能等级=A2-70；长度未指定</div></div>
+          <div class="ai-step-row" id="aiStep3"><div class="ai-step-dot" id="aiDot3"></div><div class="ai-step-text">📊 匹配 M8 六角螺母多规格组合，返回全量结果</div></div>
         </div>
         <div class="kg-container" id="kgContainer">
-          <svg class="kg-graph" viewBox="-50 -20 500 340" xmlns="http://www.w3.org/2000/svg">
-            <line class="kg-edge" id="kgEdge1" x1="200" y1="150" x2="100" y2="60"/>
-            <line class="kg-edge" id="kgEdge2" x1="200" y1="150" x2="320" y2="60"/>
-            <line class="kg-edge" id="kgEdge3" x1="200" y1="150" x2="80" y2="220"/>
-            <line class="kg-edge" id="kgEdge4" x1="200" y1="150" x2="320" y2="220"/>
-            <line class="kg-edge kg-edge-2" id="kgEdge5" x1="100" y1="60" x2="70" y2="30"/>
-            <line class="kg-edge kg-edge-2" id="kgEdge6" x1="320" y1="60" x2="360" y2="20"/>
-            <line class="kg-edge kg-edge-2" id="kgEdge7" x1="80" y1="220" x2="70" y2="265"/>
-            <circle class="kg-node kg-center" id="kgCenter" cx="200" cy="150" r="28"/>
-            <text class="kg-label kg-label-center" id="kgL0" x="200" y="155">螺栓M8</text>
-            <circle class="kg-node kg-l1" id="kgN1" cx="100" cy="60" r="20"/>
-            <text class="kg-label" id="kgL1" x="100" y="65">头型</text>
-            <circle class="kg-node kg-l1" id="kgN2" cx="320" cy="60" r="20"/>
-            <text class="kg-label" id="kgL2" x="320" y="65">长度</text>
-            <circle class="kg-node kg-l1" id="kgN3" cx="80" cy="220" r="20"/>
-            <text class="kg-label" id="kgL3" x="80" y="225">等级</text>
-            <circle class="kg-node kg-l1" id="kgN4" cx="320" cy="220" r="20"/>
-            <text class="kg-label" id="kgL4" x="320" y="225">标准</text>
-            <circle class="kg-node kg-l2" id="kgN5" cx="70" cy="30" r="14"/>
-            <text class="kg-label kg-label-sm" id="kgL5" x="70" y="34">GB5783</text>
-            <circle class="kg-node kg-l2" id="kgN6" cx="360" cy="20" r="14"/>
-            <text class="kg-label kg-label-sm" id="kgL6" x="360" y="24">DIN912</text>
-            <circle class="kg-node kg-l2" id="kgN7" cx="70" cy="265" r="14"/>
-            <text class="kg-label kg-label-sm" id="kgL7" x="70" y="269">GB5787</text>
+          <svg class="kg-graph" viewBox="0 0 480 380" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <line class="kg-edge" id="kgEdge1" x1="240" y1="170" x2="120" y2="75"/>
+            <line class="kg-edge" id="kgEdge2" x1="240" y1="170" x2="360" y2="75"/>
+            <line class="kg-edge" id="kgEdge3" x1="240" y1="170" x2="120" y2="250"/>
+            <line class="kg-edge" id="kgEdge4" x1="240" y1="170" x2="375" y2="245"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge5" x1="120" y1="75" x2="55" y2="28"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge6" x1="360" y1="75" x2="425" y2="28"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge7" x1="120" y1="250" x2="48" y2="328"/>
+            <line class="kg-edge" id="kgEdge8" x1="240" y1="170" x2="240" y2="300"/>
+            <circle class="kg-node kg-center" id="kgCenter" cx="240" cy="170" r="40"/>
+            <text class="kg-label kg-label-center" id="kgL0" x="240" y="170"><tspan x="240" dy="-2">六角螺母</tspan><tspan x="240" dy="15">M8</tspan></text>
+            <circle class="kg-node kg-l1" id="kgN1" cx="120" cy="75" r="26"/>
+            <text class="kg-label" id="kgL1" x="120" y="80">类型</text>
+            <circle class="kg-node kg-l1" id="kgN2" cx="360" cy="75" r="26"/>
+            <text class="kg-label" id="kgL2" x="360" y="80">规格</text>
+            <circle class="kg-node kg-l1" id="kgN3" cx="120" cy="250" r="26"/>
+            <text class="kg-label" id="kgL3" x="120" y="255">材质</text>
+            <circle class="kg-node kg-l1" id="kgN4" cx="375" cy="245" r="34"/>
+            <text class="kg-label" id="kgL4" x="375" y="245"><tspan x="375" dy="-4">执行</tspan><tspan x="375" dy="14">标准</tspan></text>
+            <rect class="kg-node kg-l2 kg-value-node" id="kgN5" x="20" y="15" width="70" height="26"/>
+            <text class="kg-label kg-label-sm" id="kgL5" x="55" y="32">六角螺母</text>
+            <rect class="kg-node kg-l2 kg-value-node" id="kgN6" x="410" y="15" width="30" height="26"/>
+            <text class="kg-label kg-label-sm" id="kgL6" x="425" y="32">M8</text>
+            <rect class="kg-node kg-l2 kg-value-node" id="kgN7" x="12" y="315" width="72" height="26"/>
+            <text class="kg-label kg-label-sm" id="kgL7" x="48" y="332">不锈钢</text>
+            <line class="kg-edge kg-edge-2" id="kgEdge9" x1="240" y1="300" x2="240" y2="360"/>
+            <line class="kg-edge kg-edge-2" id="kgEdge10" x1="375" y1="245" x2="435" y2="328"/>
+            <circle class="kg-node kg-l1" id="kgN8" cx="240" cy="300" r="32"/>
+            <text class="kg-label" id="kgL8" x="240" y="296"><tspan x="240" dy="-4">性能</tspan><tspan x="240" dy="14">等级</tspan></text>
+            <rect class="kg-node kg-l2 kg-value-node" id="kgN9" x="215" y="347" width="50" height="26"/>
+            <text class="kg-label kg-label-sm" id="kgL9" x="240" y="364">A2-70</text>
+            <rect class="kg-node kg-l2 kg-value-node" id="kgN10" x="392" y="315" width="86" height="26"/>
+            <text class="kg-label kg-label-sm" id="kgL10" x="435" y="332">GB/T 6170</text>
           </svg>
         </div>
       </div>
@@ -499,7 +565,7 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
   <div class="top-banner"><span style="color:#A14DFF">●</span> 企业采购专属通道&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 华东区域仓次日达&nbsp;&nbsp;|&nbsp;&nbsp;<span style="color:#A14DFF">●</span> 满500免运费</div>
   <div class="mall-header">
     <div class="logo"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" style="height:32px;width:auto" loading="eager"></div>
-    <div class="search-box"><input type="text" value="六角螺栓 M8×50 不锈钢304 A2-70" readonly><button class="search-btn">搜索</button></div>
+      <div class="search-box"><input type="text" value="六角螺母 M8 不锈钢 A2-70 GB/T 6170" readonly><button class="search-btn">搜索</button></div>
     <div class="ai-btn">✦ AI需求澄清</div>
     <div class="header-right">
       <span class="enterprise-name">玲珑慧搜测试企业</span>
@@ -510,11 +576,11 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
       <span>👤 我的</span>
     </div>
   </div>
-  <div class="mall-toolbar"><div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺栓 &gt; 商品详情</div></div>
+  <div class="mall-toolbar"><div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺母 &gt; 商品详情</div></div>
   <div class="mall-body" style="position:relative;padding-bottom:60px">
     <div class="detail-header">
-      <div class="detail-img"><img id="detailImg" alt="螺栓"></div>
-      <div class="detail-info"><h2>不锈钢六角螺栓 M8×50 A2-70</h2><div class="specs">规格：M8×50 | 材质：不锈钢304 | 等级：A2-70 | 表面处理：本色<br>品牌：DIN标准 | 包装：100个/盒</div></div>
+      <div class="detail-img"><img id="detailImg" alt="不锈钢六角螺母"></div>
+      <div class="detail-info"><h2>ZKH不锈钢六角螺母 M8×50 A2-70</h2><div class="specs">规格：M8 | 材质：不锈钢 | 等级：A2-70 | 表面处理：本色<br>执行标准：GB/T 6170 | 品牌：ZKH | 长度：50mm</div></div>
     </div>
     <div class="compare-section" id="compareSection">
       <div class="compare-title">📊 一品多商对比 <span style="font-size:12px;color:#94a3b8;font-weight:400">同一商品、相似品，多家供应商多维度排序</span></div>
@@ -547,12 +613,12 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
       <span>👤 我的</span>
     </div>
   </div>
-  <div class="mall-toolbar"><div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺钉</div></div>
+  <div class="mall-toolbar"><div class="breadcrumb">首页 &gt; 紧固件 &gt; 螺母 &gt; 六角螺母</div></div>
   <div class="mall-body">
     <div class="empty-state" id="emptyState" style="display:none">
       <div class="icon">🔍</div>
       <div class="text">暂无匹配商品</div>
-      <div style="color:#64748b;font-size:13px">未找到"M12×80 12.9级内六角圆柱头螺钉"相关商品</div>
+      <div style="color:#64748b;font-size:13px">未找到"不锈钢六角螺母 M8"相关商品</div>
     </div>
   </div>
   <div class="source-panel" id="sourcePanel">
@@ -591,10 +657,10 @@ tr.best-price.row-highlight{background:#F8F3FF !important;}
 
 <!-- SCENE: OUTRO -->
 <div class="scene outro-screen" id="sceneOutro">
+  <div class="outro-visual-bg" aria-hidden="true"></div><div class="outro-visual-grid" aria-hidden="true"></div><div class="precision-scan" aria-hidden="true"></div>
   <div class="floating-orb"></div>
   <div class="floating-orb"></div>
-  <div class="decoration-ring" style="width:250px;height:250px;top:50%;left:50%;transform:translate(-50%,-50%)"></div>
-  <div class="decoration-line" style="width:180px;height:1px;top:42%;left:50%;transform:translateX(-50%)"></div>
+  <div class="precision-frame precision-frame-a"></div><div class="precision-frame precision-frame-b"></div>
   <div class="intro-logo-wrap title-shine-img"><img src="玲珑慧搜-紫色透明.png" alt="玲珑慧搜" class="intro-logo-img" loading="eager"></div>
   <div style="width:100px;height:2px;background:linear-gradient(90deg,transparent,#7A2BFF,#A14DFF,transparent);margin:10px auto;border-radius:1px;box-shadow:0 0 8px rgba(122,43,255,.4)"></div>
   <div class="outro-sub">AI 驱动的智能采购体验</div>
@@ -662,13 +728,18 @@ const PRODUCT_IMAGES={
   '不锈钢六角':'images/不锈钢六角.jpg',
   '碳钢六角':'images/碳钢六角.jpg',
   '镀锌六角':'images/镀锌六角.jpg',
+  '不锈钢六角螺母':'images/不锈钢六角螺母.png',
+  '不锈钢六角螺母-单件':'images/不锈钢六角螺母-单件.png',
+  '不锈钢六角螺母-排列':'images/不锈钢六角螺母-排列.png',
+  '不锈钢六角螺母-堆叠':'images/不锈钢六角螺母-堆叠.png',
   '12.9级':'images/12.9级.jpg',
   '螺栓':'images/螺栓.jpg',
   '螺钉':'images/螺钉.jpg'
 };
 function getProductImage(name,fallback){
   if(fallback&&fallback!=='null'&&fallback!=='undefined'&&fallback!==''&&!fallback.includes('images/'))return fallback;
-  for(const[k,v]of Object.entries(PRODUCT_IMAGES)){if(name&&name.includes(k))return v;}
+  const match=Object.entries(PRODUCT_IMAGES).sort((a,b)=>b[0].length-a[0].length).find(([k])=>name&&name.includes(k));
+  if(match)return match[1];
   return PRODUCT_IMAGES['螺栓'];
 }
 const $=id=>document.getElementById(id);
@@ -705,9 +776,118 @@ function typeText(elOrId,text,charDelay=0.12){
 }
 function typeInDiv(elOrId,text,charDelay=0.05){
   const tl=gsap.timeline();
-  for(let i=0;i<text.length;i++){tl.call(()=>{const el=typeof elOrId==='string'?document.getElementById(elOrId):elOrId;if(el)el.textContent+=text[i];},null,`+=${charDelay}`);}
+  for(let i=0;i<text.length;i++){tl.call(()=>{const el=typeof elOrId==='string'?document.getElementById(elOrId):elOrId;if(el){el.textContent+=text[i];const field=typeof elOrId==='string'?({cv2:'spec',cv4:'material'})[elOrId]:null;if(field)updateFieldVisualState(field);}},null,`+=${charDelay}`);}
   return tl;
 }
+let standardizationCompleted=false;
+function updateMissingState(){
+  const badge=document.getElementById('missingCount');
+  if(!badge)return;
+  // 汇总只统计当前真正为空、显示“待补充”的关键属性；已提取但待确认不算缺失。
+  const requiredFields=[['brand','品牌'],['standard','执行标准'],['surface','表面处理'],['grade','性能等级']];
+  const missing=requiredFields.filter(function(item){
+    const id=fieldValueId(item[0]),el=id&&document.getElementById(id);
+    return !el||!el.textContent.trim()||el.textContent.trim()==='请选择';
+  }).map(function(item){return item[1];});
+  badge.textContent=missing.length?`缺 ${missing.length} 个关键参数：　${missing.join('　')}`:'关键参数已补全';
+  badge.style.color=missing.length?'#f45c63':'#168957';
+  badge.style.background=missing.length?'#fff0f1':'#eafaf2';
+}
+function fieldValueId(field){return ({brand:'cv0',standard:'cv1',spec:'cv2',material:'cv4',surface:'cv5',grade:'cv3'})[field];}
+function updateFieldVisualState(field){const id=fieldValueId(field),el=id&&document.getElementById(id),control=document.querySelector('.field-control[data-field="'+field+'"]');if(!control)return;const empty=!el||!el.textContent.trim();const pending=!empty&&(field==='spec'||field==='material')&&!control.classList.contains('field-ai-confirmed')&&!control.classList.contains('field-human-confirmed');control.classList.toggle('field-empty',empty);control.classList.toggle('field-pending-confirm',pending);if(field==='standard'){const info=control.querySelector('.standard-info');if(info)info.classList.toggle('is-empty',empty);}}
+function addStandardOptionInfo(){const tips={'GB/T 6170':'GB/T 6170：国内常用标准，适用于常规六角螺母；DIN934：国际通用候选，适用于客户明确要求 DIN/ISO 标准的场景。','DIN934':'DIN934：国际通用标准，适用于客户指定 DIN/ISO 体系的场景。','DIN5587':'DIN5587：适用于指定 DIN5587 标准的订单。','B18.2.2_Table3-1986':'B18.2.2_Table3-1986：美国标准系列，请按客户图纸或技术要求选择。','B18.2.2_Table8-1986':'B18.2.2_Table8-1986：美国标准系列，请按客户图纸或技术要求选择。','B18.2.2_Table9-1986':'B18.2.2_Table9-1986：美国标准系列，请按客户图纸或技术要求选择。'};document.querySelectorAll('.field-menu[data-menu="standard"] .field-option').forEach(function(option){if(option.querySelector('.standard-option-info'))return;const info=document.createElement('span');info.className='standard-option-info';info.textContent='!';info.dataset.tooltip=tips[option.dataset.value]||'该执行标准需根据客户要求确认。';option.appendChild(info);});}
+function markHumanConfirmed(field){const card=document.querySelector('.ai-source-card[data-ai-field="'+field+'"]');if(card){const label=card.querySelector('.ai-label');if(label)label.textContent='\u4eba\u5de5\u786e\u8ba4';card.classList.add('human-confirmed');}}
+function setFieldValue(field,value,source){const id=fieldValueId(field),el=id&&document.getElementById(id);if(!el||!String(value).trim())return;el.textContent=String(value).trim();const control=document.querySelector('.field-control[data-field="'+field+'"]');if(control){control.querySelectorAll('.field-option').forEach(option=>{const selected=option.dataset.value===el.textContent;option.classList.toggle('selected',selected);const radio=option.querySelector('.option-radio');if(radio)radio.textContent=selected?'\u25cf':'\u25cb';});if(source==='human'){markHumanConfirmed(field);control.classList.add('field-human-confirmed');}if(source==='ai')control.classList.add('field-ai-confirmed');}updateFieldVisualState(field);updateMissingState();}
+function completeStandardization(){standardizationCompleted=true;const values={brand:'ZKH',standard:'GB/T 6170',surface:'\u672c\u8272',grade:'A2-70'};Object.keys(values).forEach(function(field){setFieldValue(field,values[field],'ai');const card=document.querySelector('.ai-source-card[data-ai-field="'+field+'"]');if(card)card.classList.add('ai-applied');});updateMissingState();}
+// Override: one-click AI adoption always overwrites manual values and restores AI labels.
+function completeStandardization(){
+  standardizationCompleted=true;
+  const values={brand:'ZKH',standard:'GB/T 6170',spec:'M8',material:'不锈钢',surface:'本色',grade:'A2-70'};
+  Object.keys(values).forEach(function(field){
+    setFieldValue(field,values[field],'ai');
+    const control=document.querySelector('.field-control[data-field="'+field+'"]');
+    if(control){control.classList.remove('field-human-confirmed');control.classList.add('field-ai-confirmed');}
+    const card=document.querySelector('.ai-source-card[data-ai-field="'+field+'"]');
+    if(card){card.classList.remove('human-confirmed');card.classList.add('ai-applied');const label=card.querySelector('.ai-label');if(label)label.textContent='AI推荐';}
+  });
+  updateMissingState();
+}
+
+function confirmAllClarify(){
+  document.querySelectorAll('.clarify-row:not(.clarify-row-deleted)').forEach(function(row){row.classList.add('row-confirmed');});['spec','material'].forEach(function(field){const control=document.querySelector('.field-control[data-field="'+field+'"]');if(control){control.classList.add('field-ai-confirmed');updateFieldVisualState(field);}});
+  const footer=document.getElementById('clarifyFooter');if(footer){const count=footer.querySelector('.confirm-count');if(count)count.textContent='\u5c5e\u6027\u5df2\u786e\u8ba4\uff0c\u53ef\u751f\u6210\u6807\u51c6\u91c7\u8d2d Query';}
+}
+function closeReasonPopover(){const popover=document.getElementById('aiReasonPopover');if(popover){popover.style.display='none';popover.removeAttribute('data-open-field');}document.querySelectorAll('.ai-source-card').forEach(c=>c.classList.remove('active'));}
+function openReasonPopover(card,field){
+  const popover=document.getElementById('aiReasonPopover'),panel=document.querySelector('.clarify-panel-content');if(!popover||!panel)return;
+  if(popover.getAttribute('data-open-field')===field){closeReasonPopover();return;}
+  const chip=document.getElementById('reasonChip'),a=document.getElementById('reasonOptionA'),b=document.getElementById('reasonOptionB'),copyA=document.getElementById('reasonCopyA'),copyB=document.getElementById('reasonCopyB');
+  if(field==='brand'){
+    chip.textContent='ZKH';a.textContent='ZKH';b.textContent='其他品牌';
+    copyA.textContent='结合当前企业采购偏好与品类场景，优先推荐 ZKH 品牌，便于统一采购与后续治理。';
+    copyB.textContent='如需其他品牌，可从候选中选择，或通过手动输入补充品牌信息。';
+  }else{
+    chip.textContent='GB6170';a.textContent='GB6170';b.textContent='DIN934';
+    copyA.textContent='M8 不锈钢六角螺母在国内通用语境下默认对应 GB/T 6170，适用于常规六角螺母采购。';
+    copyB.textContent='DIN934 是国际通用候选，适用于客户明确要求 DIN/ISO 标准或出口场景。';
+  }
+  popover.style.display='block';popover.setAttribute('data-open-field',field);const panelRect=panel.getBoundingClientRect(),cardRect=card.getBoundingClientRect();
+  const cardWidth=Math.min(cardRect.width,Math.max(240,panel.clientWidth-32));popover.style.width=cardWidth+'px';const maxLeft=panel.clientWidth-popover.offsetWidth-16;const left=Math.max(16,Math.min(cardRect.left-panelRect.left,maxLeft));const below=cardRect.bottom-panelRect.top+10;const above=cardRect.top-panelRect.top-popover.offsetHeight-10;const top=below+popover.offsetHeight<panel.clientHeight?below:Math.max(16,above);
+  popover.style.left=left+'px';popover.style.top=top+'px';popover.style.setProperty('--popover-arrow-left',Math.max(20,Math.min(popover.offsetWidth-30,cardRect.left-panelRect.left-left+cardRect.width/2-7))+'px');
+  document.querySelectorAll('.ai-source-card').forEach(c=>c.classList.remove('active'));card.classList.add('active');
+}
+function createCustomAttributeRow(){
+  const anchor=document.getElementById('customAddRow');if(!anchor)return;
+  const row=document.createElement('tr');row.className='custom-attribute-row';
+  row.innerHTML='<td class="prop-name"><input class="custom-attr-input custom-attr-name" placeholder="属性名称" /></td><td class="prop-value"><div class="custom-attr-value-wrap"><input class="custom-attr-input custom-attr-value" placeholder="手动输入属性值" /><button type="button" class="custom-attr-save" aria-label="保存" title="保存">✓</button><button type="button" class="custom-attr-remove" aria-label="删除" title="删除">×</button></div></td><td class="ai-source"><div class="ai-source-card"><span class="ai-label">手动新增</span><span class="ai-detail">该属性由用户补充</span></div></td>';
+  anchor.parentNode.insertBefore(row,anchor);row.querySelector('.custom-attr-name').focus();
+}
+document.querySelectorAll('.field-manual-row').forEach(function(row){
+  if(!row.querySelector('.manual-radio')){const radio=document.createElement('button');radio.type='button';radio.className='manual-radio';radio.textContent='◯';radio.title='选择手动输入';radio.setAttribute('aria-label','选择手动输入');row.appendChild(radio);}
+});
+document.querySelectorAll('.field-menu').forEach(function(menu){
+  if(!menu.querySelector('.field-options-scroll')){const manual=menu.querySelector('.field-manual-row'),scroller=document.createElement('div');scroller.className='field-options-scroll';Array.from(menu.children).forEach(function(child){if(child!==manual)scroller.appendChild(child);});menu.insertBefore(scroller,manual);}
+});
+function addAiSourceActions(){
+  document.querySelectorAll('.ai-source-card[data-ai-field]').forEach(function(card){
+    if(card.querySelector('.ai-source-actions'))return;
+    const actions=document.createElement('span');actions.className='ai-source-actions';
+    actions.innerHTML='<button type="button" class="ai-source-action ai-source-confirm" title="确认采纳" aria-label="确认采纳">✓</button><button type="button" class="ai-source-action ai-source-delete" title="删除属性" aria-label="删除属性">×</button>';
+    card.appendChild(actions);
+  });
+}
+addAiSourceActions();addStandardOptionInfo();['brand','standard','spec','material','surface','grade'].forEach(function(field){const control=document.querySelector('.field-control[data-field="'+field+'"]');if(control)control.classList.remove('field-ai-confirmed','field-human-confirmed');updateFieldVisualState(field);});
+document.addEventListener('click',function(e){
+  if(e.target.closest('#addCustomAttributeBtn')){createCustomAttributeRow();return;}
+  if(e.target.closest('.custom-attr-save')){const row=e.target.closest('.custom-attribute-row');const name=row&&row.querySelector('.custom-attr-name'),value=row&&row.querySelector('.custom-attr-value');if(name&&value&&name.value.trim()&&value.value.trim()){e.target.textContent='✓';e.target.classList.add('saved');e.target.title='已保存';e.target.setAttribute('aria-label','已保存');}return;}
+  if(e.target.closest('.custom-attr-remove')){const row=e.target.closest('.custom-attribute-row');if(row)row.remove();return;}
+  if(e.target.closest('.manual-radio')){const radio=e.target.closest('.manual-radio'),row=radio.closest('.field-manual-row'),input=row&&row.querySelector('.field-manual-input');document.querySelectorAll('.manual-radio').forEach(function(item){item.classList.remove('selected');item.textContent='◯';});radio.classList.add('selected');radio.textContent='●';if(input)input.focus();return;}
+  if(e.target.closest('.ai-source-confirm')){const card=e.target.closest('.ai-source-card'),field=card&&card.dataset.aiField,value=card&&card.querySelector('.ai-value'),raw=value&&value.textContent.replace(/^\[|\]$/g,'').trim();if(field&&raw){setFieldValue(field,raw,'ai');card.classList.add('ai-applied');}return;}
+  if(e.target.closest('.ai-source-delete')){const card=e.target.closest('.ai-source-card'),row=card&&card.closest('.clarify-row');if(row){row.classList.add('clarify-row-deleted');row.style.display='none';closeReasonPopover();updateMissingState();}return;}
+  if(e.target.closest('#aiCompleteBtn')){completeStandardization();return;}
+  if(e.target.closest('#clarifyConfirm')){confirmAllClarify();return;}
+  if(e.target.closest('.standard-info'))return;
+  const control=e.target.closest('.field-control');
+  const option=e.target.closest('.field-option');
+  const ai=e.target.closest('[data-ai-field]');
+  const manualInput=e.target.closest('.field-manual-input');
+  if(manualInput)return;
+  if(option){
+    const menu=option.closest('.field-menu'),field=menu&&menu.dataset.menu;setFieldValue(field,option.dataset.value,'human');
+    if(menu)menu.classList.remove('open');const parent=menu&&menu.closest('.field-control');if(parent){parent.classList.remove('open');const row=parent.closest('.clarify-row');if(row)row.classList.remove('dropdown-open');}
+    return;
+  }
+  if(control&&!control.classList.contains('readonly')){
+    const menu=control.querySelector('.field-menu');if(!menu)return;
+    document.querySelectorAll('.field-menu').forEach(m=>{if(m!==menu)m.classList.remove('open');});document.querySelectorAll('.field-control').forEach(c=>{if(c!==control)c.classList.remove('open');});document.querySelectorAll('.clarify-row.dropdown-open').forEach(r=>{if(!r.contains(control))r.classList.remove('dropdown-open');});
+    const isOpen=!menu.classList.contains('open');menu.classList.toggle('open',isOpen);control.classList.toggle('open',isOpen);const row=control.closest('.clarify-row');if(row)row.classList.toggle('dropdown-open',isOpen);return;
+  }
+  if(ai){openReasonPopover(ai,ai.dataset.aiField);return;}
+  if(!e.target.closest('#aiReasonPopover'))closeReasonPopover();
+ });
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeReasonPopover();});
+document.addEventListener('keydown',function(e){const input=e.target.closest&&e.target.closest('.field-manual-input');if(input&&e.key==='Enter'){e.preventDefault();setFieldValue(input.dataset.field,input.value,'human');const menu=input.closest('.field-menu'),control=input.closest('.field-control'),row=input.closest('.clarify-row');if(menu)menu.classList.remove('open');if(control)control.classList.remove('open');if(row)row.classList.remove('dropdown-open');}});
+document.addEventListener('change',function(e){const input=e.target.closest&&e.target.closest('.field-manual-input');if(input)setFieldValue(input.dataset.field,input.value,'human');});
 function showToast(text,dur=1.5){toastEl.textContent=text;return gsap.timeline().to(toastEl,{opacity:1,x:0,duration:0.2}).to(toastEl,{opacity:0,x:30,duration:0.2},`+=${dur}`);}
 function showTeleprompter(text){
   teleprompterEl.textContent=text;
@@ -725,8 +905,10 @@ function showSearchStatus(text,cls){searchStatusBar.textContent=text;searchStatu
 function hideSearchStatus(){return gsap.to(searchStatusBar,{opacity:0,duration:0.2});}
 function addSceneTransition(num,text,title){
   return gsap.timeline()
-    .call(()=>{
-      transText.textContent=text;transTitle.textContent='';
+     .call(()=>{
+       // 进入场景转场时立即清理上一场景的点击高亮，避免紫色框拖尾到下一页。
+       gsap.killTweensOf(clickHighlightEl);gsap.set(clickHighlightEl,{opacity:0});
+       transText.textContent=text;transTitle.textContent='';
       transNumber.textContent=num;
       gsap.set(transDivider,{width:0,opacity:0});
       gsap.set(transRing,{scale:0.8,opacity:0});
@@ -750,30 +932,30 @@ function addSceneTransition(num,text,title){
 function activateDot(idx){const d=$('aiDot'+idx);if(d){d.classList.remove('completed');d.classList.add('active');}}
 function completeDot(idx){const d=$('aiDot'+idx);if(d){d.classList.remove('active');d.classList.add('completed');}}
 const products=[
-  {name:'不锈钢六角螺栓 M8×20 A2-70',spec:'304/本色/GB5783',price:'0.45',supplier:'玲珑慧搜自营',img:getProductImage('六角螺栓')},
-  {name:'不锈钢六角螺栓 M8×30 A2-70',spec:'304/本色/GB5783',price:'0.52',supplier:'供应商D',img:getProductImage('六角螺栓')},
-  {name:'不锈钢六角螺栓 M8×40 A2-70',spec:'304/本色/GB5783',price:'0.58',supplier:'玲珑慧搜自营',img:getProductImage('六角螺栓')},
-  {name:'不锈钢六角螺栓 M8×50 A2-70',spec:'304/本色/GB5783',price:'0.65',supplier:'供应商A',img:getProductImage('六角螺栓')},
-  {name:'不锈钢内六角螺栓 M8×25 A2-70',spec:'304/本色/DIN912',price:'0.72',supplier:'供应商D',img:getProductImage('内六角')},
-  {name:'不锈钢内六角螺栓 M8×40 A2-70',spec:'304/本色/DIN912',price:'0.85',supplier:'玲珑慧搜自营',img:getProductImage('内六角')},
-  {name:'不锈钢法兰螺栓 M8×30 A2-70',spec:'304/本色/GB5787',price:'0.92',supplier:'供应商B',img:getProductImage('法兰螺栓')},
-  {name:'不锈钢法兰螺栓 M8×50 A2-70',spec:'304/本色/GB5787',price:'1.05',supplier:'供应商C',img:getProductImage('法兰螺栓')},
-  {name:'不锈钢六角螺栓 M8×50 A4-80',spec:'316/本色/GB5783',price:'1.35',supplier:'供应商A',img:getProductImage('六角螺栓')},
-  {name:'不锈钢马车螺栓 M8×40',spec:'304/本色/GB12',price:'0.78',supplier:'供应商D',img:getProductImage('马车螺栓')},
-  {name:'不锈钢六角螺栓 M8×60 A2-70',spec:'304/本色/GB5783',price:'0.72',supplier:'玲珑慧搜自营',img:getProductImage('六角螺栓')},
-  {name:'不锈钢内六角螺栓 M8×50 A2-70',spec:'304/本色/DIN912',price:'0.95',supplier:'供应商B',img:getProductImage('内六角')}
+  {name:'ZKH不锈钢六角螺母 M8×20 A2-70',spec:'ZKH / 不锈钢 / 本色 / GB/T 6170',price:'0.18',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺母-单件')},
+  {name:'世世通不锈钢六角螺母 M8×30 A2-70',spec:'世世通 / 不锈钢 / 本色 / GB/T 6170',price:'0.22',supplier:'供应商D',img:getProductImage('不锈钢六角螺母-排列')},
+  {name:'瑞玛不锈钢六角螺母 M8×40 A2-70',spec:'瑞玛 / 不锈钢 / 本色 / GB/T 6170',price:'0.26',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺母-堆叠')},
+  {name:'东明不锈钢六角螺母 M8×50 A2-70',spec:'东明 / 不锈钢 / 本色 / GB/T 6170',price:'0.32',supplier:'供应商A',img:getProductImage('不锈钢六角螺母')},
+  {name:'盛祥不锈钢六角螺母 M8×25 A2-70',spec:'盛祥 / 不锈钢 / 本色 / GB/T 6170',price:'0.20',supplier:'供应商D',img:getProductImage('不锈钢六角螺母-排列')},
+  {name:'华东不锈钢六角螺母 M8×35 A2-70',spec:'华东 / 不锈钢 / 本色 / GB/T 6170',price:'0.24',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺母-单件')},
+  {name:'ZKH不锈钢六角螺母 M8×45 A2-70',spec:'ZKH / 不锈钢 / 本色 / GB/T 6170',price:'0.29',supplier:'供应商B',img:getProductImage('不锈钢六角螺母-堆叠')},
+  {name:'世世通不锈钢六角螺母 M8×60 A2-70',spec:'世世通 / 不锈钢 / 本色 / GB/T 6170',price:'0.36',supplier:'供应商C',img:getProductImage('不锈钢六角螺母')},
+  {name:'瑞玛不锈钢六角螺母 M8×70 A2-70',spec:'瑞玛 / 不锈钢 / 本色 / GB/T 6170',price:'0.42',supplier:'供应商A',img:getProductImage('不锈钢六角螺母-单件')},
+  {name:'东明不锈钢六角螺母 M8×80 A2-70',spec:'东明 / 不锈钢 / 本色 / GB/T 6170',price:'0.48',supplier:'供应商D',img:getProductImage('不锈钢六角螺母-排列')},
+  {name:'盛祥不锈钢六角螺母 M8×90 A2-70',spec:'盛祥 / 不锈钢 / 本色 / GB/T 6170',price:'0.55',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺母-堆叠')},
+  {name:'ZKH不锈钢六角螺母 M8×100 A2-70',spec:'ZKH / 不锈钢 / 本色 / GB/T 6170',price:'0.62',supplier:'供应商B',img:getProductImage('不锈钢六角螺母')}
 ];
 const preciseProducts=[
-  {name:'不锈钢六角螺栓 M8×50 A2-70',spec:'不锈钢304 / 本色',price:'0.85',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺栓')},
-  {name:'碳钢六角螺栓 M8×50 8.8级',spec:'碳钢 / 达克罗',price:'0.72',supplier:'供应商D',img:getProductImage('碳钢六角螺栓')},
-  {name:'镀锌六角螺栓 M8×50 4.8级',spec:'碳钢 / 镀锌',price:'0.58',supplier:'供应商A',img:getProductImage('镀锌六角螺栓')}
+  {name:'ZKH不锈钢六角螺母 M8×50 A2-70',spec:'ZKH / 不锈钢 / 本色 / GB/T 6170',price:'0.32',supplier:'玲珑慧搜自营',img:getProductImage('不锈钢六角螺母')},
+  {name:'ZKH不锈钢六角螺母 M8×30 A2-70',spec:'ZKH / 不锈钢 / 本色 / GB/T 6170',price:'0.22',supplier:'供应商D',img:getProductImage('不锈钢六角螺母-排列')},
+  {name:'ZKH不锈钢六角螺母 M8×20 A2-70',spec:'ZKH / 不锈钢 / 本色 / GB/T 6170',price:'0.18',supplier:'供应商A',img:getProductImage('不锈钢六角螺母-堆叠')}
 ];
 const compareData=[
-  {supplier:'玲珑慧搜',brand:'世世通',rating:4.9,price:0.85,delivery:'次日达',stock:'5000+',type:'相同品',cooperate:28},
-  {supplier:'供应商D',brand:'瑞玛',rating:4.5,price:0.92,delivery:'2-3天',stock:'3200',type:'相同品',cooperate:15},
-  {supplier:'供应商A',brand:'东明',rating:4.7,price:0.78,delivery:'3-5天',stock:'8000+',type:'相同品',cooperate:42},
-  {supplier:'供应商B',brand:'盛祥紧固',rating:4.3,price:0.95,delivery:'次日达',stock:'1500',type:'相似品',cooperate:8},
-  {supplier:'供应商C',brand:'华东螺丝',rating:4.6,price:1.02,delivery:'2天',stock:'4200',type:'相似品',cooperate:21}
+  {supplier:'玲珑慧搜',brand:'ZKH',rating:4.9,price:0.32,delivery:'次日达',stock:'5000+',type:'相同品',cooperate:28},
+  {supplier:'供应商D',brand:'ZKH',rating:4.5,price:0.35,delivery:'2-3天',stock:'3200',type:'相同品',cooperate:15},
+  {supplier:'供应商A',brand:'ZKH',rating:4.7,price:0.29,delivery:'3-5天',stock:'8000+',type:'相同品',cooperate:42},
+  {supplier:'供应商B',brand:'ZKH',rating:4.3,price:0.38,delivery:'次日达',stock:'1500',type:'相同品',cooperate:8},
+  {supplier:'供应商C',brand:'ZKH',rating:4.6,price:0.41,delivery:'2天',stock:'4200',type:'相同品',cooperate:21}
 ];
 const sourceData=[
   {supplier:'玲珑慧搜',brand:'高强紧固',price:3.85,delivery:'3天',stock:'5000+',advice:'库存稳',stockPick:true},
@@ -841,13 +1023,13 @@ master.addLabel('scene1')
   .call(()=>updateSceneHeader('场景 1/3 ▸ AI搜索 — 语义搜索+需求澄清'))
   .add(addSceneTransition('01','描述不够精确，如何快速定品？','AI需求澄清'))
 
-// Step 1: Type "不锈钢螺栓 M8" — charDelay 0.15
+// Step 1: Type "不锈钢六角螺母 M8" — charDelay 0.15
 master.add(showCursor(),'>+0.15')
-  .call(()=>showTeleprompter('用户搜索\'不锈钢螺栓 M8\'——仅提供了部分规格参数'),null,'>+0.1')
+  .call(()=>showTeleprompter('用户搜索\'不锈钢六角螺母 M8\'——规格与材质已给出，品牌、标准等参数待补全'),null,'>+0.1')
   .add(moveCursor('#searchInput1'),'>+0.1')
   .add(clickPulse(),'>+0.1')
   .call(()=>{$('aiBtn1').classList.add('ai-glow');},null,'>')
-  .add(typeText('searchInput1','不锈钢螺栓 M8',0.15),'>+0.15')
+  .add(typeText('searchInput1','不锈钢六角螺母 M8',0.15),'>+0.15')
   .call(()=>{$('searchBox1').classList.add('search-active');},null,'>+0.15')
   .add(moveCursor('#searchBtn1'),'>+0.15')
   .add(clickPulse(),'>+0.05')
@@ -885,49 +1067,33 @@ master.call(()=>{$('searchBox1').classList.remove('search-active');},null,'>')
 
 // Step 4: Clarify panel animation — 行间距0.8s，每行打字后有停顿
 master.to('#clarifyPanel',{opacity:1,duration:0.25,onStart:()=>{$('clarifyPanel').style.pointerEvents='auto';}},'>+0.15')
-  .call(()=>showTeleprompter('AI 自动提取规格参数：品名、规格、材质、等级…'),null,'>');
+  .call(()=>showTeleprompter('AI 提取规格与材质，并推荐补全品牌、执行标准、表面处理、性能等级'),null,'>');
 
-const clarifyValues=['六角螺栓','M8×50','不锈钢304','A2-70','本色','GB5783'];
-const clarifyIds=['cv0','cv1','cv2','cv3','cv4','cv5'];
+const clarifyValues=['ZKH','GB/T 6170','M8','\u4e0d\u9508\u94a2','\u672c\u8272','A2-70'];
+const clarifyIds=['cv0','cv1','cv2','cv4','cv5','cv3'];
+const autoExtractIds=new Set(['cv2','cv4']);
 const clarifyRows=document.querySelectorAll('.clarify-row');
 clarifyRows.forEach((row,i)=>{
-  const delay=i===0?'>+0.3':'>+0.8';
-  master.to(row,{opacity:1,y:0,duration:0.15},delay)
-    .add(typeInDiv(clarifyIds[i],clarifyValues[i],0.06),'>')
-    .to({},{duration:0.5},'>');
+  const delay=i===0?'>+0.3':'>+0.45';
+  master.to(row,{opacity:1,y:0,duration:0.15},delay);
+  if(autoExtractIds.has(clarifyIds[i])) master.add(typeInDiv(clarifyIds[i],clarifyValues[i],0.06),'>');
+  master.to({}, {duration:0.25},'>');
 });
-
-// Expand inference (after row 3 - 等级) — 展开后停留5秒
-master.call(()=>{
-  const el=$('clarifyInference');el.style.display='block';el.style.overflow='hidden';
-  const h=el.scrollHeight;gsap.fromTo(el,{height:0},{height:h,duration:0.3});
-},null,'>+1.0')
-.call(()=>showTeleprompter('等级字段由多模型投票推断——4个模型一致推荐 A2-70'),null,'>+0.2');
-
-// Inference cards — 停留5秒让观众看清投票结果
-master.fromTo('#inferCard1',{opacity:0,y:8,scale:0.95},{opacity:1,y:0,scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.3')
-  .fromTo('#inferCard2',{opacity:0,y:8,scale:0.95},{opacity:1,y:0,scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.3')
-  .to({},{duration:5.0},'>');
-
-// Collapse inference
-master.call(()=>{
-  const el=$('clarifyInference');gsap.to(el,{height:0,duration:0.15,onComplete:()=>{el.style.display='none';}});
-},null,'>+0.15');
+master.call(()=>{['spec','material'].forEach(updateFieldVisualState);updateMissingState();},null,'>+0.1');
+master.to({}, {duration:0.9},'>+0.15');
 
 // Footer
 master.to('#clarifyFooter',{opacity:1,duration:0.15},'>+0.1')
-  .call(()=>showTeleprompter('一键确认所有属性，生成标准采购 Query'),null,'>+0.15');
+  .call(()=>showTeleprompter('先采纳 AI 推荐，再一键确认所有属性，生成标准采购 Query'),null,'>+0.15');
 
-// Cursor to confirm
-master.add(moveCursor('#clarifyConfirm'),'>+0.3')
+// Cursor first adopts AI recommendations, then confirms all attributes
+master.add(moveCursor('#aiCompleteBtn'),'>+0.3')
   .add(clickPulse(),'>+0.08')
-  .call(()=>{
-    document.querySelectorAll('.btn-confirm').forEach(btn=>{
-      btn.textContent='✓ 已确认';btn.style.background='#10b981';btn.style.color='#fff';btn.style.borderColor='#10b981';
-    });
-    document.querySelectorAll('.btn-edit').forEach(btn=>{btn.style.display='none';});
-  },null,'>+0.08')
-  .to({},{duration:0.5},'>');
+  .call(()=>completeStandardization(),null,'>+0.08')
+  .add(moveCursor('#clarifyConfirm'),'>+0.35')
+  .add(clickPulse(),'>+0.08')
+  .call(()=>confirmAllClarify(),null,'>+0.08')
+  .to({}, {duration:0.5},'>');
 
 // Close clarify panel
 master.to('#clarifyPanel',{opacity:0,duration:0.2,onComplete:()=>{$('clarifyPanel').style.pointerEvents='none';}},'>+0.15');
@@ -938,15 +1104,15 @@ master.call(()=>showTeleprompter('需求已确认，AI通过知识图谱构建�
   // AI Step 0 — 中心节点
   .to('#aiStep0',{opacity:1,y:0,duration:0.2},'>+0.25')
   .call(()=>activateDot(0),null,'>')
-  .fromTo('#kgCenter',{scale:0,svgOrigin:'200 150'},{scale:1,duration:0.3,ease:'back.out(1.5)'},'>+0.2')
+  .fromTo('#kgCenter',{scale:0,svgOrigin:'240 170'},{scale:1,duration:0.3,ease:'back.out(1.5)'},'>+0.2')
   .to('#kgCenter',{opacity:1,duration:0.1},'<')
   .to('#kgL0',{opacity:1,duration:0.1},'<')
   .call(()=>completeDot(0),null,'>+0.3')
-  // AI Step 1 — 头型
+  // AI Step 1 — 类型
   .to('#aiStep1',{opacity:1,y:0,duration:0.2},'>+0.2')
   .call(()=>activateDot(1),null,'>')
   .to('#kgEdge1',{opacity:1,duration:0.15},'>+0.2')
-  .fromTo('#kgN1',{scale:0,svgOrigin:'100 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .fromTo('#kgN1',{scale:0,svgOrigin:'120 75'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
   .to('#kgN1',{opacity:1,duration:0.1},'<')
   .to('#kgL1',{opacity:1,duration:0.1},'<')
   .call(()=>completeDot(1),null,'>+0.3')
@@ -954,11 +1120,11 @@ master.call(()=>showTeleprompter('需求已确认，AI通过知识图谱构建�
   .to('#aiStep2',{opacity:1,y:0,duration:0.2},'>+0.2')
   .call(()=>activateDot(2),null,'>')
   .to('#kgEdge2',{opacity:1,duration:0.15},'>+0.2')
-  .fromTo('#kgN2',{scale:0,svgOrigin:'320 60'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .fromTo('#kgN2',{scale:0,svgOrigin:'360 75'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
   .to('#kgN2',{opacity:1,duration:0.1},'<')
   .to('#kgL2',{opacity:1,duration:0.1},'<')
   .to('#kgEdge3',{opacity:1,duration:0.15},'>+0.15')
-  .fromTo('#kgN3',{scale:0,svgOrigin:'80 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .fromTo('#kgN3',{scale:0,svgOrigin:'120 250'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
   .to('#kgN3',{opacity:1,duration:0.1},'<')
   .to('#kgL3',{opacity:1,duration:0.1},'<')
   .call(()=>completeDot(2),null,'>+0.3')
@@ -966,15 +1132,21 @@ master.call(()=>showTeleprompter('需求已确认，AI通过知识图谱构建�
   .to('#aiStep3',{opacity:1,y:0,duration:0.2},'>+0.2')
   .call(()=>activateDot(3),null,'>')
   .to('#kgEdge4',{opacity:1,duration:0.15},'>+0.2')
-  .fromTo('#kgN4',{scale:0,svgOrigin:'320 220'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
+  .fromTo('#kgN4',{scale:0,svgOrigin:'375 245'},{scale:1,duration:0.25,ease:'back.out(1.2)'},'>+0.15')
   .to('#kgN4',{opacity:1,duration:0.1},'<')
   .to('#kgL4',{opacity:1,duration:0.1},'<')
   .call(()=>completeDot(3),null,'>+0.3')
   // L2 nodes
-  .to(['#kgEdge5','#kgEdge6','#kgEdge7'],{opacity:1,duration:0.15,stagger:0.12},'>+0.2')
-  .to(['#kgN5','#kgN6','#kgN7'],{opacity:1,duration:0.2,stagger:0.12},'>+0.15')
-  .to(['#kgL5','#kgL6','#kgL7'],{opacity:1,duration:0.12,stagger:0.08},'<')
-  .call(()=>showTeleprompter('已确认参数：头型=六角, 长度=50mm, 等级=A2-70, 标准=GB5783'),null,'>+0.2')
+  .to(['#kgEdge5','#kgEdge6','#kgEdge7','#kgEdge8'],{opacity:1,duration:0.15,stagger:0.12},'>+0.2')
+  .to(['#kgN5','#kgN6','#kgN7','#kgN8'],{opacity:1,duration:0.2,stagger:0.12},'>+0.15')
+  .to(['#kgL5','#kgL6','#kgL7','#kgL8'],{opacity:1,duration:0.12,stagger:0.08},'<')
+  .to('#kgEdge9',{opacity:1,duration:0.15},'>+0.12')
+  .to('#kgN9',{opacity:1,duration:0.2},'>+0.12')
+  .to('#kgL9',{opacity:1,duration:0.12},'<')
+  .to('#kgEdge10',{opacity:1,duration:0.15},'>+0.12')
+  .to('#kgN10',{opacity:1,duration:0.2},'>+0.12')
+  .to('#kgL10',{opacity:1,duration:0.12},'<')
+  .call(()=>showTeleprompter('已确认参数：类型=六角螺母, 规格=M8, 材质=不锈钢, 表面处理=本色, 等级=A2-70, 标准=GB/T 6170'),null,'>+0.2')
   .to({},{duration:1.5},'>')
   .to('#aiPanel1',{opacity:0,duration:0.2,onComplete:()=>{$('aiPanel1').style.pointerEvents='none';}},'>+0.1');
 
@@ -1000,7 +1172,7 @@ master.add(showCursor(),'>+0.15')
 
 // ── SCENE 2: 一品多商 ──
 master.addLabel('scene2')
-  .call(()=>{showScene('scene2');renderCompare();$('detailImg').src=getProductImage('不锈钢六角螺栓');progressText.textContent='场景 2/3';})
+  .call(()=>{showScene('scene2');renderCompare();$('detailImg').src=getProductImage('不锈钢六角螺母');progressText.textContent='场景 2/3';})
   .call(()=>updateSceneHeader('场景 2/3 ▸ 一品多商 — 同品多供实时比价'))
   .add(showCursor(),'>+0.15')
   .to('#compareSection',{borderColor:'#7A2BFF',boxShadow:'0 0 0 3px rgba(122,43,255,.15)',border:'2px solid #7A2BFF',borderRadius:'12px',padding:'16px',duration:0.3},'>+0.25')
@@ -1020,7 +1192,7 @@ master.addLabel('scene2')
     rows.forEach(r=>body.appendChild(r));
   },null,'>+0.1')
   .call(()=>flashHighlight('#priceHeader'),null,'>')
-  .call(()=>showTeleprompter('按价格排序，最低 ¥0.78/个'),null,'>+0.15')
+  .call(()=>showTeleprompter('按价格排序，最低 ¥0.29/个'),null,'>+0.15')
   .add(hideCursor(),'>+0.25')
   .to({},{duration:3.0},'>')
   .call(()=>gsap.set(clickHighlightEl,{opacity:0}),null,'>');
@@ -1033,22 +1205,35 @@ master.addLabel('trans23')
 
 // 辅助函数：重置澄清面板
 function resetClarifyPanel(){
-  ['cv0','cv1','cv2','cv3','cv4','cv5'].forEach(function(id){var el=$(id);if(el)el.textContent='';});
+  standardizationCompleted=false;
+  ['cv0','cv1','cv2','cv3','cv4','cv5'].forEach(function(id){var el=$(id);if(el)el.textContent='';});['brand','standard','spec','material','surface','grade'].forEach(updateFieldVisualState);
+  document.querySelectorAll('.field-manual-input').forEach(function(input){input.value='';});document.querySelectorAll('.manual-radio').forEach(function(radio){radio.classList.remove('selected');radio.textContent='◯';});
+  document.querySelectorAll('.custom-attribute-row').forEach(function(row){row.remove();});document.querySelectorAll('.clarify-row-deleted').forEach(function(row){row.classList.remove('clarify-row-deleted');row.style.display='';});document.querySelectorAll('.field-control').forEach(function(control){control.classList.remove('field-ai-confirmed','field-human-confirmed');});document.querySelectorAll('.ai-source-card').forEach(function(card){card.classList.remove('ai-applied','human-confirmed');const label=card.querySelector('.ai-label');if(label){if(!card.dataset.defaultLabel)card.dataset.defaultLabel=label.textContent;label.textContent=card.dataset.defaultLabel;}});updateMissingState();
   document.querySelectorAll('.clarify-row').forEach(function(r){r.style.opacity='0';r.style.transform='translateY(8px)';});
-  var inf=$('clarifyInference');if(inf)inf.style.display='none';
+  document.querySelectorAll('.clarify-row.dropdown-open').forEach(function(r){r.classList.remove('dropdown-open');});
+  var inf=$('aiReasonPopover');if(inf){inf.style.display='none';inf.removeAttribute('data-open-field');}
+  document.querySelectorAll('.ai-source-card').forEach(function(card){card.classList.remove('active');});
   document.querySelectorAll('.btn-confirm').forEach(function(btn){btn.textContent='✓ 确认';btn.style.background='';btn.style.color='';btn.style.borderColor='';});
   document.querySelectorAll('.btn-edit').forEach(function(btn){btn.style.display='';});
   var ft=$('clarifyFooter');if(ft)ft.style.opacity='0';
 }
+function resetLegacyClarifyPanel(){
+  ['s3cv0','s3cv1','s3cv2','s3cv3','s3cv4','s3cv5'].forEach(function(id){var el=$(id);if(el)el.textContent='';});
+  document.querySelectorAll('.legacy-clarify-row').forEach(function(r){r.style.opacity='0';r.style.transform='translateY(8px)';});
+  var inf=$('clarifyInference3');if(inf)inf.style.display='none';
+  document.querySelectorAll('.legacy-btn-confirm').forEach(function(btn){btn.textContent='✓ 确认';btn.style.background='';btn.style.color='';btn.style.borderColor='';});
+  document.querySelectorAll('.legacy-btn-edit').forEach(function(btn){btn.style.display='';});
+  var ft=$('clarifyFooter3');if(ft)ft.style.opacity='0';
+}
 // 辅助函数：填充询价单参数
 function fillInquiryParams(){
   var params=[
-    {label:'品名',value:'内六角圆柱头螺钉'},
-    {label:'规格',value:'M12×80'},
-    {label:'材质',value:'合金钢'},
-    {label:'等级',value:'12.9级'},
-    {label:'表面处理',value:'达克罗'},
-    {label:'标准',value:'GB/T 70.1'}
+    {label:'品名',value:'六角螺母'},
+    {label:'规格',value:'M8'},
+    {label:'材质',value:'不锈钢'},
+    {label:'等级',value:'A2-70'},
+    {label:'表面处理',value:'本色'},
+    {label:'标准',value:'GB/T 6170'}
   ];
   var container=$('inquiryParams');
   container.innerHTML=params.map(function(p){return '<span class="inquiry-tag" style="opacity:0"><span class="tag-label">'+p.label+':</span>'+p.value+'</span>';}).join('');
@@ -1077,7 +1262,7 @@ master.addLabel('scene3')
     // 重置询价单
     var siq=$('sourceInquiry');if(siq)siq.style.display='none';
     // 重置澄清面板
-    resetClarifyPanel();
+     resetClarifyPanel();
     // 重置供应商勾选
     document.querySelectorAll('.source-check').forEach(c => {
       c.style.display = 'flex';
@@ -1087,11 +1272,11 @@ master.addLabel('scene3')
     });
   })
   .call(()=>updateSceneHeader('场景 3/3 ▸ 一键寻源 — 搜不到也能买到'))
-  .call(()=>showTeleprompter('搜索\'M12×80 12.9级内六角圆柱头螺钉\'——平台暂无'),null,'>+0.15')
+  .call(()=>showTeleprompter('搜索\'不锈钢六角螺母 M8\'——平台暂无'),null,'>+0.15')
   .add(showCursor(),'>+0.15')
   .add(moveCursor('#searchInput3'),'>')
   .add(clickPulse(),'>+0.1')
-  .add(typeText('searchInput3','M12×80 12.9级内六角圆柱头螺钉',0.12),'>+0.15')
+  .add(typeText('searchInput3','不锈钢六角螺母 M8',0.12),'>+0.15')
   .add(moveCursor('#searchBtn3'),'>+0.15')
   .add(clickPulse(),'>+0.05')
   .call(()=>{$('searchBtn3').classList.add('loading');$('searchBtn3').textContent='⟳ 搜索中';})
@@ -1110,32 +1295,30 @@ master.call(()=>showTeleprompter('平台暂无该物料，触发AI需求澄清�
   .call(()=>flashHighlight('#aiBtn3'),null,'>')
   .call(()=>{$('aiBtn3').style.boxShadow='0 0 0 8px rgba(122,43,255,.3)';setTimeout(()=>{$('aiBtn3').style.boxShadow='';},400);},null,'>');
 
-// Step 3: 复用澄清面板 — 填入Scene 3数据
+// Step 3: 完整复用场景1的需求澄清流程
+// 场景3只改变后续寻源动作，澄清面板的字段顺序、AI提取、推荐采纳和确认节奏与场景1保持一致。
 master.to('#clarifyPanel',{opacity:1,duration:0.25,onStart:()=>{$('clarifyPanel').style.pointerEvents='auto';}},'>+0.15')
-  .call(()=>showTeleprompter('AI 自动提取寻源参数：品名、规格、材质、等级…'),null,'>');
+  .call(()=>showTeleprompter('AI 提取规格与材质，并推荐补全品牌、执行标准、表面处理、性能等级'),null,'>');
 
-const s3ClarifyValues=['内六角圆柱头螺钉','M12×80','合金钢','12.9级','达克罗','GB/T 70.1'];
-const s3ClarifyIds=['cv0','cv1','cv2','cv3','cv4','cv5'];
-const s3ClarifyRows=document.querySelectorAll('.clarify-row');
-s3ClarifyRows.forEach((row,i)=>{
-  const delay=i===0?'>+0.3':'>+0.6';
-  master.to(row,{opacity:1,y:0,duration:0.15},delay)
-    .add(typeInDiv(s3ClarifyIds[i],s3ClarifyValues[i],0.06),'>')
-    .to({},{duration:0.3},'>');
+clarifyRows.forEach((row,i)=>{
+  const delay=i===0?'>+0.3':'>+0.45';
+  master.to(row,{opacity:1,y:0,duration:0.15},delay);
+  if(autoExtractIds.has(clarifyIds[i])) master.add(typeInDiv(clarifyIds[i],clarifyValues[i],0.06),'>');
+  master.to({}, {duration:0.25},'>');
 });
+master.call(()=>{['spec','material'].forEach(updateFieldVisualState);updateMissingState();},null,'>+0.1');
+master.to({}, {duration:0.9},'>+0.15');
 
-// Footer + 一键确认
+// 先采纳AI推荐，再一键确认，保持与场景1相同的演示闭环
 master.to('#clarifyFooter',{opacity:1,duration:0.15},'>+0.1')
-  .call(()=>showTeleprompter('一键确认所有寻源参数'),null,'>+0.1')
-  .add(moveCursor('#clarifyConfirm'),'>+0.2')
+  .call(()=>showTeleprompter('先采纳 AI 推荐，再一键确认所有属性，生成标准采购 Query'),null,'>+0.15')
+  .add(moveCursor('#aiCompleteBtn'),'>+0.3')
   .add(clickPulse(),'>+0.08')
-  .call(()=>{
-    document.querySelectorAll('.btn-confirm').forEach(btn=>{
-      btn.textContent='✓ 已确认';btn.style.background='#10b981';btn.style.color='#fff';btn.style.borderColor='#10b981';
-    });
-    document.querySelectorAll('.btn-edit').forEach(btn=>{btn.style.display='none';});
-  },null,'>+0.08')
-  .to({},{duration:0.5},'>');
+  .call(()=>completeStandardization(),null,'>+0.08')
+  .add(moveCursor('#clarifyConfirm'),'>+0.35')
+  .add(clickPulse(),'>+0.08')
+  .call(()=>confirmAllClarify(),null,'>+0.08')
+  .to({}, {duration:0.5},'>');
 
 // 关闭澄清面板
 master.to('#clarifyPanel',{opacity:0,duration:0.2,onComplete:()=>{$('clarifyPanel').style.pointerEvents='none';}},'>+0.15');
@@ -1216,15 +1399,32 @@ const SCENE_NAV=['scene1','trans12','scene2','trans23','scene3','outro'];
 const SCENE_ONLY=['scene1','trans12','trans23'];
 const SCENE_ID_MAP={scene1:'scene1',trans12:'scene1',scene2:'scene2',trans23:'scene2',scene3:'scene3',outro:'sceneOutro'};
 let isPaused=false;
-function seekToLabel(label){
-  master.seek(label);
-  const sceneId=SCENE_ID_MAP[label];if(sceneId)showScene(sceneId);
+function resetPlaybackDom(){
+  if(typeof resetClarifyPanel==='function')resetClarifyPanel();
+  ['searchInput1','searchInput3'].forEach(id=>{const el=$(id);if(el)el.value='';});
+  document.querySelectorAll('.field-menu').forEach(m=>m.classList.remove('open'));
+  document.querySelectorAll('.field-control').forEach(c=>c.classList.remove('open'));
+  document.querySelectorAll('.clarify-row.dropdown-open').forEach(r=>r.classList.remove('dropdown-open'));
+  closeReasonPopover();
   ['aiPanel1','clarifyPanel'].forEach(id=>{const el=$(id);if(el){el.style.opacity='0';el.style.pointerEvents='none';}});
   const sp=$('sourcePanel');if(sp){sp.style.right='-860px';}
-  const siq=$('sourceInquiry');if(siq){siq.style.display='none';}
-  const cc=$('compareCard');if(cc){cc.style.opacity='0';}
+  const siq=$('sourceInquiry');if(siq)siq.style.display='none';
+  const cc=$('compareCard');if(cc)cc.style.opacity='0';
   document.querySelectorAll('.compare-row,.compare-arrow').forEach(el=>{el.style.opacity='0';});
+  document.querySelectorAll('.product-card').forEach(el=>{el.style.opacity='0';});
   transOverlay.style.opacity='0';cursor.style.opacity='0';
+}
+function seekPlayback(targetTime,sceneId){
+  const shouldResume=!isPaused;
+  master.pause(0);
+  resetPlaybackDom();
+  master.time(targetTime);
+  if(sceneId)showScene(sceneId);
+  if(shouldResume)master.resume();
+}
+function seekToLabel(label){
+  const sceneId=SCENE_ID_MAP[label];
+  seekPlayback(master.labels[label],sceneId);
 }
 $('btnPause').addEventListener('click',()=>{master.pause();isPaused=true;$('btnPause').style.display='none';$('btnPlay').style.display='flex';});
 $('btnPlay').addEventListener('click',()=>{master.resume();isPaused=false;$('btnPlay').style.display='none';$('btnPause').style.display='flex';});
@@ -1233,21 +1433,13 @@ $('btnPrev').addEventListener('click',()=>{const ct=master.time();let prev=SCENE
 $('progressBarWrap').addEventListener('click',(e)=>{
   const ratio=e.clientX/window.innerWidth;
   const targetTime=master.duration()*ratio;
-  master.seek(targetTime);
   let activeLabel='scene1';
   for(let l of SCENE_NAV){const t=master.labels[l];if(t<=targetTime)activeLabel=l;else break;}
-  const sceneId=SCENE_ID_MAP[activeLabel];if(sceneId)showScene(sceneId);
-  ['aiPanel1','clarifyPanel'].forEach(id=>{const el=$(id);if(el){el.style.opacity='0';el.style.pointerEvents='none';}});
-  const sp=$('sourcePanel');if(sp){sp.style.right='-420px';}
-  const siq2=$('sourceInquiry');if(siq2){siq2.style.display='none';}
-  const cc2=$('compareCard');if(cc2){cc2.style.opacity='0';}
-  document.querySelectorAll('.compare-row,.compare-arrow').forEach(el=>{el.style.opacity='0';});
-  transOverlay.style.opacity='0';cursor.style.opacity='0';
+  seekPlayback(targetTime,SCENE_ID_MAP[activeLabel]);
   progressBar.style.width=(ratio*100)+'%';
-  if(!isPaused)master.resume();
 });
 master.eventCallback('onUpdate',()=>{progressBar.style.width=(master.progress()*100)+'%';});
-master.play();
+function ensureAutoPlayback(){if(isPaused)return;if(master.progress()>=0.999){resetPlaybackDom();master.restart(true);}if(master.paused())master.play();}master.play(0);window.addEventListener('load',ensureAutoPlayback);window.addEventListener('pageshow',ensureAutoPlayback);window.addEventListener('focus',ensureAutoPlayback);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ensureAutoPlayback();});setTimeout(ensureAutoPlayback,120);setTimeout(ensureAutoPlayback,600);
 })();
 </script>
 </body>

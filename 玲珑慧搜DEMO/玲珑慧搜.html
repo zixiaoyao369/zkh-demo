@@ -793,13 +793,14 @@ function updateMissingState(){
   badge.style.color=missing.length?'#f45c63':'#168957';
   badge.style.background=missing.length?'#fff0f1':'#eafaf2';
 }
-function fieldValueId(field){return ({brand:'cv0',standard:'cv1',spec:'cv2',material:'cv4',surface:'cv5',grade:'cv3'})[field];}
+ function fieldValueId(field){return ({brand:'cv0',standard:'cv1',spec:'cv2',material:'cv4',surface:'cv5',grade:'cv3'})[field];}
+ const clarifyAiLabelDefaults={brand:'AI推荐',standard:'AI推荐',spec:'AI提取',material:'AI提取',surface:'AI推荐',grade:'AI推荐'};
 function updateFieldVisualState(field){const id=fieldValueId(field),el=id&&document.getElementById(id),control=document.querySelector('.field-control[data-field="'+field+'"]');if(!control)return;const empty=!el||!el.textContent.trim();const pending=!empty&&(field==='spec'||field==='material')&&!control.classList.contains('field-ai-confirmed')&&!control.classList.contains('field-human-confirmed');control.classList.toggle('field-empty',empty);control.classList.toggle('field-pending-confirm',pending);if(field==='standard'){const info=control.querySelector('.standard-info');if(info)info.classList.toggle('is-empty',empty);}}
 function addStandardOptionInfo(){const tips={'GB/T 6170':'GB/T 6170：国内常用标准，适用于常规六角螺母；DIN934：国际通用候选，适用于客户明确要求 DIN/ISO 标准的场景。','DIN934':'DIN934：国际通用标准，适用于客户指定 DIN/ISO 体系的场景。','DIN5587':'DIN5587：适用于指定 DIN5587 标准的订单。','B18.2.2_Table3-1986':'B18.2.2_Table3-1986：美国标准系列，请按客户图纸或技术要求选择。','B18.2.2_Table8-1986':'B18.2.2_Table8-1986：美国标准系列，请按客户图纸或技术要求选择。','B18.2.2_Table9-1986':'B18.2.2_Table9-1986：美国标准系列，请按客户图纸或技术要求选择。'};document.querySelectorAll('.field-menu[data-menu="standard"] .field-option').forEach(function(option){if(option.querySelector('.standard-option-info'))return;const info=document.createElement('span');info.className='standard-option-info';info.textContent='!';info.dataset.tooltip=tips[option.dataset.value]||'该执行标准需根据客户要求确认。';option.appendChild(info);});}
 function markHumanConfirmed(field){const card=document.querySelector('.ai-source-card[data-ai-field="'+field+'"]');if(card){const label=card.querySelector('.ai-label');if(label)label.textContent='\u4eba\u5de5\u786e\u8ba4';card.classList.add('human-confirmed');}}
 function setFieldValue(field,value,source){const id=fieldValueId(field),el=id&&document.getElementById(id);if(!el||!String(value).trim())return;el.textContent=String(value).trim();const control=document.querySelector('.field-control[data-field="'+field+'"]');if(control){control.querySelectorAll('.field-option').forEach(option=>{const selected=option.dataset.value===el.textContent;option.classList.toggle('selected',selected);const radio=option.querySelector('.option-radio');if(radio)radio.textContent=selected?'\u25cf':'\u25cb';});if(source==='human'){markHumanConfirmed(field);control.classList.add('field-human-confirmed');}if(source==='ai')control.classList.add('field-ai-confirmed');}updateFieldVisualState(field);updateMissingState();}
 function completeStandardization(){standardizationCompleted=true;const values={brand:'ZKH',standard:'GB/T 6170',surface:'\u672c\u8272',grade:'A2-70'};Object.keys(values).forEach(function(field){setFieldValue(field,values[field],'ai');const card=document.querySelector('.ai-source-card[data-ai-field="'+field+'"]');if(card)card.classList.add('ai-applied');});updateMissingState();}
-// Override: one-click AI adoption always overwrites manual values and restores AI labels.
+// 一键采纳：推荐字段显示“AI推荐”，原始描述中已提取的字段保持“AI提取”。
 function completeStandardization(){
   standardizationCompleted=true;
   const values={brand:'ZKH',standard:'GB/T 6170',spec:'M8',material:'不锈钢',surface:'本色',grade:'A2-70'};
@@ -808,7 +809,7 @@ function completeStandardization(){
     const control=document.querySelector('.field-control[data-field="'+field+'"]');
     if(control){control.classList.remove('field-human-confirmed');control.classList.add('field-ai-confirmed');}
     const card=document.querySelector('.ai-source-card[data-ai-field="'+field+'"]');
-    if(card){card.classList.remove('human-confirmed');card.classList.add('ai-applied');const label=card.querySelector('.ai-label');if(label)label.textContent='AI推荐';}
+    if(card){card.classList.remove('human-confirmed');card.classList.add('ai-applied');const label=card.querySelector('.ai-label');if(label)label.textContent=(field==='spec'||field==='material')?'AI提取':'AI推荐';}
   });
   updateMissingState();
 }
@@ -1041,16 +1042,17 @@ master.add(showCursor(),'>+0.15')
 master.call(()=>{$('searchBtn1').classList.remove('loading');$('searchBtn1').textContent='搜索';},null,'>+0.5')
   .call(()=>{
     $('sortBar1').style.display='flex';$('filterSidebar').style.display='block';$('resultCount1').textContent='共找到 12 件商品';
+    $('productGrid1').style.gridTemplateColumns='repeat(4,1fr)';
+    renderGrid('productGrid1',products);
     gsap.set($('sortBar1'),{opacity:0});gsap.set($('filterSidebar'),{opacity:0});
+    gsap.set(document.querySelectorAll('#productGrid1 .product-card'),{opacity:0,y:16});
   },null,'>+0.25')
   .to($('sortBar1'),{opacity:1,duration:0.2},'>')
   .to($('filterSidebar'),{opacity:1,duration:0.2},'<')
-  .call(()=>{$('productGrid1').style.gridTemplateColumns='repeat(4,1fr)';},null,'>+0.1')
-  .call(()=>renderGrid('productGrid1',products),null,'>')
   .call(()=>{
     const cards=document.querySelectorAll('#productGrid1 .product-card');
-    cards.forEach((card,i)=>{gsap.fromTo(card,{opacity:0,y:16},{opacity:1,y:0,duration:0.25,delay:i*0.06,ease:'back.out(1.2)'});});
-  },null,'>+0.15')
+    gsap.to(cards,{opacity:1,y:0,duration:0.25,stagger:0.06,ease:'back.out(1.2)'});
+  },null,'<')
   .call(()=>showTeleprompter('搜索结果混乱，无法定品'),null,'>+0.15')
   .to({},{duration:2.0},'>');
 
@@ -1177,13 +1179,11 @@ master.addLabel('scene2')
   .add(showCursor(),'>+0.15')
   .to('#compareSection',{borderColor:'#7A2BFF',boxShadow:'0 0 0 3px rgba(122,43,255,.15)',border:'2px solid #7A2BFF',borderRadius:'12px',padding:'16px',duration:0.3},'>+0.25')
   .call(()=>{const rows=document.querySelectorAll('#compareBody tr');rows.forEach((r,i)=>gsap.to(r,{opacity:1,duration:0.25,delay:i*0.25}));},null,'>+0.25')
-  .call(()=>showTeleprompter('同一商品，5 家供应商多维度实时比价'),null,'>+1.5')
-  .call(()=>{document.querySelectorAll('.refresh-btn').forEach(b=>gsap.to(b,{opacity:1,duration:0.2}));},null,'>+3.5')
-  .to({},{duration:2.0},'>')
-  .to('#detailActions',{opacity:1,duration:0.2},'>+0.15')
+  .call(()=>showTeleprompter('同一商品，5 家供应商多维度实时比价'),null,'>+0.8')
+  .to('#detailActions',{opacity:1,duration:0.2},'>+0.4')
   .to({},{duration:0.15},'>')
-  // Sort — 排序后停留3秒
-  .add(moveCursor('#priceHeader'),'>+0.75')
+  // Sort — 排序后短暂停留，保持节奏紧凑
+  .add(moveCursor('#priceHeader'),'>+0.35')
   .add(showAnnotation('按价格排序'),'>+0.1')
   .add(clickPulse(),'>+0.1')
   .call(()=>{
@@ -1194,12 +1194,12 @@ master.addLabel('scene2')
   .call(()=>flashHighlight('#priceHeader'),null,'>')
   .call(()=>showTeleprompter('按价格排序，最低 ¥0.29/个'),null,'>+0.15')
   .add(hideCursor(),'>+0.25')
-  .to({},{duration:3.0},'>')
+  .to({},{duration:1.5},'>')
   .call(()=>gsap.set(clickHighlightEl,{opacity:0}),null,'>');
 
 // ── TRANSITION 2→3 ── (保持快速过渡)
 master.addLabel('trans23')
-  .add(addSceneTransition('03','平台没有怎么办？','一键外部寻源'))
+  .add(addSceneTransition('03','平台没有怎么办？','一键供应商寻源'))
 
 // ── SCENE 3: 批量寻源（含需求澄清+寻源询价单） ──
 
@@ -1208,7 +1208,7 @@ function resetClarifyPanel(){
   standardizationCompleted=false;
   ['cv0','cv1','cv2','cv3','cv4','cv5'].forEach(function(id){var el=$(id);if(el)el.textContent='';});['brand','standard','spec','material','surface','grade'].forEach(updateFieldVisualState);
   document.querySelectorAll('.field-manual-input').forEach(function(input){input.value='';});document.querySelectorAll('.manual-radio').forEach(function(radio){radio.classList.remove('selected');radio.textContent='◯';});
-  document.querySelectorAll('.custom-attribute-row').forEach(function(row){row.remove();});document.querySelectorAll('.clarify-row-deleted').forEach(function(row){row.classList.remove('clarify-row-deleted');row.style.display='';});document.querySelectorAll('.field-control').forEach(function(control){control.classList.remove('field-ai-confirmed','field-human-confirmed');});document.querySelectorAll('.ai-source-card').forEach(function(card){card.classList.remove('ai-applied','human-confirmed');const label=card.querySelector('.ai-label');if(label){if(!card.dataset.defaultLabel)card.dataset.defaultLabel=label.textContent;label.textContent=card.dataset.defaultLabel;}});updateMissingState();
+   document.querySelectorAll('.custom-attribute-row').forEach(function(row){row.remove();});document.querySelectorAll('.clarify-row-deleted').forEach(function(row){row.classList.remove('clarify-row-deleted');row.style.display='';});document.querySelectorAll('.field-control').forEach(function(control){control.classList.remove('field-ai-confirmed','field-human-confirmed');});document.querySelectorAll('.ai-source-card').forEach(function(card){card.classList.remove('ai-applied','human-confirmed');const label=card.querySelector('.ai-label');if(label){const field=card.dataset.aiField;label.textContent=clarifyAiLabelDefaults[field]||'AI推荐';}});updateMissingState();
   document.querySelectorAll('.clarify-row').forEach(function(r){r.style.opacity='0';r.style.transform='translateY(8px)';});
   document.querySelectorAll('.clarify-row.dropdown-open').forEach(function(r){r.classList.remove('dropdown-open');});
   var inf=$('aiReasonPopover');if(inf){inf.style.display='none';inf.removeAttribute('data-open-field');}

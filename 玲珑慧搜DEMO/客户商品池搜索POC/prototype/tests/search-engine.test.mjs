@@ -16,6 +16,26 @@ const tape = makeProduct("tape", "自动锁定卷尺", "得力", "5m", { 分类:
 const caliper = makeProduct("caliper", "不锈钢游标卡尺", "上工", "0-150mm", { 分类: "量具" });
 const battery = makeProduct("battery", "蓄电池", "超威", "6-DZF-12", { 分类: "电气元件" });
 const sizeLabel = makeProduct("size-label", "设备尺寸标签", "通用", "100mm", { 分类: "标识" });
+const mroClusterProducts = [
+  makeProduct("fastener", "内六角螺栓", "通用", "M8×30"),
+  makeProduct("tool", "铬钒钢活动扳手", "世达", "12寸"),
+  makeProduct("cutting", "高速钢麻花钻头", "上工", "6mm"),
+  makeProduct("pneumatic", "标准气缸", "SMC", "C95-32"),
+  makeProduct("vacuum-part", "真空吸盘", "FESTO", "VAD-20"),
+  makeProduct("hydraulic", "液压油缸", "力士乐", "HSG-80"),
+  makeProduct("protection", "小型断路器", "施耐德", "iC65N"),
+  makeProduct("control", "交流接触器", "施耐德", "LC1D"),
+  makeProduct("automation", "光电传感器", "欧姆龙", "E3Z"),
+  makeProduct("connection", "冷压接线端子", "魏德米勒", "OT-2.5"),
+  makeProduct("bearing", "深沟球轴承", "SKF", "6204"),
+  makeProduct("transmission", "同步带轮", "盖茨", "HTD-5M"),
+  makeProduct("linear", "滚珠丝杆", "上银", "R20-5"),
+  makeProduct("piping", "不锈钢球阀", "埃美柯", "DN25"),
+  makeProduct("ppe", "防切割劳保手套", "安思尔", "8级"),
+  makeProduct("packaging", "封箱胶带", "3M", "48mm"),
+  makeProduct("cleaning", "工业除油清洁剂", "WD-40", "500ml"),
+  makeProduct("office", "A4复印打印纸", "得力", "70g"),
+];
 
 test("cross-field brand and model fragments stay at the top", () => {
   const index = createSearchIndex([festo, vacuum, screw]);
@@ -65,6 +85,31 @@ test("category clusters rank measuring tools before homophone and descriptive no
     assert.ok(!strong.some((item) => item.id === "battery"), `${query} must not treat 电池 as a 尺类 strong match`);
     assert.ok(result.parsed.categoryClusters.some((cluster) => cluster.id === "measuring-ruler"), query);
   }
+});
+
+test("common industrial MRO clusters recall their product family with Chinese and pinyin queries", () => {
+  const index = createSearchIndex([...mroClusterProducts, battery, sizeLabel, level, ruler, tape, caliper]);
+  const cases = [
+    ["螺丝", "fastener", "fasteners"], ["扳手", "tool", "hand-tools"], ["钻头", "cutting", "cutting-tools"],
+    ["qigang", "pneumatic", "pneumatics"], ["真空", "vacuum-part", "vacuum"], ["油缸", "hydraulic", "hydraulics"],
+    ["duanluqi", "protection", "electrical-protection"], ["接触器", "control", "electrical-control"], ["传感器", "automation", "automation-sensing"],
+    ["端子", "connection", "electronic-connection"], ["zhoucheng", "bearing", "bearings"], ["皮带", "transmission", "power-transmission"],
+    ["丝杆", "linear", "linear-motion"], ["球阀", "piping", "valves-piping"], ["手套", "ppe", "safety-ppe"],
+    ["胶带", "packaging", "packaging"], ["清洁剂", "cleaning", "cleaning"], ["打印纸", "office", "office-supplies"],
+  ];
+  for (const [query, expectedId, clusterId] of cases) {
+    const result = searchIndex(index, query);
+    assert.equal(result.fallback, false, query);
+    assert.equal(result.items[0].id, expectedId, query);
+    assert.ok(result.parsed.categoryClusters.some((cluster) => cluster.id === clusterId), query);
+  }
+});
+
+test("exact model and brand matches rank ahead of category-only expansion", () => {
+  const exact = makeProduct("exact", "通用紧固件", "FESTO", "SNC-63", { 分类: "气动元件" });
+  const related = makeProduct("related", "FESTO气缸安装支架", "FESTO", "C95", { 分类: "气动元件" });
+  const result = searchIndex(createSearchIndex([related, exact, ...mroClusterProducts]), "festo snc 63");
+  assert.equal(result.items[0].id, "exact");
 });
 
 test("strong results are retained and the remainder is filled with related supplements", () => {

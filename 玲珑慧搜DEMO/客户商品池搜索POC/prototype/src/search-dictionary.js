@@ -17,11 +17,34 @@ export const DOMAIN_GROUPS = [
 
 // Category clusters are intentionally data/config driven: adding a customer-specific
 // product family only requires another entry here, not a special search code path.
+// `coreTerms` are high-confidence category signals; `synonyms` expand the family;
+// `pinyinAliases` are word-level spellings only, never single-character homophones.
 export const CATEGORY_CLUSTERS = [
   {
     id: "measuring-ruler",
-    name: "尺类量具",
-    terms: ["尺", "尺子", "直尺", "水平尺", "卷尺", "钢尺", "卡尺", "游标卡尺", "角尺", "测量尺"],
+    displayName: "尺类量具",
+    priority: 88,
+    coreTerms: ["尺子", "直尺", "水平尺", "卷尺", "钢尺", "卡尺", "游标卡尺", "角尺", "测量尺"],
+    synonyms: ["尺", "量尺", "卷皮尺", "高度尺", "塞尺"],
+    pinyinAliases: ["chizi", "zhichi", "shuipingchi", "juanchi", "gangchi", "kaichi"],
     excludeTerms: ["尺寸", "尺度"],
   },
+  { id: "fasteners", displayName: "紧固件", priority: 84, coreTerms: ["螺丝", "螺钉", "螺栓", "螺母", "垫圈", "铆钉", "膨胀螺栓"], synonyms: ["紧固件", "螺杆", "自攻钉", "内六角螺丝", "六角螺栓", "平垫", "弹垫", "螺纹杆"], pinyinAliases: ["luosi", "luoding", "luoshuan", "luomu", "dianquan"], excludeTerms: [] },
+  { id: "hand-tools", displayName: "手动工具", priority: 78, coreTerms: ["扳手", "钳子", "螺丝刀", "锤子", "套筒", "棘轮扳手"], synonyms: ["工具钳", "活扳手", "梅花扳手", "开口扳手", "起子", "改锥", "内六角扳手"], pinyinAliases: ["banshou", "qianzi", "luosidao", "chuizi"], excludeTerms: [] },
+  { id: "cutting-tools", displayName: "切削工具", priority: 76, coreTerms: ["钻头", "铣刀", "丝锥", "板牙", "锯片", "砂轮"], synonyms: ["刀具", "麻花钻", "开孔器", "切割片", "磨片", "锉刀"], pinyinAliases: ["zuantou", "xidao", "sizhui", "jupian"], excludeTerms: [] },
+  { id: "pneumatics", displayName: "气动件", priority: 86, coreTerms: ["气缸", "电磁阀", "气动阀", "气动接头", "气管", "气源处理器"], synonyms: ["气动元件", "气缸安装件", "气缸支架", "调压阀", "过滤减压阀", "快插接头"], pinyinAliases: ["qidong", "qigang", "diancifa", "qiguan"], excludeTerms: [] },
+  { id: "vacuum", displayName: "真空件", priority: 86, coreTerms: ["真空发生器", "真空吸盘", "真空泵", "真空阀"], synonyms: ["真空元件", "吸盘", "真空过滤器", "负压发生器"], pinyinAliases: ["zhenkong", "zhenkongfashengqi", "xipan"], excludeTerms: [] },
+  { id: "hydraulics", displayName: "液压件", priority: 84, coreTerms: ["液压缸", "液压阀", "液压泵", "液压油管", "液压接头"], synonyms: ["油缸", "油泵", "液压元件", "液压过滤器", "液压站"], pinyinAliases: ["yeya", "yougang", "yeyafa", "youbeng"], excludeTerms: [] },
+  { id: "electrical-protection", displayName: "配电保护", priority: 85, coreTerms: ["断路器", "空气开关", "漏电保护器", "熔断器", "隔离开关"], synonyms: ["空开", "微型断路器", "塑壳断路器", "断路器附件"], pinyinAliases: ["duanluqi", "kongkai", "loudianbaohuqi"], excludeTerms: [] },
+  { id: "electrical-control", displayName: "电气控制", priority: 85, coreTerms: ["接触器", "继电器", "按钮", "指示灯", "开关电源"], synonyms: ["中间继电器", "时间继电器", "按钮开关", "控制按钮", "接触器附件"], pinyinAliases: ["jiechuuqi", "jidianqi", "anniu", "zhishideng"], excludeTerms: [] },
+  { id: "automation-sensing", displayName: "自动化与传感", priority: 84, coreTerms: ["PLC", "传感器", "变频器", "伺服电机", "编码器"], synonyms: ["可编程控制器", "接近开关", "光电传感器", "温度传感器", "伺服驱动器", "人机界面"], pinyinAliases: ["chuanganqi", "bianpinqi", "sifu", "jiejinkai guan"], excludeTerms: [] },
+  { id: "electronic-connection", displayName: "电子连接", priority: 80, coreTerms: ["电池", "线缆", "端子", "连接器", "插头", "插座"], synonyms: ["蓄电池", "电缆", "接线端子", "航空插头", "接插件", "线束"], pinyinAliases: ["dianchi", "xianlan", "duanzi", "lianjieqi"], excludeTerms: [] },
+  { id: "bearings", displayName: "轴承", priority: 83, coreTerms: ["轴承", "滚珠轴承", "滚针轴承", "带座轴承"], synonyms: ["深沟球轴承", "调心轴承", "轴承座", "关节轴承"], pinyinAliases: ["zhoucheng", "gunzhuzhoucheng"], excludeTerms: [] },
+  { id: "power-transmission", displayName: "传动件", priority: 80, coreTerms: ["皮带", "链条", "齿轮", "联轴器", "减速机"], synonyms: ["同步带", "三角带", "链轮", "传动链", "皮带轮", "涨紧轮"], pinyinAliases: ["pidai", "liantiao", "chilun", "lianzhouqi"], excludeTerms: [] },
+  { id: "linear-motion", displayName: "直线运动件", priority: 80, coreTerms: ["滑轨", "导轨", "丝杆", "滑块", "直线轴承"], synonyms: ["线性导轨", "滚珠丝杆", "导轨滑块", "直线模组"], pinyinAliases: ["huagui", "daogui", "sigang", "huakuai"], excludeTerms: [] },
+  { id: "valves-piping", displayName: "管路阀门", priority: 79, coreTerms: ["阀门", "法兰", "管件", "软管", "密封件"], synonyms: ["球阀", "蝶阀", "截止阀", "止回阀", "弯头", "三通", "管箍", "密封圈", "O型圈"], pinyinAliases: ["famen", "falan", "guanjian", "mifengjian"], excludeTerms: [] },
+  { id: "safety-ppe", displayName: "劳保安全", priority: 75, coreTerms: ["手套", "口罩", "安全帽", "防护鞋", "护目镜", "消防器材"], synonyms: ["劳保手套", "防切割手套", "安全带", "耳塞", "灭火器", "防护服"], pinyinAliases: ["shoutao", "kouzhao", "anquanmao", "humu jing"], excludeTerms: [] },
+  { id: "packaging", displayName: "包装耗材", priority: 70, coreTerms: ["胶带", "标签", "包装膜", "纸箱", "缠绕膜"], synonyms: ["封箱胶带", "不干胶标签", "气泡膜", "打包带", "收缩膜"], pinyinAliases: ["jiaodai", "biaoqian", "baozhuangmo"], excludeTerms: [] },
+  { id: "cleaning", displayName: "清洁用品", priority: 68, coreTerms: ["清洁剂", "抹布", "拖把", "垃圾袋", "洗手液"], synonyms: ["除油剂", "消毒液", "擦拭纸", "工业擦拭布", "清洗剂"], pinyinAliases: ["qingjieji", "mobu", "tuoba"], excludeTerms: [] },
+  { id: "office-supplies", displayName: "办公文具", priority: 65, coreTerms: ["打印纸", "笔", "文件夹", "订书机", "计算器"], synonyms: ["复印纸", "签字笔", "中性笔", "便签", "办公用品"], pinyinAliases: ["dayinzhi", "wenjianjia", "ding shu ji"], excludeTerms: [] },
 ];

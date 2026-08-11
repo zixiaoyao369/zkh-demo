@@ -68,7 +68,9 @@ export function deriveAliases({ name = "", brand = "", model = "", attributes = 
     if (chinese) addVariant(aliases, chinese[0]);
   }
   for (const group of DOMAIN_GROUPS) {
-    if (group.terms.some((term) => normalize(allText).includes(normalize(term)))) group.terms.forEach((term) => aliases.add(term));
+    // Keep the broad domain label as an alias, but do not copy every sibling term
+    // (for example, a breaker must not become a synthetic "contactor").
+    if (group.terms.some((term) => normalize(allText).includes(normalize(term)))) aliases.add(group.name);
   }
   return [...aliases].filter((item) => normalize(item).length > 1);
 }
@@ -77,6 +79,33 @@ function splitChinese(value) {
   const terms = new Set([value]);
   if (value.length > 2) for (let i = 0; i < value.length - 1; i += 1) terms.add(value.slice(i, i + 2));
   return [...terms];
+}
+
+function clusterTerms(cluster) {
+  return [...new Set([...(cluster.coreTerms || []), ...(cluster.synonyms || [])])];
+}
+
+function clusterDisplayName(cluster) {
+  return cluster.displayName || cluster.name || cluster.id;
+}
+
+function resolveCategoryClusters(intent) {
+  const rawPinyin = toPinyin(intent.raw);
+  const scored = CATEGORY_CLUSTERS.map((cluster) => {
+    let score = 0;
+    clusterTerms(cluster).forEach((term) => {
+      const normalizedTerm = normalize(term);
+      if (intent.normalized.includes(normalizedTerm) || intent.tokens.some((token) => normalize(token) === normalizedTerm)) {
+        score = Math.max(score, (cluster.coreTerms || []).includes(term) ? 120 : 100);
+      }
+    });
+    (cluster.pinyinAliases || []).forEach((alias) => {
+      if (rawPinyin.length >= 4 && rawPinyin.includes(normalize(alias))) score = Math.max(score, 82);
+    });
+    return { cluster, score };
+  }).filter((item) => item.score > 0);
+  const best = Math.max(...scored.map((item) => item.score), 0);
+  return scored.filter((item) => item.score >= Math.max(80, best - 20)).map((item) => item.cluster);
 }
 
 export function parseQuery(query) {
@@ -98,15 +127,8 @@ export function parseQuery(query) {
     }
   }
   intent.tokens = [...tokens].filter(isSearchableToken);
-  const rawPinyin = toPinyin(raw);
-  intent.categoryClusters = CATEGORY_CLUSTERS.filter((cluster) => cluster.terms.some((term) => {
-    const normalizedTerm = normalize(term);
-    const termPinyin = toPinyin(term);
-    return intent.normalized.includes(normalizedTerm)
-      || intent.tokens.some((token) => normalize(token) === normalizedTerm)
-      || (rawPinyin.length >= 4 && rawPinyin.includes(termPinyin));
-  }));
-  intent.categories.push(...intent.categoryClusters.map((cluster) => cluster.name));
+  intent.categoryClusters = resolveCategoryClusters(intent);
+  intent.categories.push(...intent.categoryClusters.map(clusterDisplayName));
   intent.expanded = intent.tokens.filter((token) => !intent.normalized.includes(normalize(token)));
   return intent;
 }
@@ -150,10 +172,10 @@ function isSingleChineseToken(value) {
 
 function categoryTermsInDoc(doc, cluster) {
   const text = doc.corpus;
-  const preciseTerms = cluster.terms.filter((term) => normalize(term).length > 1 && text.includes(normalize(term)));
+  const preciseTerms = clusterTerms(cluster).filter((term) => normalize(term).length > 1 && text.includes(normalize(term)));
   if (!preciseTerms.length) return [];
-  // A specification such as "尺寸" is not a measuring tool by itself.
-  const hasOnlyDescriptiveText = cluster.excludeTerms?.some((term) => text.includes(normalize(term))) && !preciseTerms.length;
+  const hasCoreTerm = (cluster.coreTerms || []).some((term) => normalize(term).length > 1 && text.includes(normalize(term)));
+  const hasOnlyDescriptiveText = (cluster.excludeTerms || []).some((term) => text.includes(normalize(term))) && !hasCoreTerm;
   return hasOnlyDescriptiveText ? [] : preciseTerms;
 }
 
@@ -237,7 +259,7 @@ export function searchIndex(index, query, limit = DISPLAY_LIMIT) {
   const required = [...new Map(parsed.tokens.filter((token) => !parsed.expanded.includes(token)).map((token) => [normalize(token), token])).values()];
   const strong = candidateIndexes(index, parsed).map((docIndex) => {
     const doc = index.docs[docIndex]; const matches = parsed.tokens.map((token) => matchToken(token, doc.fields)).filter(Boolean);
-    const categoryMatches = parsed.categoryClusters.flatMap((cluster) => categoryTermsInDoc(doc, cluster).map((term) => ({ score: 82, reason: `${cluster.name}优先结果`, field: "品类簇", token: term })));
+    const categoryMatches = parsed.categoryClusters.flatMap((cluster) => categoryTermsInDoc(doc, cluster).length ? [{ score: cluster.priority || 72, reason: `${clusterDisplayName(cluster)}优先结果`, field: "品类簇", token: cluster.id }] : []);
     matches.push(...categoryMatches);
     const coverage = required.length ? new Set(matches.filter((match) => required.some((token) => normalize(token) === normalize(match.token))).map((match) => normalize(match.token))).size / required.length : 0;
     const effectiveCoverage = categoryMatches.length ? Math.max(coverage, 1) : coverage;

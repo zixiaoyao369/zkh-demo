@@ -11,6 +11,11 @@ const festo = makeProduct("festo", "FESTO/费斯托 双耳环安装件 SNC-63 17
 const vacuum = makeProduct("vacuum", "真空发生器模块 ZH10DS", "SMC", "ZH10DS", { 适用设备: "包装线真空吸取", 单位: "个" });
 const screw = makeProduct("screw", "304 不锈钢内六角圆柱头螺钉", "通用", "M6×20", { 材质: "304不锈钢", 规格单位: "M6 x 20 mm" });
 const ruler = makeProduct("ruler", "得力(deli)100cm不锈钢直尺与刻度尺子", "得力", "长度100cm", { 分类: "办公用品", 采购备注: "测量绘图尺子" });
+const level = makeProduct("level", "高精度水平尺", "保联", "R200", { 分类: "量具" });
+const tape = makeProduct("tape", "自动锁定卷尺", "得力", "5m", { 分类: "量具" });
+const caliper = makeProduct("caliper", "不锈钢游标卡尺", "上工", "0-150mm", { 分类: "量具" });
+const battery = makeProduct("battery", "蓄电池", "超威", "6-DZF-12", { 分类: "电气元件" });
+const sizeLabel = makeProduct("size-label", "设备尺寸标签", "通用", "100mm", { 分类: "标识" });
 
 test("cross-field brand and model fragments stay at the top", () => {
   const index = createSearchIndex([festo, vacuum, screw]);
@@ -45,6 +50,20 @@ test("single Chinese characters and token pinyin recall the same product family"
     const result = searchIndex(index, query);
     assert.equal(result.fallback, false, query);
     assert.equal(result.items[0].id, "ruler", query);
+  }
+});
+
+test("category clusters rank measuring tools before homophone and descriptive noise", () => {
+  const index = createSearchIndex([battery, sizeLabel, level, ruler, tape, caliper, festo]);
+  const measuringIds = new Set(["level", "ruler", "tape", "caliper"]);
+  for (const query of ["尺", "尺子", "chizi", "zhichi"]) {
+    const result = searchIndex(index, query);
+    const strong = result.items.filter((item) => !item.supplement);
+    assert.equal(result.fallback, false, query);
+    assert.ok(strong.length >= 4, query);
+    assert.ok(strong.slice(0, 4).every((item) => measuringIds.has(item.id)), query);
+    assert.ok(!strong.some((item) => item.id === "battery"), `${query} must not treat 电池 as a 尺类 strong match`);
+    assert.ok(result.parsed.categoryClusters.some((cluster) => cluster.id === "measuring-ruler"), query);
   }
 });
 

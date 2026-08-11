@@ -14,3 +14,14 @@ export const DOMAIN_GROUPS = [
   { name: "SMC", terms: ["smc", "日本smc"] },
   { name: "施耐德", terms: ["schneider", "施耐德"] },
 ];
+
+// Category clusters are intentionally data/config driven: adding a customer-specific
+// product family only requires another entry here, not a special search code path.
+export const CATEGORY_CLUSTERS = [
+  {
+    id: "measuring-ruler",
+    name: "尺类量具",
+    terms: ["尺", "尺子", "直尺", "水平尺", "卷尺", "钢尺", "卡尺", "游标卡尺", "角尺", "测量尺"],
+    excludeTerms: ["尺寸", "尺度"],
+  },
+];

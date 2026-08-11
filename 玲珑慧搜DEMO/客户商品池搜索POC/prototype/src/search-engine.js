@@ -1,5 +1,5 @@
 import { pinyin } from "pinyin-pro";
-import { DOMAIN_GROUPS, STOP_WORDS } from "./search-dictionary.js";
+import { CATEGORY_CLUSTERS, DOMAIN_GROUPS, STOP_WORDS } from "./search-dictionary.js";
 
 export const DISPLAY_LIMIT = 30;
 export const normalize = (value = "") => String(value).normalize("NFKC").toLowerCase()
@@ -82,7 +82,7 @@ function splitChinese(value) {
 export function parseQuery(query) {
   const raw = String(query || "").trim();
   const tokens = new Set();
-  const intent = { raw, normalized: normalize(raw), tokens: [], expanded: [], categories: [] };
+  const intent = { raw, normalized: normalize(raw), tokens: [], expanded: [], categories: [], categoryClusters: [] };
   for (const token of raw.toLowerCase().match(VALUE_RE) || []) {
     const cleaned = token.trim();
     if (!cleaned || STOP_WORDS.has(cleaned) || STOP_WORDS.has(normalize(cleaned))) continue;
@@ -98,6 +98,15 @@ export function parseQuery(query) {
     }
   }
   intent.tokens = [...tokens].filter(isSearchableToken);
+  const rawPinyin = toPinyin(raw);
+  intent.categoryClusters = CATEGORY_CLUSTERS.filter((cluster) => cluster.terms.some((term) => {
+    const normalizedTerm = normalize(term);
+    const termPinyin = toPinyin(term);
+    return intent.normalized.includes(normalizedTerm)
+      || intent.tokens.some((token) => normalize(token) === normalizedTerm)
+      || (rawPinyin.length >= 4 && rawPinyin.includes(termPinyin));
+  }));
+  intent.categories.push(...intent.categoryClusters.map((cluster) => cluster.name));
   intent.expanded = intent.tokens.filter((token) => !intent.normalized.includes(normalize(token)));
   return intent;
 }
@@ -135,8 +144,21 @@ function isSearchableToken(value) {
   return compact.length > 1 || /^[\u4e00-\u9fff]$/.test(compact);
 }
 
+function isSingleChineseToken(value) {
+  return /^[\u4e00-\u9fff]$/.test(normalize(value));
+}
+
+function categoryTermsInDoc(doc, cluster) {
+  const text = doc.corpus;
+  const preciseTerms = cluster.terms.filter((term) => normalize(term).length > 1 && text.includes(normalize(term)));
+  if (!preciseTerms.length) return [];
+  // A specification such as "尺寸" is not a measuring tool by itself.
+  const hasOnlyDescriptiveText = cluster.excludeTerms?.some((term) => text.includes(normalize(term))) && !preciseTerms.length;
+  return hasOnlyDescriptiveText ? [] : preciseTerms;
+}
+
 export function createSearchIndex(products) {
-  const lexical = new Map(); const phonetic = new Map(); const grams = new Map(); const termPostings = new Map(); const phoneticTerms = new Map(); const charPostings = new Map();
+  const lexical = new Map(); const phonetic = new Map(); const grams = new Map(); const termPostings = new Map(); const phoneticTerms = new Map(); const charPostings = new Map(); const categoryPostings = new Map();
   const docs = products.map((product, index) => {
     const fields = productFields(product).map((field) => ({ ...field, compact: normalize(field.value), phonetic: toPinyin(field.value) }));
     const corpus = fields.map((field) => field.compact).join(" ");
@@ -153,18 +175,25 @@ export function createSearchIndex(products) {
       });
       for (const part of String(field.value).match(VALUE_RE) || []) addPosting(phoneticTerms, toPinyin(part), index);
     });
-    return { id: product.id, fields, corpus, phonetic: toPinyin(corpus), fingerprint: normalize(`${product.name}|${product.brand}|${product.model}`) };
+    const doc = { id: product.id, fields, corpus, phonetic: toPinyin(corpus), fingerprint: normalize(`${product.name}|${product.brand}|${product.model}`) };
+    CATEGORY_CLUSTERS.forEach((cluster) => {
+      if (categoryTermsInDoc(doc, cluster).length) addPosting(categoryPostings, cluster.id, index);
+    });
+    return doc;
   });
-  return { docs, lexical, phonetic, grams, termPostings, phoneticTerms, charPostings, size: docs.length };
+  return { docs, lexical, phonetic, grams, termPostings, phoneticTerms, charPostings, categoryPostings, size: docs.length };
 }
 
 function candidateIndexes(index, parsed) {
   const candidates = new Set();
   parsed.tokens.forEach((token) => {
     const compact = normalize(token);
-    [index.lexical.get(compact), index.termPostings.get(compact), index.phonetic.get(toPinyin(token)), index.phoneticTerms.get(toPinyin(token)), index.charPostings.get(compact)].forEach((set) => set?.forEach((id) => candidates.add(id)));
+    const postings = [index.lexical.get(compact), index.termPostings.get(compact), index.charPostings.get(compact)];
+    if (!isSingleChineseToken(token)) postings.push(index.phonetic.get(toPinyin(token)), index.phoneticTerms.get(toPinyin(token)));
+    postings.forEach((set) => set?.forEach((id) => candidates.add(id)));
     ngrams(compact).forEach((gram) => index.grams.get(gram)?.forEach((id) => candidates.add(id)));
   });
+  parsed.categoryClusters.forEach((cluster) => index.categoryPostings.get(normalize(cluster.id))?.forEach((id) => candidates.add(id)));
   return candidates.size ? [...candidates] : index.docs.map((_, id) => id);
 }
 
@@ -175,7 +204,7 @@ function matchToken(token, fields) {
     if (field.compact === wanted) { score = base + 90; reason = "精确命中"; }
     else if (field.compact.includes(wanted)) { score = base + (wanted.length === 1 && /^[\u4e00-\u9fff]$/.test(wanted) ? 18 : field.type === "model" || field.type === "brand" || field.type === "code" ? 64 : 42); reason = wanted.length === 1 && /^[\u4e00-\u9fff]$/.test(wanted) ? "单字词项命中" : field.type === "model" || field.type === "code" ? "型号/编码命中" : "字段命中"; }
     else if (wanted.length >= 3 && field.compact.startsWith(wanted)) { score = base + 48; reason = "前缀命中"; }
-    else if (wantedPinyin.length >= 3 && field.phonetic.includes(wantedPinyin)) { score = base + 29; reason = "拼音/谐音命中"; }
+    else if (!isSingleChineseToken(token) && wantedPinyin.length >= 3 && field.phonetic.includes(wantedPinyin)) { score = base + 29; reason = "拼音/谐音命中"; }
     else if (wanted.length >= 4 && field.compact.length <= wanted.length + 3 && editDistance(wanted, field.compact) <= 2) { score = base + 19; reason = "错别字容错"; }
     if (score && (!best || score > best.score)) best = { score, reason, field: field.key, token };
   }
@@ -208,8 +237,11 @@ export function searchIndex(index, query, limit = DISPLAY_LIMIT) {
   const required = [...new Map(parsed.tokens.filter((token) => !parsed.expanded.includes(token)).map((token) => [normalize(token), token])).values()];
   const strong = candidateIndexes(index, parsed).map((docIndex) => {
     const doc = index.docs[docIndex]; const matches = parsed.tokens.map((token) => matchToken(token, doc.fields)).filter(Boolean);
+    const categoryMatches = parsed.categoryClusters.flatMap((cluster) => categoryTermsInDoc(doc, cluster).map((term) => ({ score: 82, reason: `${cluster.name}优先结果`, field: "品类簇", token: term })));
+    matches.push(...categoryMatches);
     const coverage = required.length ? new Set(matches.filter((match) => required.some((token) => normalize(token) === normalize(match.token))).map((match) => normalize(match.token))).size / required.length : 0;
-    return { doc, matches, coverage, score: matches.reduce((sum, match) => sum + match.score, 0) + coverage * 100 };
+    const effectiveCoverage = categoryMatches.length ? Math.max(coverage, 1) : coverage;
+    return { doc, matches, coverage: effectiveCoverage, score: matches.reduce((sum, match) => sum + match.score, 0) + effectiveCoverage * 100 };
   }).filter((item) => {
     const minimumCoverage = required.length <= 2 ? 0.99 : parsed.categories.length ? 0.2 : 0.45;
     return item.matches.length && item.coverage >= minimumCoverage;

@@ -10,6 +10,7 @@ const makeProduct = (id, name, brand = "未填写品牌", model = "未填写型�
 const festo = makeProduct("festo", "FESTO/费斯托 双耳环安装件 SNC-63 174386", "未填写品牌", "未填写型号", { 库存编码: "174386", 分类: "气动元件", 材质: "碳钢" });
 const vacuum = makeProduct("vacuum", "真空发生器模块 ZH10DS", "SMC", "ZH10DS", { 适用设备: "包装线真空吸取", 单位: "个" });
 const screw = makeProduct("screw", "304 不锈钢内六角圆柱头螺钉", "通用", "M6×20", { 材质: "304不锈钢", 规格单位: "M6 x 20 mm" });
+const ruler = makeProduct("ruler", "得力(deli)100cm不锈钢直尺与刻度尺子", "得力", "长度100cm", { 分类: "办公用品", 采购备注: "测量绘图尺子" });
 
 test("cross-field brand and model fragments stay at the top", () => {
   const index = createSearchIndex([festo, vacuum, screw]);
@@ -36,6 +37,26 @@ test("unrelated search returns a diversified top thirty fuzzy fallback", () => {
   assert.equal(result.items.length, 30);
   assert.ok(result.items.every((item) => item.confidence === "低"));
   assert.equal(new Set(result.items.map((item) => `${item.product.name}|${item.product.model}`)).size, result.items.length);
+});
+
+test("single Chinese characters and token pinyin recall the same product family", () => {
+  const index = createSearchIndex([ruler, festo, vacuum, screw]);
+  for (const query of ["尺", "尺子", "直尺", "chizi", "zhichi", "池子"]) {
+    const result = searchIndex(index, query);
+    assert.equal(result.fallback, false, query);
+    assert.equal(result.items[0].id, "ruler", query);
+  }
+});
+
+test("strong results are retained and the remainder is filled with related supplements", () => {
+  const products = [ruler, ...Array.from({ length: 35 }, (_, index) => makeProduct(`extra-${index}`, `通用商品 ${index}`, `品牌${index}`, `A-${index}`, { 分类: index % 2 ? "办公用品" : "工业备件" }))];
+  const result = localSearch(products, "池子");
+  assert.equal(result.fallback, false);
+  assert.equal(result.strongCount, 1);
+  assert.equal(result.supplementCount, 29);
+  assert.equal(result.items.length, 30);
+  assert.equal(result.items[0].product.id, "ruler");
+  assert.ok(result.items.slice(1).every((item) => item.confidence === "低" && item.supplement));
 });
 
 test("prebuilt index handles a ten-thousand-item POC pool and caps results", () => {

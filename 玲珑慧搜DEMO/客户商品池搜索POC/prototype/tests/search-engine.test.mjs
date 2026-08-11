@@ -36,6 +36,14 @@ const mroClusterProducts = [
   makeProduct("cleaning", "工业除油清洁剂", "WD-40", "500ml"),
   makeProduct("office", "A4复印打印纸", "得力", "70g"),
 ];
+const synonymProducts = [
+  makeProduct("screwdriver", "十字螺丝刀", "世达", "PH2"),
+  makeProduct("breaker-synonym", "小型断路器", "施耐德", "iC65N"),
+  makeProduct("cylinder-synonym", "液压缸", "力士乐", "HSG-80"),
+  makeProduct("ball-screw-synonym", "滚珠丝杆", "上银", "R20-5"),
+  makeProduct("terminal-synonym", "接线端子排", "魏德米勒", "UK2.5"),
+  makeProduct("glove-synonym", "防切割手套", "安思尔", "8级"),
+];
 
 test("cross-field brand and model fragments stay at the top", () => {
   const index = createSearchIndex([festo, vacuum, screw]);
@@ -103,6 +111,29 @@ test("common industrial MRO clusters recall their product family with Chinese an
     assert.equal(result.items[0].id, expectedId, query);
     assert.ok(result.parsed.categoryClusters.some((cluster) => cluster.id === clusterId), query);
   }
+});
+
+test("strict synonyms and aliases recall the canonical product with an explainable reason", () => {
+  const index = createSearchIndex(synonymProducts);
+  const cases = [
+    ["改锥", "screwdriver", "同义词：改锥 → 螺丝刀"], ["起子", "screwdriver", "同义词：起子 → 螺丝刀"],
+    ["空开", "breaker-synonym", "同义词：空开 → 小型断路器"], ["油缸", "cylinder-synonym", "同义词：油缸 → 液压缸"],
+    ["丝杠", "ball-screw-synonym", "同义词：丝杠 → 滚珠丝杆"], ["端子", "terminal-synonym", "同义词：端子 → 接线端子"],
+    ["防割手套", "glove-synonym", "同义词：防割手套 → 防切割手套"], ["luosidao", "screwdriver", "拼音别名：luosidao → 螺丝刀"],
+  ];
+  for (const [query, expectedId, reason] of cases) {
+    const result = searchIndex(index, query);
+    assert.equal(result.fallback, false, query);
+    assert.equal(result.items[0].id, expectedId, query);
+    assert.match(result.items[0].reason, new RegExp(reason.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), query);
+  }
+});
+
+test("exact text matches remain ahead of synonym expansion", () => {
+  const exactAlias = makeProduct("exact-alias", "改锥", "世达", "PH2");
+  const canonical = makeProduct("canonical", "十字螺丝刀", "世达", "PH2");
+  const result = searchIndex(createSearchIndex([canonical, exactAlias]), "改锥");
+  assert.equal(result.items[0].id, "exact-alias");
 });
 
 test("exact model and brand matches rank ahead of category-only expansion", () => {

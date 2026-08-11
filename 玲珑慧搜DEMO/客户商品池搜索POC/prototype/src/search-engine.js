@@ -1,5 +1,5 @@
 import { pinyin } from "pinyin-pro";
-import { CATEGORY_CLUSTERS, DOMAIN_GROUPS, STOP_WORDS } from "./search-dictionary.js";
+import { CATEGORY_CLUSTERS, DOMAIN_GROUPS, STOP_WORDS, SYNONYM_GROUPS } from "./search-dictionary.js";
 
 export const DISPLAY_LIMIT = 30;
 export const normalize = (value = "") => String(value).normalize("NFKC").toLowerCase()
@@ -89,6 +89,19 @@ function clusterDisplayName(cluster) {
   return cluster.displayName || cluster.name || cluster.id;
 }
 
+function synonymTerms(group) {
+  return [...new Set([group.canonical, ...(group.aliases || []), ...(group.english || [])])];
+}
+
+function resolveSynonymGroups(intent) {
+  const rawPinyin = toPinyin(intent.raw);
+  return SYNONYM_GROUPS.map((group) => {
+    const matchedTerm = synonymTerms(group).find((term) => intent.normalized.includes(normalize(term)) || intent.tokens.some((token) => normalize(token) === normalize(term)));
+    const matchedPinyin = (group.pinyinAliases || []).find((alias) => rawPinyin.length >= 3 && rawPinyin.includes(normalize(alias)));
+    return matchedTerm || matchedPinyin ? { group, source: matchedTerm || matchedPinyin, sourceType: matchedTerm ? "同义词" : "拼音别名" } : null;
+  }).filter(Boolean);
+}
+
 function resolveCategoryClusters(intent) {
   const rawPinyin = toPinyin(intent.raw);
   const scored = CATEGORY_CLUSTERS.map((cluster) => {
@@ -111,7 +124,7 @@ function resolveCategoryClusters(intent) {
 export function parseQuery(query) {
   const raw = String(query || "").trim();
   const tokens = new Set();
-  const intent = { raw, normalized: normalize(raw), tokens: [], expanded: [], categories: [], categoryClusters: [] };
+  const intent = { raw, normalized: normalize(raw), tokens: [], expanded: [], categories: [], categoryClusters: [], synonymGroups: [], synonymExpansions: [] };
   for (const token of raw.toLowerCase().match(VALUE_RE) || []) {
     const cleaned = token.trim();
     if (!cleaned || STOP_WORDS.has(cleaned) || STOP_WORDS.has(normalize(cleaned))) continue;
@@ -126,6 +139,16 @@ export function parseQuery(query) {
       intent.categories.push(group.name);
     }
   }
+  intent.tokens = [...tokens].filter(isSearchableToken);
+  intent.synonymGroups = resolveSynonymGroups(intent);
+  const originalTokenKeys = new Set(intent.tokens.map(normalize));
+  intent.synonymGroups.forEach(({ group, source, sourceType }) => {
+    synonymTerms(group).forEach((term) => {
+      if (!isSearchableToken(term)) return;
+      tokens.add(term);
+      if (!originalTokenKeys.has(normalize(term))) intent.synonymExpansions.push({ token: term, source, sourceType, canonical: group.canonical, groupId: group.id });
+    });
+  });
   intent.tokens = [...tokens].filter(isSearchableToken);
   intent.categoryClusters = resolveCategoryClusters(intent);
   intent.categories.push(...intent.categoryClusters.map(clusterDisplayName));
@@ -219,7 +242,7 @@ function candidateIndexes(index, parsed) {
   return candidates.size ? [...candidates] : index.docs.map((_, id) => id);
 }
 
-function matchToken(token, fields) {
+function matchToken(token, fields, synonymExpansion) {
   const wanted = normalize(token); const wantedPinyin = toPinyin(token); let best = null;
   for (const field of fields) {
     const base = FIELD_WEIGHTS[field.type] || 20; let score = 0; let reason = "";
@@ -228,7 +251,11 @@ function matchToken(token, fields) {
     else if (wanted.length >= 3 && field.compact.startsWith(wanted)) { score = base + 48; reason = "前缀命中"; }
     else if (!isSingleChineseToken(token) && wantedPinyin.length >= 3 && field.phonetic.includes(wantedPinyin)) { score = base + 29; reason = "拼音/谐音命中"; }
     else if (wanted.length >= 4 && field.compact.length <= wanted.length + 3 && editDistance(wanted, field.compact) <= 2) { score = base + 19; reason = "错别字容错"; }
-    if (score && (!best || score > best.score)) best = { score, reason, field: field.key, token };
+    if (score && synonymExpansion) {
+      score = Math.min(score, base + 58);
+      reason = `${synonymExpansion.sourceType}：${synonymExpansion.source} → ${synonymExpansion.canonical}`;
+    }
+    if (score && (!best || score > best.score)) best = { score, reason, field: field.key, token, satisfies: synonymExpansion?.source || token };
   }
   return best;
 }
@@ -258,10 +285,10 @@ export function searchIndex(index, query, limit = DISPLAY_LIMIT) {
   if (!parsed.raw) return { items: index.docs.slice(0, displayLimit).map((doc) => ({ id: doc.id, confidence: "浏览", reason: "全部商品", score: 0, matches: [] })), fallback: false, parsed };
   const required = [...new Map(parsed.tokens.filter((token) => !parsed.expanded.includes(token)).map((token) => [normalize(token), token])).values()];
   const strong = candidateIndexes(index, parsed).map((docIndex) => {
-    const doc = index.docs[docIndex]; const matches = parsed.tokens.map((token) => matchToken(token, doc.fields)).filter(Boolean);
+    const doc = index.docs[docIndex]; const matches = parsed.tokens.map((token) => matchToken(token, doc.fields, parsed.synonymExpansions.find((item) => normalize(item.token) === normalize(token)))).filter(Boolean);
     const categoryMatches = parsed.categoryClusters.flatMap((cluster) => categoryTermsInDoc(doc, cluster).length ? [{ score: cluster.priority || 72, reason: `${clusterDisplayName(cluster)}优先结果`, field: "品类簇", token: cluster.id }] : []);
     matches.push(...categoryMatches);
-    const coverage = required.length ? new Set(matches.filter((match) => required.some((token) => normalize(token) === normalize(match.token))).map((match) => normalize(match.token))).size / required.length : 0;
+    const coverage = required.length ? new Set(matches.filter((match) => required.some((token) => normalize(token) === normalize(match.satisfies || match.token))).map((match) => normalize(match.satisfies || match.token))).size / required.length : 0;
     const effectiveCoverage = categoryMatches.length ? Math.max(coverage, 1) : coverage;
     return { doc, matches, coverage: effectiveCoverage, score: matches.reduce((sum, match) => sum + match.score, 0) + effectiveCoverage * 100 };
   }).filter((item) => {
@@ -271,7 +298,7 @@ export function searchIndex(index, query, limit = DISPLAY_LIMIT) {
   const strongItems = strong.map((item) => ({ ...item, id: item.doc.id })).filter((item, position, list) => list.findIndex((candidate) => candidate.doc.fingerprint === item.doc.fingerprint) === position).slice(0, displayLimit);
   const fuzzy = index.docs.map((doc) => ({ doc, score: fallbackScore(doc, parsed) })).filter((item) => !strongItems.some((strongItem) => strongItem.id === item.doc.id)).sort((a, b) => b.score - a.score);
   const fuzzyItems = diversify(fuzzy, Math.max(0, Math.min(displayLimit, index.size) - strongItems.length));
-  const strongResults = strongItems.map((item) => ({ id: item.doc.id, score: item.score, matches: item.matches, confidence: item.matches.some((match) => match.reason === "精确命中" || match.reason === "型号/编码命中") ? "高" : "中", reason: item.matches.map((match) => `${match.field}：${match.reason}`).filter((value, i, all) => all.indexOf(value) === i).slice(0, 2).join("；"), supplement: false }));
+  const strongResults = strongItems.map((item) => ({ id: item.doc.id, score: item.score, matches: item.matches, confidence: item.matches.some((match) => match.reason === "精确命中" || match.reason === "型号/编码命中") ? "高" : "中", reason: item.matches.map((match) => `${match.field}：${match.reason}`).filter((value, i, all) => all.indexOf(value) === i).sort((left, right) => Number(/同义词|拼音别名/.test(right)) - Number(/同义词|拼音别名/.test(left))).slice(0, 2).join("；"), supplement: false }));
   const supplementResults = fuzzyItems.map((item) => ({ id: item.doc.id, score: item.score, confidence: "低", reason: item.score > 9 ? "相关补充：名称、别名或拼音相似" : "相关补充：模糊推荐", matches: [], supplement: true }));
   if (strongResults.length) return { items: [...strongResults, ...supplementResults], fallback: false, parsed, strongCount: strongResults.length, supplementCount: supplementResults.length };
   return { items: supplementResults.map((item) => ({ ...item, reason: item.reason.replace("相关补充：", "") })), fallback: true, parsed, strongCount: 0, supplementCount: supplementResults.length };

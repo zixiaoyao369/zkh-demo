@@ -48,3 +48,33 @@ export const CATEGORY_CLUSTERS = [
   { id: "cleaning", displayName: "清洁用品", priority: 68, coreTerms: ["清洁剂", "抹布", "拖把", "垃圾袋", "洗手液"], synonyms: ["除油剂", "消毒液", "擦拭纸", "工业擦拭布", "清洗剂"], pinyinAliases: ["qingjieji", "mobu", "tuoba"], excludeTerms: [] },
   { id: "office-supplies", displayName: "办公文具", priority: 65, coreTerms: ["打印纸", "笔", "文件夹", "订书机", "计算器"], synonyms: ["复印纸", "签字笔", "中性笔", "便签", "办公用品"], pinyinAliases: ["dayinzhi", "wenjianjia", "ding shu ji"], excludeTerms: [] },
 ];
+
+// Strict equivalents only. Product-family relations stay in CATEGORY_CLUSTERS,
+// so an adjacent item (for example a bolt versus a nut) is never promoted as a synonym.
+export const SYNONYM_GROUPS = [
+  { id: "screwdriver", canonical: "螺丝刀", aliases: ["改锥", "起子", "改刀"], english: ["screwdriver"], pinyinAliases: ["luosidao", "gaizhui", "qizi"], clusterId: "hand-tools" },
+  { id: "wrench", canonical: "扳手", aliases: ["扳子", "板手"], english: ["wrench", "spanner"], pinyinAliases: ["banshou", "banzi"], clusterId: "hand-tools" },
+  { id: "pliers", canonical: "钳子", aliases: ["工具钳", "钳"], english: ["pliers"], pinyinAliases: ["qianzi"], clusterId: "hand-tools" },
+  { id: "tape-measure", canonical: "卷尺", aliases: ["皮尺", "卷皮尺", "软尺"], english: ["tape measure"], pinyinAliases: ["juanchi", "pichi"], clusterId: "measuring-ruler" },
+  { id: "screw", canonical: "螺钉", aliases: ["螺丝", "螺丝钉"], english: ["screw"], pinyinAliases: ["luoding", "luosi"], clusterId: "fasteners" },
+  { id: "oil-cylinder", canonical: "液压缸", aliases: ["油缸", "液压油缸"], english: ["hydraulic cylinder"], pinyinAliases: ["yeyagang", "yougang"], clusterId: "hydraulics" },
+  { id: "vacuum-cup", canonical: "真空吸盘", aliases: ["吸盘", "真空杯"], english: ["vacuum cup", "suction cup"], pinyinAliases: ["zhenkongxipan", "xipan"], clusterId: "vacuum" },
+  { id: "quick-connector", canonical: "快插接头", aliases: ["快插", "快速接头"], english: ["quick connector"], pinyinAliases: ["kuaicha", "kuaisujietou"], clusterId: "pneumatics" },
+  { id: "breaker", canonical: "小型断路器", aliases: ["空开", "空气开关", "微型断路器"], english: ["MCB", "circuit breaker"], pinyinAliases: ["kongkai", "duanluqi"], clusterId: "electrical-protection" },
+  { id: "contactor", canonical: "交流接触器", aliases: ["接触器"], english: ["contactor"], pinyinAliases: ["jiechuuqi"], clusterId: "electrical-control" },
+  { id: "relay", canonical: "继电器", aliases: ["中间继电器", "控制继电器"], english: ["relay"], pinyinAliases: ["jidianqi"], clusterId: "electrical-control" },
+  { id: "proximity-sensor", canonical: "接近传感器", aliases: ["接近开关", "接近感应器"], english: ["proximity sensor"], pinyinAliases: ["jiejinkaiguan", "jiejinchuanganqi"], clusterId: "automation-sensing" },
+  { id: "plc", canonical: "可编程控制器", aliases: ["PLC", "可编程逻辑控制器"], english: ["programmable logic controller"], pinyinAliases: ["plc"], clusterId: "automation-sensing" },
+  { id: "cable", canonical: "线缆", aliases: ["电缆", "电线"], english: ["cable", "wire"], pinyinAliases: ["xianlan", "dianlan"], clusterId: "electronic-connection" },
+  { id: "terminal", canonical: "接线端子", aliases: ["端子", "压线端子"], english: ["terminal block", "terminal"], pinyinAliases: ["jiexian duanzi", "duanzi"], clusterId: "electronic-connection" },
+  { id: "connector", canonical: "连接器", aliases: ["接插件", "插接件", "插头"], english: ["connector"], pinyinAliases: ["lianjieqi", "jiejian"], clusterId: "electronic-connection" },
+  { id: "bearing-housing", canonical: "带座轴承", aliases: ["轴承座", "轴承座组件"], english: ["pillow block bearing"], pinyinAliases: ["daizuozhoucheng", "zhouchengzuo"], clusterId: "bearings" },
+  { id: "linear-block", canonical: "导轨滑块", aliases: ["滑块", "滑轨块"], english: ["linear guide block"], pinyinAliases: ["daoguihuakuai", "huakuai"], clusterId: "linear-motion" },
+  { id: "ball-screw", canonical: "滚珠丝杆", aliases: ["丝杠", "丝杆"], english: ["ball screw"], pinyinAliases: ["gunzhusigang", "sigang", "sigang"], clusterId: "linear-motion" },
+  { id: "o-ring", canonical: "O型圈", aliases: ["密封圈", "O圈"], english: ["O-ring", "oring"], pinyinAliases: ["mifengquan", "oquan"], clusterId: "valves-piping" },
+  { id: "ball-valve", canonical: "球阀", aliases: ["球形阀"], english: ["ball valve"], pinyinAliases: ["qiufa"], clusterId: "valves-piping" },
+  { id: "cut-resistant-glove", canonical: "防切割手套", aliases: ["防割手套", "防割手套"], english: ["cut resistant glove"], pinyinAliases: ["fangqiegeshoutao", "fanggeshoutao"], clusterId: "safety-ppe" },
+  { id: "carton-tape", canonical: "封箱胶带", aliases: ["胶带", "打包胶带"], english: ["packing tape", "carton sealing tape"], pinyinAliases: ["fengxiangjiaodai", "jiaodai"], clusterId: "packaging" },
+  { id: "degreaser", canonical: "除油剂", aliases: ["脱脂剂", "除油清洁剂"], english: ["degreaser"], pinyinAliases: ["chuyouji", "tuozhiji"], clusterId: "cleaning" },
+  { id: "copy-paper", canonical: "复印纸", aliases: ["打印纸", "A4纸"], english: ["copy paper", "printing paper"], pinyinAliases: ["fuyinzhi", "dayinzhi"], clusterId: "office-supplies" },
+];

@@ -44,6 +44,15 @@ const synonymProducts = [
   makeProduct("terminal-synonym", "接线端子排", "魏德米勒", "UK2.5"),
   makeProduct("glove-synonym", "防切割手套", "安思尔", "8级"),
 ];
+const warehouseProducts = [
+  makeProduct("pallet-jack", "手动液压搬运车", "诺力", "CBY-2.5"),
+  makeProduct("electric-pallet", "电动搬运车", "杭叉", "CBD15"),
+  makeProduct("stacker", "电动堆高车", "中力", "CDD15"),
+  makeProduct("forklift", "电动叉车", "合力", "CPD15"),
+  makeProduct("platform-cart", "不锈钢平台车", "得力", "300kg"),
+  makeProduct("caster", "工业万向脚轮", "环球", "4寸"),
+  makeProduct("chain-hoist", "手拉葫芦", "沪工", "2T"),
+];
 
 test("cross-field brand and model fragments stay at the top", () => {
   const index = createSearchIndex([festo, vacuum, screw]);
@@ -127,6 +136,31 @@ test("strict synonyms and aliases recall the canonical product with an explainab
     assert.equal(result.items[0].id, expectedId, query);
     assert.match(result.items[0].reason, new RegExp(reason.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), query);
   }
+});
+
+test("warehouse equipment aliases recall their exact equipment without cross-equipment strong matches", () => {
+  const index = createSearchIndex(warehouseProducts);
+  const cases = [
+    ["地牛", "pallet-jack", "同义词：地牛 → 手动液压搬运车"],
+    ["手动托盘搬运车", "pallet-jack", "同义词：手动托盘搬运车 → 手动液压搬运车"],
+    ["液压托盘车", "pallet-jack", "同义词：液压托盘车 → 手动液压搬运车"],
+    ["manual pallet jack", "pallet-jack", "同义词：manual pallet jack → 手动液压搬运车"],
+    ["电动地牛", "electric-pallet", "同义词：电动地牛 → 电动搬运车"],
+    ["堆垛车", "stacker", "同义词：堆垛车 → 堆高车"],
+    ["万向轮", "caster", "同义词：万向轮 → 脚轮"],
+    ["倒链", "chain-hoist", "同义词：倒链 → 手拉葫芦"],
+  ];
+  for (const [query, expectedId, reason] of cases) {
+    const result = searchIndex(index, query);
+    assert.equal(result.fallback, false, query);
+    assert.equal(result.items[0].id, expectedId, query);
+    assert.match(result.items[0].reason, new RegExp(reason.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")), query);
+  }
+  const palletResult = searchIndex(index, "地牛");
+  const strongIds = new Set(palletResult.items.filter((item) => !item.supplement).map((item) => item.id));
+  assert.ok(!strongIds.has("stacker"), "地牛 must not strongly match a stacker");
+  assert.ok(!strongIds.has("forklift"), "地牛 must not strongly match a forklift");
+  assert.ok(palletResult.parsed.categoryClusters.some((cluster) => cluster.id === "warehouse-handling"));
 });
 
 test("exact text matches remain ahead of synonym expansion", () => {

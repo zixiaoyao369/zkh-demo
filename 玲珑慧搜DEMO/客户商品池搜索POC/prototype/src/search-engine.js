@@ -293,7 +293,14 @@ export function searchIndex(index, query, limit = DISPLAY_LIMIT) {
     return { doc, matches, coverage: effectiveCoverage, score: matches.reduce((sum, match) => sum + match.score, 0) + effectiveCoverage * 100 };
   }).filter((item) => {
     const minimumCoverage = required.length <= 2 ? 0.99 : parsed.categories.length ? 0.2 : 0.45;
-    return item.matches.length && item.coverage >= minimumCoverage;
+    const strictGroups = parsed.synonymGroups.filter(({ group }) => group.strict);
+    const needsStrictSynonymMatch = strictGroups.length > 0;
+    const strictOriginalTerms = new Set(strictGroups.flatMap(({ group }) => synonymTerms(group).map(normalize)));
+    const hasStrictSynonymMatch = item.matches.some((match) => /同义词|拼音别名/.test(match.reason)
+      || (strictOriginalTerms.has(normalize(match.token)) && parsed.normalized.includes(normalize(match.token))));
+    // Some equipment is adjacent in the warehouse category but is not an
+    // equivalent product: 地牛、堆高车和叉车 must never share a strong result.
+    return item.matches.length && item.coverage >= minimumCoverage && (!needsStrictSynonymMatch || hasStrictSynonymMatch);
   }).sort((a, b) => b.score - a.score);
   const strongItems = strong.map((item) => ({ ...item, id: item.doc.id })).filter((item, position, list) => list.findIndex((candidate) => candidate.doc.fingerprint === item.doc.fingerprint) === position).slice(0, displayLimit);
   const fuzzy = index.docs.map((doc) => ({ doc, score: fallbackScore(doc, parsed) })).filter((item) => !strongItems.some((strongItem) => strongItem.id === item.doc.id)).sort((a, b) => b.score - a.score);

@@ -46,6 +46,7 @@ export const CATEGORY_CLUSTERS = [
   { id: "safety-ppe", displayName: "劳保安全", priority: 75, coreTerms: ["手套", "口罩", "安全帽", "防护鞋", "护目镜", "消防器材"], synonyms: ["劳保手套", "防切割手套", "安全带", "耳塞", "灭火器", "防护服"], pinyinAliases: ["shoutao", "kouzhao", "anquanmao", "humu jing"], excludeTerms: [] },
   { id: "packaging", displayName: "包装耗材", priority: 70, coreTerms: ["胶带", "标签", "包装膜", "纸箱", "缠绕膜"], synonyms: ["封箱胶带", "不干胶标签", "气泡膜", "打包带", "收缩膜"], pinyinAliases: ["jiaodai", "biaoqian", "baozhuangmo"], excludeTerms: [] },
   { id: "cleaning", displayName: "清洁用品", priority: 68, coreTerms: ["清洁剂", "抹布", "拖把", "垃圾袋", "洗手液"], synonyms: ["除油剂", "消毒液", "擦拭纸", "工业擦拭布", "清洗剂"], pinyinAliases: ["qingjieji", "mobu", "tuoba"], excludeTerms: [] },
+  { id: "warehouse-handling", displayName: "仓储搬运与起重设备", priority: 82, coreTerms: ["手动液压搬运车", "电动搬运车", "堆高车", "叉车", "平台车", "脚轮", "手拉葫芦", "托盘", "货架"], synonyms: ["托盘搬运车", "液压托盘车", "电动托盘车", "堆垛车", "平板推车", "万向轮", "工业脚轮", "倒链", "链条葫芦", "起重设备", "吊装带"], pinyinAliases: ["diniu", "banyunche", "duigaoche", "chache", "pingtaiche", "jiaolun", "shoulahulu"], excludeTerms: [] },
   { id: "office-supplies", displayName: "办公文具", priority: 65, coreTerms: ["打印纸", "笔", "文件夹", "订书机", "计算器"], synonyms: ["复印纸", "签字笔", "中性笔", "便签", "办公用品"], pinyinAliases: ["dayinzhi", "wenjianjia", "ding shu ji"], excludeTerms: [] },
 ];
 
@@ -76,5 +77,14 @@ export const SYNONYM_GROUPS = [
   { id: "cut-resistant-glove", canonical: "防切割手套", aliases: ["防割手套", "防割手套"], english: ["cut resistant glove"], pinyinAliases: ["fangqiegeshoutao", "fanggeshoutao"], clusterId: "safety-ppe" },
   { id: "carton-tape", canonical: "封箱胶带", aliases: ["胶带", "打包胶带"], english: ["packing tape", "carton sealing tape"], pinyinAliases: ["fengxiangjiaodai", "jiaodai"], clusterId: "packaging" },
   { id: "degreaser", canonical: "除油剂", aliases: ["脱脂剂", "除油清洁剂"], english: ["degreaser"], pinyinAliases: ["chuyouji", "tuozhiji"], clusterId: "cleaning" },
+  // Warehouse equipment shares a category but not a meaning. `strict` prevents a
+  // search for 地牛 from promoting stackers or forklifts into strong matches.
+  { id: "manual-pallet-jack", canonical: "手动液压搬运车", aliases: ["地牛", "手动托盘搬运车", "液压托盘车", "手动搬运车", "手动地牛"], english: ["manual pallet jack", "hand pallet truck"], pinyinAliases: ["diniu", "shoudongyeyabanyunche", "shoudongtuopanbanyunche", "yeyatuopanche"], clusterId: "warehouse-handling", strict: true },
+  { id: "electric-pallet-jack", canonical: "电动搬运车", aliases: ["电动地牛", "电动托盘搬运车", "电动托盘车", "电动搬运叉车"], english: ["electric pallet jack", "electric pallet truck"], pinyinAliases: ["diandongdiniu", "diandongbanyunche", "diandongtuopanche"], clusterId: "warehouse-handling", strict: true },
+  { id: "stacker", canonical: "堆高车", aliases: ["堆垛车", "手动堆高车", "电动堆高车"], english: ["stacker", "pallet stacker"], pinyinAliases: ["duigaoche", "duoduoche"], clusterId: "warehouse-handling", strict: true },
+  { id: "forklift", canonical: "叉车", aliases: ["工业叉车", "平衡重叉车", "电动叉车"], english: ["forklift"], pinyinAliases: ["chache", "diandongchache"], clusterId: "warehouse-handling", strict: true },
+  { id: "platform-cart", canonical: "平台车", aliases: ["平板推车", "手推平台车"], english: ["platform trolley", "platform cart"], pinyinAliases: ["pingtaiche", "pingbantuiche"], clusterId: "warehouse-handling", strict: true },
+  { id: "caster", canonical: "脚轮", aliases: ["万向轮", "万向脚轮", "工业脚轮"], english: ["caster", "castor"], pinyinAliases: ["jiaolun", "wanxianglun"], clusterId: "warehouse-handling", strict: true },
+  { id: "chain-hoist", canonical: "手拉葫芦", aliases: ["倒链", "链条葫芦"], english: ["chain hoist", "manual chain hoist"], pinyinAliases: ["shoulahulu", "daolian", "liantiaohulu"], clusterId: "warehouse-handling", strict: true },
   { id: "copy-paper", canonical: "复印纸", aliases: ["打印纸", "A4纸"], english: ["copy paper", "printing paper"], pinyinAliases: ["fuyinzhi", "dayinzhi"], clusterId: "office-supplies" },
 ];

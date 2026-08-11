@@ -154,14 +154,14 @@ export function App() {
     onClick: () => !isImporting && fileInput.current?.click(),
   };
 
-  const header = <header className="app-header"><button className="brand" onClick={() => setScreen("home")}><img src={assetUrl("linglong-icon.png")} alt="玲珑慧搜" /><span>客户商品池</span></button><nav><button className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}>首页</button><button className={screen === "pool" ? "active" : ""} onClick={() => products.length && setScreen("pool")}>商品检索</button></nav><div className="header-right"><span className="poc-chip"><Sparkle size={14} weight="fill" /> 本地检索 POC</span><span className="avatar">L</span><span className="user-name">采购运营</span></div></header>;
+  const header = <header className="app-header"><button className="brand" onClick={() => setScreen("home")}><img src={assetUrl("linglong-logo.png")} alt="玲珑慧搜" /></button><nav><button className={screen === "home" ? "active" : ""} onClick={() => setScreen("home")}>首页</button><button className={screen === "pool" ? "active" : ""} onClick={() => products.length && setScreen("pool")}>商品检索</button></nav><div className="header-right"><span className="poc-chip"><Sparkle size={14} weight="fill" /> 本地检索 POC</span><span className="avatar">L</span><span className="user-name">采购运营</span></div></header>;
 
   return <div className="app-shell">
     {header}
     <input ref={fileInput} className="visually-hidden" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" onChange={(event) => handleFile(event.target.files?.[0])} />
     {notice && <div className={`toast ${notice.type}`} role="status">{notice.type === "success" ? <CheckCircle size={19} weight="fill" /> : <WarningCircle size={19} weight="fill" />}<span>{notice.text}</span><button onClick={() => setNotice(null)} aria-label="关闭提示"><X size={16} /></button></div>}
     {screen === "home" ? <main className="home-page">
-      <section className="home-intro"><p className="eyebrow"><Sparkle size={15} weight="fill" /> 客户专属商品资产</p><h1>让客户商品，<br /><em>随时可被找到</em></h1><p>导入客户商品清单，建立可解释的本地商品池。即使输入谐音、错别字或采购描述，也能更快定位目标商品。</p></section>
+      <section className="home-intro"><p className="eyebrow"><Sparkle size={15} weight="fill" /> 客户专属商品资产</p><h1>玲珑慧搜 <span>-</span> <em>搜你所想</em></h1><p>导入客户商品清单，建立可解释的本地商品池。即使输入谐音、错别字或采购描述，也能更快定位目标商品。</p></section>
       <section className="onboarding-grid" aria-label="商品池导入">
         <div className={`upload-zone ${isDragging ? "dragging" : ""}`} {...uploadProps} role="button" tabIndex="0" onKeyDown={(event) => event.key === "Enter" && fileInput.current?.click()}>
           <div className="upload-illustration"><FileXls size={54} weight="duotone" /><span><UploadSimple size={18} weight="bold" /></span></div>
